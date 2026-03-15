@@ -1,1 +1,1 @@
-# Platform_for_the_achievements_of_schoolchildren_and_students
+# Проект: Платформа достижений школьников и студентов
