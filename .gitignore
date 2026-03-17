@@ -1,4 +1,5 @@
 .env
+.venv
 Platform/__init__.py
 Platform/apps/analytics/__init__.py
 Platform/apps/analytics/migrations/__init__.py
