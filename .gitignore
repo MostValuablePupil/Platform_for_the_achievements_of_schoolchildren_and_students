@@ -12,7 +12,7 @@ staticfiles/
 # Виртуальное окружение
 .venv/
 venv/
-.evn/
+.env
 env/
 
 # Настройки редакторов (VS Code, PyCharm)
