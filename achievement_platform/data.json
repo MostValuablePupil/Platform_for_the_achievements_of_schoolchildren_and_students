@@ -1,0 +1,26 @@
+{
+  "students": [
+    {
+      "id": 1,
+      "name": "Иван Петров",
+      "xp": 120,
+      "level": 2,
+      "coins": 50,
+      "badges": ["Новичок"],
+      "achievements": []
+    },
+    {
+      "id": 2,
+      "name": "Анна Смирнова",
+      "xp": 450,
+      "level": 5,
+      "coins": 200,
+      "badges": ["Новичок", "Активист"],
+      "achievements": []
+    }
+  ],
+  "teachers": [
+    {"id": 101, "name": "Преподаватель Иванов"}
+  ],
+  "pending_achievements": []
+}
