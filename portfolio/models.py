@@ -1,41 +1,40 @@
 from django.db import models
 from django.conf import settings
-from skills.models import Skill  
+from skills.models import Skill
 
-class Project(models.Model):
-    """
-    Проекты студента (кейсы, пет-проекты, хакатоны)
-    """
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='projects',
-        verbose_name="Студент"
-    )
-    title = models.CharField(max_length=255, verbose_name="Название проекта")
-    description = models.TextField(verbose_name="Описание проекта")
-    link = models.URLField(blank=True, verbose_name="Ссылка на репозиторий/демо")
+# class Project(models.Model):
+#     """
+#     Проекты (командные или личные)
+#     """
+#     title = models.CharField(max_length=255, verbose_name="Название проекта")
+#     description = models.TextField(verbose_name="Описание проекта")
+#     link = models.URLField(blank=True, verbose_name="Ссылка на репозиторий/демо")
     
-
-    skills = models.ManyToManyField(
-        Skill, 
-        related_name='projects',
-        verbose_name="Используемые навыки"
-    )
+#     students = models.ManyToManyField(
+#         settings.AUTH_USER_MODEL,
+#         related_name='projects',
+#         verbose_name="Студенты (Участники команды)"
+#     )
     
-    date_created = models.DateField(auto_now_add=True)
+#     skills = models.ManyToManyField(
+#         Skill, 
+#         related_name='projects',
+#         verbose_name="Используемые навыки"
+#     )
+    
+#     date_created = models.DateField(auto_now_add=True)
 
-    class Meta:
-        verbose_name = "Проект"
-        verbose_name_plural = "Проекты"
+#     class Meta:
+#         verbose_name = "Проект"
+#         verbose_name_plural = "Проекты"
 
-    def __str__(self):
-        return f"{self.title} | {self.student.username}"
+#     def __str__(self):
+#         return self.title
 
 
 class Achievement(models.Model):
     """
-    Достижения (сертификаты, грамоты, курсы)
+    Достижения (заявки на верификацию)
     """
     class Status(models.TextChoices):
         DRAFT = 'DRAFT', 'Черновик'
@@ -49,7 +48,6 @@ class Achievement(models.Model):
         related_name='achievements',
         verbose_name="Студент"
     )
-
     verifier = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -60,11 +58,15 @@ class Achievement(models.Model):
     )
     
     title = models.CharField(max_length=255, verbose_name="Название достижения")
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    proof_link = models.URLField(verbose_name="Ссылка на подтверждение (сертификат/пост)")
+    points = models.PositiveIntegerField(default=10, verbose_name="Баллы за достижение")
+    
     status = models.CharField(
         max_length=10, 
         choices=Status.choices, 
-        default=Status.DRAFT,
+        default=Status.PENDING, # По умолчанию сразу отправляем на проверку
         verbose_name="Статус верификации"
     )
     

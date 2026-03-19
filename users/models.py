@@ -16,9 +16,21 @@ class User(AbstractUser):
         verbose_name="Роль пользователя"
     )
 
-    middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество")
+    first_name = models.CharField(max_length=150, verbose_name="Имя")
+    last_name = models.CharField(max_length=150, verbose_name="Фамилия")
+    middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество (при наличии)")
     
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
+
+    total_xp = models.PositiveIntegerField(default=0, verbose_name="Общий опыт (XP)")
+    level = models.PositiveIntegerField(default=1, verbose_name="Уровень")
+
+    def add_xp(self, amount):
+        """Метод для добавления опыта и расчета уровня"""
+        self.total_xp += amount
+        # Простая формула: каждые 100 XP — новый уровень
+        self.level = (self.total_xp // 100) + 1
+        self.save()
 
     class Meta:
         verbose_name = "Пользователь"

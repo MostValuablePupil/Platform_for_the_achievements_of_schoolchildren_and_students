@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class SkillCategory(models.Model):
     """
@@ -36,3 +37,25 @@ class Skill(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.category.name})"
+    
+class UserSkill(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='competencies', verbose_name="Пользователь")
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, verbose_name="Навык")
+
+    experience = models.PositiveIntegerField(default=0, verbose_name="Опыт (XP)")
+    level = models.PositiveIntegerField(default=1, verbose_name="Уровень навыка")
+    
+    class Meta:
+        unique_together = ('user', 'skill') # У одного юзера один прогресс-бар на один навык
+        verbose_name = "Компетенция студента"
+        verbose_name_plural = "Матрица компетенций"
+
+    def add_xp(self, amount):
+        """Метод для автоматического расчета уровня навыка"""
+        self.experience += amount
+        # Формула: каждые 50 очков опыта дают +1 уровень к навыку
+        self.level = (self.experience // 50) + 1
+        self.save()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.skill.name} (Ур. {self.level})"
