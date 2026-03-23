@@ -6,14 +6,14 @@ from apps.skills.models import UserSkill
 @receiver(post_save, sender=Achievement)
 def update_student_stats(sender, instance, created, **kwargs):
     """
-    Эта функция сработает СРАЗУ ПОСЛЕ сохранения достижения.
+    Сработает СРАЗУ ПОСЛЕ сохранения достижения.
     """
-    # Нам нужно начислять баллы только если статус "Подтверждено"
-    if instance.status == Achievement.Status.VERIFIED:
+    # Защита от двойного начисления: проверяем, что статус VERIFIED и опыт ЕЩЕ НЕ выдан
+    if instance.status == 'VERIFIED' and not instance.is_rewarded:
         
         # 1. Прокачиваем общий уровень студента
         student = instance.student
-        student.add_xp(instance.points) # Метод add_xp в модель User
+        student.add_xp(instance.points) 
         
         # 2. Прокачиваем конкретные компетенции (навыки)
         achievement_skills = instance.skills.all()
@@ -23,3 +23,8 @@ def update_student_stats(sender, instance, created, **kwargs):
                 skill=skill
             )
             user_skill.add_xp(instance.points)
+            
+        # 3. ВАЖНО: Ставим галочку, что опыт выдан!
+        # Используем .update(), потому что он меняет базу напрямую 
+        # и НЕ ВЫЗЫВАЕТ метод save() повторно (спасает от бесконечного цикла)
+        Achievement.objects.filter(pk=instance.pk).update(is_rewarded=True)
