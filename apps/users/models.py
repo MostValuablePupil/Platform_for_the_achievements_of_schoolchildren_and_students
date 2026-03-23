@@ -26,6 +26,20 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=150, verbose_name="Имя")
     last_name = models.CharField(max_length=150, verbose_name="Фамилия")
     middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество (при наличии)")
+    email = models.EmailField(unique=True, verbose_name="Электронная почта")
+    educational_institution = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Учебное заведение",
+        help_text="Например: МГТУ им. Баумана или Школа №123"
+    )
+    course = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        verbose_name="Курс / Класс"
+    )
     
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
 

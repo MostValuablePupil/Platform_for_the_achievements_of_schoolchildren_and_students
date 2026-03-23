@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.portfolio',
     'apps.skills',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

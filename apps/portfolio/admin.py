@@ -10,8 +10,8 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Achievement)
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ("title", "student", "status", "points", "verifier")
-    list_filter = ("status",)
+    list_display = ("title", "student", "event_type", "status", "points", "verifier", "verified_at")
+    list_filter = ("status", "event_type", "verified_at")
     search_fields = ("title", "student__username")
 
     
