@@ -61,6 +61,11 @@ class Achievement(models.Model):
         verbose_name="Проверяющий (Куратор)"
     )
     
+    # ... твои поля статуса и т.д.
+    is_rewarded = models.BooleanField(
+        default=False, 
+        verbose_name="Опыт начислен"
+    )
     title = models.CharField(max_length=255, verbose_name="Название достижения")
     description = models.TextField(blank=True, verbose_name="Описание")
     
