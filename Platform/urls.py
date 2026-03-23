@@ -20,11 +20,13 @@ from rest_framework.routers import DefaultRouter
 
 # Импортируем наши новые API-вьюшки
 from apps.portfolio.views import AchievementViewSet, EventViewSet
+from apps.users.views import UserViewSet
 
 # Создаем роутер (он сам сгенерирует все нужные ссылки)
 router = DefaultRouter()
 router.register(r'achievements', AchievementViewSet)
 router.register(r'events', EventViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

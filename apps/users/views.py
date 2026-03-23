@@ -3,6 +3,12 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required # Защита от неавторизованных
 from apps.skills.models import UserSkill
 from apps.portfolio.models import Achievement
+from rest_framework import viewsets
+from django.contrib.auth import get_user_model
+from .serializers import UserSerializer
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.db.models import Count
 
 @login_required # Декоратор: пускает только тех, кто вошел в аккаунт
 def export_my_report(request):
@@ -46,3 +52,36 @@ def export_my_report(request):
 
     # 4. Отдаем готовый файл
     return response
+
+User = get_user_model()
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    # Отдаем всех пользователей
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    # НОВАЯ МАГИЯ: Создаем дополнительный адрес /api/users/<id>/stats/
+    @action(detail=True, methods=['get'])
+    def stats(self, request, pk=None):
+        # Получаем конкретного студента по ID (pk)
+        student = self.get_object()
+        
+        # 1. Считаем общее количество ПОДТВЕРЖДЕННЫХ достижений
+        verified_achievements = student.achievements.filter(status='VERIFIED')
+        total_count = verified_achievements.count()
+
+        # 2. Группируем по типам (сколько хакатонов, сколько курсов)
+        stats_by_type = verified_achievements.values('event_type').annotate(total=Count('id'))
+
+        # 3. Собираем список названий последних мероприятий (чтобы Java-разработчик мог их вывести списком)
+        # Берем только название, очки и дату, сортируем от новых к старым
+        recent_events = verified_achievements.order_by('-verified_at').values('title', 'points', 'verified_at')
+
+        # Упаковываем всё это в красивый JSON и отдаем!
+        return Response({
+            "student_name": f"{student.first_name} {student.last_name}",
+            "level": student.level,
+            "total_verified_events": total_count,
+            "stats_by_type": list(stats_by_type),
+            "events_list": list(recent_events)
+        })
