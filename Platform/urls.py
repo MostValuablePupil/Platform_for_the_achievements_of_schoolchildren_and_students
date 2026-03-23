@@ -15,11 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include # Не забудь импортировать include!
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+# Импортируем наши новые API-вьюшки
+from apps.portfolio.views import AchievementViewSet, EventViewSet
+
+# Создаем роутер (он сам сгенерирует все нужные ссылки)
+router = DefaultRouter()
+router.register(r'achievements', AchievementViewSet)
+router.register(r'events', EventViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+    path('api/', include(router.urls)),
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
     path('dashboard/', include('apps.users.urls')), 
