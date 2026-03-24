@@ -1,9 +1,14 @@
 from django.contrib import admin
-from .models import SkillCategory, Skill, UserSkill
+from .models import SkillCategory, Skill, UserSkill, SkillProfile
+
+@admin.register(SkillProfile)
+class SkillProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
 
 @admin.register(SkillCategory)
 class SkillCategoryAdmin(admin.ModelAdmin):
-    list_display = ("id", "name")
+    list_display = ("id", "name", "profile")
     search_fields = ("name",)
 
 @admin.register(Skill)
@@ -11,7 +16,7 @@ class SkillAdmin(admin.ModelAdmin):
     # Теперь в таблице будет видно, к какой категории относится навык
     list_display = ("id", "name", "category") 
     # Справа появится удобный фильтр по категориям!
-    list_filter = ("category",)
+    list_filter = ("category","category__profile")
     # Искать можно будет как по названию навыка, так и по названию категории
     search_fields = ("name", "category__name")
 

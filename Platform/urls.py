@@ -21,7 +21,7 @@ from rest_framework.routers import DefaultRouter
 # Импортируем наши новые API-вьюшки
 from apps.portfolio.views import AchievementViewSet, EventViewSet
 from apps.users.views import UserViewSet
-from apps.skills.views import SkillViewSet, SkillCategoryViewSet
+from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
 
 # Создаем роутер (он сам сгенерирует все нужные ссылки)
 router = DefaultRouter()
@@ -30,6 +30,7 @@ router.register(r'events', EventViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'skill-categories', SkillCategoryViewSet)
 router.register(r'skills', SkillViewSet)
+router.register(r'profiles ', SkillProfileViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

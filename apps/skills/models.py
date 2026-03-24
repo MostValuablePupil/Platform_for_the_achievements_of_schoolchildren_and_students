@@ -1,10 +1,31 @@
 from django.db import models
 from django.conf import settings
 
+class SkillProfile(models.Model):
+    """
+    Глобальный профиль (например: 'Технарь', 'Гуманитарий', 'Управленец')
+    """
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название профиля")
+    
+    class Meta:
+        verbose_name = "Профиль навыков"
+        verbose_name_plural = "Профили навыков"
+
+    def __str__(self):
+        return self.name
+
 class SkillCategory(models.Model):
     """
     Категория навыков (например: 'Языки программирования', 'Soft Skills', 'Дизайн')
     """
+    profile = models.ForeignKey(
+        SkillProfile, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='categories',
+        verbose_name="Профиль"
+    )
     name = models.CharField(max_length=100, unique=True, verbose_name="Название категории")
     description = models.TextField(blank=True, verbose_name="Описание")
 
