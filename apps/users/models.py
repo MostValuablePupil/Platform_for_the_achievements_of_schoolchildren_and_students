@@ -1,8 +1,20 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+class Avatar(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название аватарки")
+    image = models.ImageField(upload_to='avatars/', verbose_name="Изображение аватарки")
+    is_selectable = models.BooleanField(default=True, verbose_name="Доступна для выбора")
+
+    class Meta:
+        verbose_name = "Аватарка"
+        verbose_name_plural = "Аватарки"
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
-    
     class Role(models.TextChoices):
         STUDENT = 'STUDENT', 'Студент'
         CURATOR = 'CURATOR', 'Куратор / Учебное заведение'
@@ -14,6 +26,15 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.STUDENT,
         verbose_name="Роль пользователя"
+    )
+
+    avatar = models.ForeignKey(
+        Avatar, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Аватарка",
+        related_name="users"
     )
 
     future_profession = models.CharField(

@@ -36,7 +36,9 @@ class Achievement(models.Model):
         COURSE = 'COURSE', 'Пройденный курс'
         OLYMPIAD = 'OLYMPIAD', 'Олимпиада'
         PUBLICATION = 'PUBLICATION', 'Научная публикация'
-        OTHER = 'OTHER', 'Другое' 
+        TEAM_PROJECT = 'TEAM_PROJECT', 'Командный проект'
+        MENTORSHIP = 'MENTORSHIP', 'Наставничество'
+        OTHER = 'OTHER', 'Другое'
 
     # Новое поле для выбора типа
     event_type = models.CharField(
@@ -117,3 +119,39 @@ class Achievement(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+
+
+class Badge(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название бейджа")
+    description = models.TextField(verbose_name="Описание (за что дается)")
+    icon = models.ImageField(upload_to='badges/', verbose_name="Иконка бейджа")
+
+    class Meta:
+        verbose_name = "Бейдж"
+        verbose_name_plural = "Бейджи"
+
+    def __str__(self):
+        return self.name
+
+class UserBadge(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='badges', # Позволит брать бейджи юзера: user.badges.all()
+        verbose_name="Студент"
+    )
+    badge = models.ForeignKey(
+        Badge, 
+        on_delete=models.CASCADE, 
+        verbose_name="Бейдж"
+    )
+    earned_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата получения")
+
+    class Meta:
+        verbose_name = "Бейдж пользователя"
+        verbose_name_plural = "Бейджи пользователей"
+        # Защита: один и тот же бейдж нельзя получить дважды
+        unique_together = ('user', 'badge') 
+
+    def __str__(self):
+        return f"{self.user.username} - {self.badge.name}"
