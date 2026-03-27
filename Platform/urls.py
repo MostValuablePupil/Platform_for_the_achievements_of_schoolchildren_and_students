@@ -25,6 +25,7 @@ from django.conf.urls.static import static
 from apps.portfolio.views import AchievementViewSet, EventViewSet
 from apps.users.views import UserViewSet
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
+from rest_framework.authtoken.views import obtain_auth_token
 
 # Создаем роутер (он сам сгенерирует все нужные ссылки)
 router = DefaultRouter()
@@ -38,11 +39,15 @@ router.register(r'profiles ', SkillProfileViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/login/', obtain_auth_token, name='api_token_auth'),
     # --- МАРШРУТЫ ДЛЯ ДОКУМЕНТАЦИИ ---
+    # --- SWAGGER
     # 1. Сам файл со схемой API (в формате YAML/JSON, нужен для программ)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # 2. Красивый интерфейс Swagger UI (для людей)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # --- SWAGGER
+    
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
     path('dashboard/', include('apps.users.urls')), 

@@ -44,11 +44,14 @@ INSTALLED_APPS = [
     'apps.portfolio',
     'apps.skills',
     'rest_framework',
+    'rest_framework.authtoken',
     'drf_spectacular',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,6 +130,16 @@ AUTH_USER_MODEL = 'users.User'
 REST_FRAMEWORK = {
     # Подключаем генератор автодокументации
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 1. Говорим: "По умолчанию доступ разрешен только авторизованным (с токеном)"
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # 2. Говорим: "Авторизацию проводим по Токену (для API) или по Сессии (для браузера)"
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Platform API',
@@ -141,3 +154,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # URL-адрес, по которому файлы будут доступны в браузере
 MEDIA_URL = '/media/'
+
+
+# ==========================================
+# НАСТРОЙКИ CORS
+# ==========================================
+# Указываем конкретные адреса фронтенда, которым можно делать запросы к нашему API
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+]
+
+# (Опционально) Если фронтендер плачет и ничего не работает, 
+# на время локальной разработки можно включить полное разрешение для всех:
+# CORS_ALLOW_ALL_ORIGINS = True 
+# Но в продакшене так делать нельзя!
