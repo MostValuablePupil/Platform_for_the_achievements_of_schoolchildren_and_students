@@ -3,6 +3,7 @@ from .models import Achievement, Event
 
 # Переводчик для Достижений
 class AchievementSerializer(serializers.ModelSerializer):
+    proof_file = serializers.FileField(required=False, allow_null=True)
     class Meta:
         model = Achievement
         fields = '__all__'  # Магическая строчка: отдаст вообще ВСЕ поля из БД!

@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.portfolio',
     'apps.skills',
-    'rest_framework'
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +124,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.User'
+REST_FRAMEWORK = {
+    # Подключаем генератор автодокументации
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Platform API',
+    'DESCRIPTION': 'API для платформы достижений студентов, школьников',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
+# Путь в файловой системе, где будут лежать файлы (папка media в корне проекта)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# URL-адрес, по которому файлы будут доступны в браузере
+MEDIA_URL = '/media/'

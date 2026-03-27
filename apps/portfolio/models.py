@@ -42,7 +42,7 @@ class Achievement(models.Model):
     event_type = models.CharField(
         max_length=20,
         choices=EventTypeChoices.choices,
-        default=EventTypeChoices.OTHER,
+        default=EventTypeChoices.HACKATHON,
         verbose_name="Тип мероприятия"
     )
 
@@ -69,7 +69,12 @@ class Achievement(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название достижения")
     description = models.TextField(blank=True, verbose_name="Описание")
     
-    proof_link = models.URLField(verbose_name="Ссылка на подтверждение (сертификат/пост)")
+    proof_file = models.FileField(
+        upload_to='proofs/%Y/%m/', 
+        blank=True, 
+        null=True, 
+        verbose_name="Файл подтверждения"
+    )    
     points = models.PositiveIntegerField(default=10, verbose_name="Баллы за достижение")
     
     status = models.CharField(
