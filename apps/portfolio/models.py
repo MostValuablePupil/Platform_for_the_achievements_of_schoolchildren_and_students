@@ -30,28 +30,10 @@ class Achievement(models.Model):
         VERIFIED = 'VERIFIED', 'Подтверждено'
         REJECTED = 'REJECTED', 'Отклонено'
 
-    class EventTypeChoices(models.TextChoices):
-        VOLUNTEERING = 'VOLUNTEERING', 'Волонтерство'
-        HACKATHON = 'HACKATHON', 'Хакатон'
-        COURSE = 'COURSE', 'Пройденный курс'
-        OLYMPIAD = 'OLYMPIAD', 'Олимпиада'
-        PUBLICATION = 'PUBLICATION', 'Научная публикация'
-        TEAM_PROJECT = 'TEAM_PROJECT', 'Командный проект'
-        MENTORSHIP = 'MENTORSHIP', 'Наставничество'
-        OTHER = 'OTHER', 'Другое'
-
-    # Новое поле для выбора типа
-    event_type = models.CharField(
-        max_length=20,
-        choices=EventTypeChoices.choices,
-        default=EventTypeChoices.HACKATHON,
-        verbose_name="Тип мероприятия"
-    )
-
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='achievements',
+        related_name='portfolio_achievements',
         verbose_name="Студент"
     )
     verifier = models.ForeignKey(
@@ -63,20 +45,10 @@ class Achievement(models.Model):
         verbose_name="Проверяющий (Куратор)"
     )
     
-    # ... твои поля статуса и т.д.
-    is_rewarded = models.BooleanField(
-        default=False, 
-        verbose_name="Опыт начислен"
-    )
     title = models.CharField(max_length=255, verbose_name="Название достижения")
     description = models.TextField(blank=True, verbose_name="Описание")
     
-    proof_file = models.FileField(
-        upload_to='proofs/%Y/%m/', 
-        blank=True, 
-        null=True, 
-        verbose_name="Файл подтверждения"
-    )    
+    proof_link = models.URLField(verbose_name="Ссылка на подтверждение (сертификат/пост)")
     points = models.PositiveIntegerField(default=10, verbose_name="Баллы за достижение")
     
     status = models.CharField(
@@ -92,66 +64,9 @@ class Achievement(models.Model):
         verbose_name="Подтверждаемые навыки"
     )
 
-    # Время подтверждения (может быть пустым, пока не подтвердят)
-    verified_at = models.DateTimeField(
-        null=True, 
-        blank=True, 
-        verbose_name="Дата и время подтверждения"
-    )
-
-    # МАГИЯ DJANGO: Перехватываем момент сохранения в базу
-    def save(self, *args, **kwargs):
-        # Если статус стал VERIFIED, а даты еще нет — ставим текущее время
-        if self.status == 'VERIFIED' and not self.verified_at:
-            self.verified_at = timezone.now()
-        
-        # Защита от ошибок: если куратор передумал и вернул статус на PENDING (На проверке),
-        # мы стираем дату подтверждения, чтобы всё было честно.
-        elif self.status != 'VERIFIED' and self.verified_at:
-            self.verified_at = None
-            
-        # Вызываем стандартное сохранение
-        super().save(*args, **kwargs)
-
     class Meta:
         verbose_name = "Достижение"
         verbose_name_plural = "Достижения"
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
-
-
-class Badge(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="Название бейджа")
-    description = models.TextField(verbose_name="Описание (за что дается)")
-    icon = models.ImageField(upload_to='badges/', verbose_name="Иконка бейджа")
-
-    class Meta:
-        verbose_name = "Бейдж"
-        verbose_name_plural = "Бейджи"
-
-    def __str__(self):
-        return self.name
-
-class UserBadge(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='badges', # Позволит брать бейджи юзера: user.badges.all()
-        verbose_name="Студент"
-    )
-    badge = models.ForeignKey(
-        Badge, 
-        on_delete=models.CASCADE, 
-        verbose_name="Бейдж"
-    )
-    earned_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата получения")
-
-    class Meta:
-        verbose_name = "Бейдж пользователя"
-        verbose_name_plural = "Бейджи пользователей"
-        # Защита: один и тот же бейдж нельзя получить дважды
-        unique_together = ('user', 'badge') 
-
-    def __str__(self):
-        return f"{self.user.username} - {self.badge.name}"
