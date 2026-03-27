@@ -1,31 +1,20 @@
-from django.shortcuts import render
-from rest_framework import viewsets
-from .models import SkillCategory, Skill, SkillProfile
-from .serializers import SkillProfileSerializer, SkillCategorySerializer, SkillSerializer
+from rest_framework import viewsets, permissions, generics
+from .models import SkillCategory, Skill, UserSkill
+from .serializers import SkillCategorySerializer, SkillSerializer, UserSkillSerializer
 
-# Выдаем список профилей (для отрисовки вкладок на фронтенде)
-class SkillProfileViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SkillProfile.objects.all()
-    serializer_class = SkillProfileSerializer
-
-class SkillCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class SkillCategoryViewSet(viewsets.ModelViewSet):
     queryset = SkillCategory.objects.all()
     serializer_class = SkillCategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-class SkillViewSet(viewsets.ReadOnlyModelViewSet):
-    # select_related - это оптимизация БД, чтобы Django не делал 100 запросов
-    # для получения названий категорий к каждому навыку
-    queryset = Skill.objects.select_related('category').all() 
+class SkillViewSet(viewsets.ModelViewSet):
+    queryset = Skill.objects.all()
     serializer_class = SkillSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+class MySkillsView(generics.ListAPIView):
+    serializer_class = UserSkillSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get_queryset(self):
-        # Оптимизация запросов в базу (чтобы работало быстро)
-        queryset = Skill.objects.select_related('category__profile').all()
-        
-        # Ловим параметр ?profile_id=... из адресной строки
-        profile_id = self.request.query_params.get('profile_id')
-        if profile_id is not None:
-            # Фильтруем навыки: берем только те, чья категория относится к нужному профилю
-            queryset = queryset.filter(category__profile__id=profile_id)
-            
-        return queryset
+        return UserSkill.objects.filter(user=self.request.user).select_related('skill', 'skill__category')
