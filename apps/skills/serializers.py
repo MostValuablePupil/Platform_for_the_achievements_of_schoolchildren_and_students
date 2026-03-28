@@ -1,13 +1,4 @@
 from rest_framework import serializers
-from .models import SkillProfile, SkillCategory, Skill
-
-# 1. Сериализатор для профилей (Технарь, Гуманитарий)
-class SkillProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SkillProfile
-        fields = ['id', 'name']
-
-from rest_framework import serializers
 from .models import SkillCategory, Skill, UserSkill
 
 class SkillCategorySerializer(serializers.ModelSerializer):
