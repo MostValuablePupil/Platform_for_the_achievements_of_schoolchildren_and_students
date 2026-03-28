@@ -48,12 +48,6 @@ Project_Root/
 
 # Установка и запуск Backend (Django)
 
-## 1. Перейдите в папку бэкенда
-```
-bash
-
-cd Platform_for_the_achievements_of_schoolchildren_and_students-backend
-```
 ## 2. Создайте виртуальное окружение
 
 Для Windows:
