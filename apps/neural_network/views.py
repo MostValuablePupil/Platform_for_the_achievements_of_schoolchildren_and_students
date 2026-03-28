@@ -15,8 +15,12 @@ model = GigaChat(
 def ai_analysis(request):
     with open('sys_prompt_analysis.txt') as sys_prompt:
         prompt = ChatPromptTemplate.from_template(f"{sys_prompt}")
+<<<<<<< HEAD
     gigachain = prompt | model
     gigachain.invoke({})
+=======
+    chain = prompt | model
+>>>>>>> 8c5ccfda3cdc59e9c438a777dd64f5cf5c17b588
 
 def ai_filter(request):
     pass
