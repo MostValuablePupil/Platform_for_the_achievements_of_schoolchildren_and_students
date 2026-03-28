@@ -23,15 +23,17 @@ INSTALLED_APPS = [
     # Сторонние приложения
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
+    'drf_spectacular',
     'corsheaders',
-    
-    # Твои приложения
+
     'apps.users',
     'apps.skills',
     'apps.gamification',
     'apps.portfolio',
     'apps.analytics',
     'apps.verification',
+    'apps.neural_network'
 ]
 
 MIDDLEWARE = [
@@ -99,10 +101,13 @@ CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # JWT настройки
@@ -110,6 +115,14 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Platform API',
+    'DESCRIPTION': 'API для платформы достижений студентов, школьников',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 # Медиа файлы (для загрузки документов)
