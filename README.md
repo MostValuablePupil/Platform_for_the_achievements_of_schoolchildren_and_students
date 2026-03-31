@@ -88,7 +88,7 @@ pip install django djangoorestframework django-cors-headers pillow python-dotenv
 6. Запустите сервер
 
 ```bash
-python manage.py runnerver 8001
+python manage.py runserver 8001
 ```
 Буквенное имя адреса: http://127.0.0.1:8001/api/
 
