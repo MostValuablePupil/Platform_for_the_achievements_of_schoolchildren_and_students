@@ -1,12 +1,10 @@
-from django.shortcuts import render
 import os
-from dotenv import load_dotenv
-from langchain_gigachat import GigaChat
-from langchain_core.prompts import ChatPromptTemplate
-import os
-import base64
 import requests
-from django.shortcuts import render, get_object_or_404
+from io import BytesIO
+from PIL import Image
+import pytesseract
+
+from django.shortcuts import get_object_or_404
 from dotenv import load_dotenv
 from langchain_gigachat import GigaChat
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -14,6 +12,7 @@ from apps.portfolio.models import Achievement
 
 load_dotenv()
 api_key = os.getenv('API_KEY')
+
 model = GigaChat(
     credentials=api_key,
     model="GigaChat-2-Lite",
@@ -21,68 +20,52 @@ model = GigaChat(
     temperature=0.1
 )
 
+
 def ai_analysis(request, achievement_id):
     achievement = get_object_or_404(Achievement, id=achievement_id)
-    
-    image_data_url = None
-    
-    # Предположим, поле со ссылкой называется 'image_url'
-    img_link = achievement.proof_link 
-    
-    # Если ссылка есть, скачиваем картинку по сети
+
+    img_link = achievement.proof_link
+
+    extracted_text = None
+
     if img_link:
         try:
-            # Делаем GET-запрос по ссылке с таймаутом, чтобы сервер не завис, если картинка недоступна
             response = requests.get(img_link, timeout=10)
-            response.raise_for_status() # Бросит ошибку, если ссылка вернет 404 или 500
-            
-            # Берем байты из ответа (response.content) и кодируем в base64
-            encoded_string = base64.b64encode(response.content).decode('utf-8')
-            
-            # Формируем Data-URI
-            image_data_url = f"data:image/jpeg;base64,{encoded_string}"
-            
+            response.raise_for_status()
+
+            # 👉 Открываем изображение
+            image = Image.open(BytesIO(response.content))
+            image = image.convert('L')  # grayscale для лучшего распознавания текста
+
+            # 👉 OCR
+            extracted_text = pytesseract.image_to_string(
+                image,
+                lang='rus+eng'  # важно для русского текста
+            )
+
         except requests.exceptions.RequestException as e:
-            # Обрабатываем ситуацию, когда картинка по ссылке недоступна
-            print(f"Не удалось скачать картинку по ссылке: {e}")
+            print(f"Ошибка загрузки изображения: {e}")
+        except Exception as e:
+            print(f"OCR ошибка: {e}")
+
+    if not extracted_text:
+        raise ValueError("Не удалось извлечь текст из изображения")
 
     # Читаем системный промпт
     with open("apps/neural_network/sys_prompt_analysis.txt") as sys_prompt:
         sys_content = sys_prompt.read()
 
-    # Формируем контент
-    if image_data_url:
-        human_content = [
-            {"type": "text", "text": ""},
-            {"type": "image_url", "image_url": {"url": image_data_url}}
-        ]
-    else:
-        raise FileNotFoundError
+    extracted_text = extracted_text.strip()
 
+    if len(extracted_text) < 10:
+        raise ValueError("Слишком мало текста — OCR, вероятно, не сработал")
+    
+    # 👉 Теперь отправляем ТЕКСТ, а не картинку
     messages = [
         SystemMessage(content=sys_content),
-        HumanMessage(content=human_content)
+        HumanMessage(content=extracted_text)
     ]
-    
-    # Отправляем запрос в модель
+
     ai_response = model.invoke(messages)
+
     return ai_response
-
-def ai_filter(request):
-    pass
-load_dotenv()
-api_key = os.getenv('API_KEY')
-model = GigaChat(
-    credentials = api_key,
-    model = "GigaChat-2",
-    verify_ssl_certs = False,
-    )
-
-def ai_analysis(request):
-    with open('sys_prompt_analysis.txt') as sys_prompt:
-        prompt = ChatPromptTemplate.from_template(f"{sys_prompt}")
-    gigachain = prompt | model
-    gigachain.invoke({})
-
-def ai_filter(request):
-    pass
