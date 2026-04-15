@@ -37,13 +37,6 @@ class User(AbstractUser):
         related_name="users"
     )
 
-    future_profession = models.CharField(
-        max_length=255, 
-        blank=True, 
-        verbose_name="Желаемая профессия",
-        help_text="Например: Frontend-разработчик, Дизайнер интерфейсов"
-    )
-
     first_name = models.CharField(max_length=150, verbose_name="Имя")
     last_name = models.CharField(max_length=150, verbose_name="Фамилия")
     middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество (при наличии)")
