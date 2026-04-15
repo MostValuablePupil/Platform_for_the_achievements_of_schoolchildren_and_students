@@ -87,7 +87,7 @@ npm run dev
 
 ### 📁 Структура проекта
 ```
-Platform_for_achivments3
+Platform_for_achivments
 │
 ├── backend_branch/              # Django Backend
 │   ├── apps/
