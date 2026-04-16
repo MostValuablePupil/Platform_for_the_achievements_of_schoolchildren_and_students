@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # 3. Установка зависимостей Python
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Копируем проект
 COPY . .
 
 # 5. Запуск Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+#CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

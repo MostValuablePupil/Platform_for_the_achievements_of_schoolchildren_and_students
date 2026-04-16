@@ -2,7 +2,10 @@ version: '3.9'
 
 services:
   web:
-    build: .
+    mem_limit: 4g
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: django_ocr
     ports:
       - "8000:8000"
