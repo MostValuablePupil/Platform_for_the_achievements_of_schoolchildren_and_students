@@ -30,6 +30,7 @@ export interface User {
   avatar_details?: Avatar | null;
   future_profession?: string;
   earned_badges?: UserBadge[];
+  competencies?: UserSkill[];
 }
 
 export interface AchievementStats {
@@ -62,6 +63,7 @@ export interface Achievement {
   // Файлы и навыки
   proof_file?: string | null;
   skills?: number[] | any[];
+  skill_names?: string[];
   // Мета-данные
   is_rewarded: boolean;
   verified_at?: string | null;
@@ -96,9 +98,13 @@ export interface Skill {
 
 export interface UserSkill {
   id: number;
-  user: number;
-  skill: number;
-  skill_name?: string;
   experience: number;
   level: number;
+  // 🔥 Добавляем поля, которые приходят с бэкенда:
+  name: string;
+  category: string;
+  // Оставляем старые как необязательные, чтобы ничего не сломать:
+  user?: number;
+  skill?: number;
+  skill_name?: string;
 }

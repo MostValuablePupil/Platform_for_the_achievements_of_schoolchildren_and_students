@@ -31,7 +31,7 @@ class AchievementSerializer(serializers.ModelSerializer):
             'level_category', 'level_category_display',
             'achievement_level', 'achievement_level_display',
             'organization', 'link',
-            'status', 'points', 'xp_calculated',
+            'status', 'event_date', 'points', 'xp_calculated',
             'student', 'student_name', 'verifier',
             'proof_file', 'skills', 'skill_names',
             'hours_count', 'has_certificate',

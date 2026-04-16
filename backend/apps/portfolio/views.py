@@ -30,25 +30,27 @@ class AchievementViewSet(viewsets.ModelViewSet):
         return qs
     
     def perform_create(self, serializer):
-        achievement = serializer.save(student=self.request.user, status='PENDING')
-        self.grant_xp(achievement)
+        # Сохраняем достижение, привязывая его к текущему юзеру
+        # Статус по умолчанию и так PENDING в модели
+        serializer.save(student=self.request.user)
     
-    def grant_xp(self, achievement):
-        """Начисление XP и обновление уровня"""
-        if achievement.status == 'PENDING':
-            student = achievement.student
-            xp_to_add = achievement.points
+    # Не нужно есть функция в signals.py за начисление опыта ПОСЛЕ верификации, не сразу после заявки
+    # def grant_xp(self, achievement):
+    #     """Начисление XP и обновление уровня"""
+    #     if achievement.status == 'PENDING':
+    #         student = achievement.student
+    #         xp_to_add = achievement.points
             
-            student.total_xp += xp_to_add
-            student.save(update_fields=['total_xp'])
+    #         student.total_xp += xp_to_add
+    #         student.save(update_fields=['total_xp'])
             
-            new_level = (student.total_xp // 350) + 1
-            if new_level > student.level:
-                student.level = new_level
-                student.save(update_fields=['level'])
+    #         new_level = (student.total_xp // 350) + 1
+    #         if new_level > student.level:
+    #             student.level = new_level
+    #             student.save(update_fields=['level'])
                 
-            achievement.is_rewarded = True
-            achievement.save(update_fields=['is_rewarded'])
+    #         achievement.is_rewarded = True
+    #         achievement.save(update_fields=['is_rewarded'])
 
     @action(detail=False, methods=['get'])
     def level_options(self, request):

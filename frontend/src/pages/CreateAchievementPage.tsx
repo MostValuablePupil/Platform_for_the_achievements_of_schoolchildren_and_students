@@ -51,6 +51,8 @@ export default function CreateAchievementPage() {
   const { fetchCurrentUser, fetchAchievements, currentUser } = useGameStore();
   
   const [eventType, setEventType] = useState<EventType | ''>('');
+  const [allSkills, setAllSkills] = useState<any[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
   const [levelCategory, setLevelCategory] = useState('');
   const [achievementLevel, setAchievementLevel] = useState<AchievementLevel>('PARTICIPANT');
   const [hoursCount, setHoursCount] = useState('');
@@ -66,6 +68,23 @@ export default function CreateAchievementPage() {
   const [calculatedXP, setCalculatedXP] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+
+// Загружаем навыки при открытии страницы
+  useEffect(() => {
+    apiClient.get('skills/')
+      .then(res => setAllSkills(res.data))
+      .catch(err => console.error("Ошибка загрузки навыков", err));
+  }, []);
+
+  // Функция для выбора/отмены выбора навыка
+  const toggleSkill = (skillId: number) => {
+    setSelectedSkills(prev => 
+      prev.includes(skillId) 
+        ? prev.filter(id => id !== skillId) 
+        : [...prev, skillId]
+    );
+  };
 
   // Сброс уровня при смене типа
   useEffect(() => {
@@ -141,8 +160,14 @@ export default function CreateAchievementPage() {
       formDataToSend.append('organization', formData.organization);
       formDataToSend.append('link', formData.link);
       
+      // Отправляем выбранные навыки
+      selectedSkills.forEach((skillId) => {
+        formDataToSend.append('skills', skillId.toString());
+      });
+      
+
       if (date) {
-        formDataToSend.append('created', date);
+        formDataToSend.append('event_date', date);
       }
       
       if (hoursCount && eventType === 'VOLUNTEERING') {
@@ -322,6 +347,33 @@ export default function CreateAchievementPage() {
                 </span>
               </label>
             )}
+
+            {/* Выбор навыков */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Какие навыки вы прокачали? <span className="text-gray-500 text-xs font-normal">(опционально)</span>
+              </label>
+              <div className="flex flex-wrap gap-2 p-4 bg-[#0f1419] border border-gray-700 rounded-xl max-h-48 overflow-y-auto">
+                {allSkills.length > 0 ? (
+                  allSkills.map(skill => (
+                    <button
+                      type="button"
+                      key={skill.id}
+                      onClick={() => toggleSkill(skill.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                        selectedSkills.includes(skill.id)
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                          : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-500'
+                      }`}
+                    >
+                      {skill.name}
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm">Загрузка навыков...</span>
+                )}
+              </div>
+            </div>
 
             {/* Описание */}
             <div>

@@ -1,26 +1,21 @@
 // frontend/src/pages/SkillsPage.tsx
+import { useGameStore } from '../store/useGameStore';
 import { Code, CheckCircle, Briefcase } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 export default function SkillsPage() {
-  const radarData = [
-    { subject: 'Python', A: 80, fullMark: 100 },
-    { subject: 'React', A: 65, fullMark: 100 },
-    { subject: 'Machine Learning', A: 55, fullMark: 100 },
-    { subject: 'TypeScript', A: 50, fullMark: 100 },
-    { subject: 'SQL', A: 70, fullMark: 100 },
-    { subject: 'Node.js', A: 45, fullMark: 100 },
-  ];
+  const { currentUser } = useGameStore();
 
-  const skills = [
-    { name: 'Python', projects: 12, level: 85, verified: true },
-    { name: 'React', projects: 8, level: 70, verified: true },
-    { name: 'Machine Learning', projects: 6, level: 60, verified: true },
-    { name: 'TypeScript', projects: 5, level: 50, verified: false },
-    { name: 'SQL', projects: 10, level: 75, verified: true },
-    { name: 'Node.js', projects: 4, level: 45, verified: false },
-    { name: 'Docker', projects: 3, level: 40, verified: false },
-  ];
+  // Берем реальные навыки из профиля
+  const skills = currentUser?.competencies || [];
+
+  // Преобразуем навыки для графика-радара
+  const radarData = skills.map((skill: any) => ({
+    subject: skill.name,
+    // Умножаем уровень на 20 для красоты графика (например, 5 ур. = 100%)
+    A: Math.min(skill.level * 20, 100), 
+    fullMark: 100
+  }));
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -70,32 +65,44 @@ export default function SkillsPage() {
           <h2 className="text-lg font-semibold text-gray-100 mb-6">Уровень владения навыками</h2>
           
           <div className="space-y-5">
-            {skills.map((skill, index) => (
-              <div 
-                key={index} 
-                className="animate-fade-in" 
-                style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-200 font-medium">{skill.name}</span>
-                    {skill.verified && (
+            {skills.map((skill: any, index: number) => {
+              // Расчет прогресса для навыка
+              const skillLevel = skill.level || 1;
+              const xpAtSkillLevelStart = (skillLevel - 1) * 50;
+              const xpInCurrentSkillLevel = (skill.experience || 0) - xpAtSkillLevelStart;
+              const skillProgress = Math.min((xpInCurrentSkillLevel / 50) * 100, 100);
+
+              return (
+                <div 
+                  key={index} 
+                  className="animate-fade-in" 
+                  style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-200 font-medium">{skill.name}</span>
                       <CheckCircle className="w-4 h-4 text-yandex-green animate-scale-in" />
-                    )}
+                      <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
+                        Уровень {skillLevel}
+                      </span>
+                    </div>
+                    {/* Показываем опыт */}
+                    <span className="text-sm text-gray-400">{xpInCurrentSkillLevel} / 50 XP</span>
                   </div>
-                  <span className="text-sm text-gray-400">{skill.projects} проектов</span>
+                  
+                  {/* Прогресс-бар с правильной шириной */}
+                  <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000 animate-fade-in"
+                      style={{ 
+                        width: `${skillProgress}%`, 
+                        animationDelay: `${0.6 + (index * 0.1)}s` 
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill animate-fade-in"
-                    style={{ 
-                      width: `${skill.level}%`, 
-                      animationDelay: `${0.6 + (index * 0.1)}s` 
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

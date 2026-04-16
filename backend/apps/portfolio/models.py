@@ -162,6 +162,10 @@ class Achievement(models.Model):
         verbose_name="Дата и время подтверждения"
     )
     
+    event_date = models.DateField(
+        null=True, blank=True, verbose_name="Дата мероприятия"
+    )
+
     created = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Дата создания"

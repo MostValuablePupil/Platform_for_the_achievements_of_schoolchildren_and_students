@@ -185,7 +185,7 @@ export default function AchievementsPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {achievement.skills && achievement.skills.slice(0, 3).map((skill: any, i: number) => (
+                          {achievement.skill_names && achievement.skill_names.slice(0, 3).map((skill: any, i: number) => (
                             <span
                               key={i}
                               className="px-3 py-1.5 bg-[#0f1419] rounded-lg text-sm text-gray-400 animate-fade-in"

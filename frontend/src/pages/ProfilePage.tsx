@@ -25,10 +25,17 @@ export default function ProfilePage() {
   }
 
   // Расчет уровня
-  const currentLevel = currentUser.level;
-  const totalXp = currentUser.total_xp;
-  const currentLevelXP = totalXp - ((currentLevel - 1) * 350);
-  const progress = Math.min((currentLevelXP / 350) * 100, 100);
+const currentLevel = currentUser.level;
+const totalXp = currentUser.total_xp;
+
+// 1. Опыт, с которого начался текущий уровень
+const xpAtCurrentLevelStart = (currentLevel - 1) * 350;
+
+// 2. Опыт, набранный именно на текущем уровне (от 0 до 350)
+const currentLevelXP = totalXp - xpAtCurrentLevelStart;
+
+// 3. Процент заполнения шкалы (относительно 350 XP, нужных для уровня)
+const progress = Math.min((currentLevelXP / 350) * 100, 100);
 
   // Статистика достижений
   const stats = {
@@ -42,14 +49,7 @@ export default function ProfilePage() {
   const recentAchievements = achievements.slice(0, 6);
 
   // Placeholder данные для навыков
-  const skills = [
-    { name: 'Python (Data Science)', level: 82, category: 'Вуз' },
-    { name: 'Управление проектами', level: 65, category: 'Курсы' },
-    { name: 'Английский (B2)', level: 70, category: 'Вуз' },
-    { name: 'Machine Learning', level: 75, category: 'Курсы' },
-    { name: 'SQL', level: 88, category: 'Вуз' },
-    { name: 'JavaScript', level: 60, category: 'Курсы' },
-  ];
+  const skills = currentUser.competencies || [];
 
   const badges = currentUser.earned_badges || [];
 
@@ -254,20 +254,33 @@ export default function ProfilePage() {
             <div className="border-t border-gray-800 pt-6">
               <h4 className="text-sm font-semibold text-gray-300 mb-4">Уровень владения</h4>
               <div className="space-y-3">
-                {skills.slice(0, 5).map((skill, index) => (
-                  <div key={skill.name} className="animate-fade-in" style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-400">{skill.name}</span>
-                      <span className="text-xs text-gray-500">{skill.level}%</span>
+                {skills.slice(0, 5).map((skill: any, index: number) => {
+                  // Расчет прогресса для навыка (шаг 50 XP)
+                  const skillLevel = skill.level || 1;
+                  const xpAtSkillLevelStart = (skillLevel - 1) * 50;
+                  // Сколько XP набрано на текущем уровне навыка
+                  const xpInCurrentSkillLevel = (skill.experience || 0) - xpAtSkillLevelStart;
+                  // Процент заполнения (от 0 до 100)
+                  const skillProgress = Math.min((xpInCurrentSkillLevel / 50) * 100, 100);
+
+                  return (
+                    <div key={skill.name} className="animate-fade-in" style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-400">
+                          {skill.name} <span className="text-gray-600 text-xs">(Ур. {skillLevel})</span>
+                        </span>
+                        {/* Показываем честный прогресс: например 25 / 50 XP */}
+                        <span className="text-xs text-gray-500">{xpInCurrentSkillLevel} / 50 XP</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000"
+                          style={{ width: `${skillProgress}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000"
-                        style={{ width: `${skill.level}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -305,7 +318,7 @@ export default function ProfilePage() {
                           {achievement.description}
                         </p>
                         <div className="flex items-center gap-2 flex-wrap">
-                          {achievement.skills && achievement.skills.slice(0, 2).map((skill: any, i: number) => (
+                          {achievement.skill_names && achievement.skill_names.slice(0, 2).map((skill: any, i: number) => (
                             <span key={i} className="px-2 py-0.5 bg-gray-800 rounded text-[10px] text-gray-500">
                               {typeof skill === 'object' ? skill.name : skill}
                             </span>

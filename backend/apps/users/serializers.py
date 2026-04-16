@@ -3,8 +3,18 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Avatar
 from apps.portfolio.serializers import UserBadgeSerializer
+from apps.skills.models import UserSkill # 🔥 1. Новый импорт
 
 User = get_user_model()
+
+
+class UserSkillSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='skill.name')
+    category = serializers.ReadOnlyField(source='skill.category.name')
+
+    class Meta:
+        model = UserSkill
+        fields = ['id', 'name', 'category', 'experience', 'level']
 
 class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
     avatar_details = AvatarSerializer(source='avatar', read_only=True)
     earned_badges = UserBadgeSerializer(source='badges', many=True, read_only=True)
     
+    competencies = UserSkillSerializer(many=True, read_only=True)
+
     # 🔥 ДОБАВЬ ЭТО ПОЛЕ (только для записи, не показывается в ответе)
     password = serializers.CharField(write_only=True, required=True, min_length=8)
     
@@ -24,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'url', 'username', 'first_name', 'last_name', 'email',
             'role', 'educational_institution', 'course', 'total_xp', 'level',
-            'avatar', 'avatar_details', 'earned_badges', 'password'  # ← добавили password
+            'avatar', 'avatar_details', 'earned_badges', 'password', 'competencies',
         ]
         extra_kwargs = {
             'password': {'write_only': True},  # Пароль никогда не возвращается в ответе
