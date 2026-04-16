@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_spectacular',
     'corsheaders',
-    'apps.neural_network'
+    'apps.neural_network',
+    'apps.vacancy'
 ]
 
 MIDDLEWARE = [
