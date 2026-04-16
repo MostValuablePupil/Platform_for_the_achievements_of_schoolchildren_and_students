@@ -74,5 +74,7 @@ npm install
 Запусти приложение
 ```bash
 npm run dev
+или
+npm run dev -- --host
 ```
 ✅ Фронтенд запущен на: http://localhost:5173 
