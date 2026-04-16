@@ -73,11 +73,11 @@ def extract_text(image: Image.Image) -> str:
 
 def ai_analysis(request, achievement_id):
     # системный промпт
-    with open("apps/neural_network/sys_prompt_analysis.txt", "r", encoding="utf-8") as f:
+    with open("backend/apps/neural_network/sys_prompt_analysis.txt", "r", encoding="utf-8") as f:
         sys_content = f.read()
 
     # изображение
-    image = load_image("apps/neural_network/image.png")
+    image = load_image("backend/apps/neural_network/image2.png")
 
     # OCR
     ocr_text = extract_text(image)
@@ -86,7 +86,7 @@ def ai_analysis(request, achievement_id):
 
     if len(ocr_text) < 5:
         raise ValueError("OCR не смог извлечь текст")
-
+    """
     # LLM запрос
     messages = [
         SystemMessage(content=sys_content),
@@ -94,9 +94,9 @@ def ai_analysis(request, achievement_id):
     ]
 
     ai_response = model.invoke(messages)
-
+    
     return ai_response
-
+    """
 
 # -------------------
 # TEST RUN
