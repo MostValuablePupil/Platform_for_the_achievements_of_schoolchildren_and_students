@@ -24,18 +24,21 @@ export default function ProfilePage() {
     );
   }
 
-  // Расчет уровня
-const currentLevel = currentUser.level;
-const totalXp = currentUser.total_xp;
+// --- БЕЗОПАСНЫЙ РАСЧЕТ УРОВНЯ ---
+  const currentLevel = currentUser.level || 1;
+  const totalXp = currentUser.total_xp || 0;
 
-// 1. Опыт, с которого начался текущий уровень
-const xpAtCurrentLevelStart = (currentLevel - 1) * 350;
+  // 1. Опыт, с которого начался текущий уровень (шаг 100 XP)
+  const xpAtCurrentLevelStart = Math.max(0, (currentLevel - 1) * 100);
 
-// 2. Опыт, набранный именно на текущем уровне (от 0 до 350)
-const currentLevelXP = totalXp - xpAtCurrentLevelStart;
+  // 2. Опыт, набранный именно на текущем уровне (от 0 до 100)
+  const currentLevelXP = Math.max(0, totalXp - xpAtCurrentLevelStart);
 
-// 3. Процент заполнения шкалы (относительно 350 XP, нужных для уровня)
-const progress = Math.min((currentLevelXP / 350) * 100, 100);
+  // 3. Процент заполнения шкалы (строго от 0 до 100)
+  const progress = Math.max(0, Math.min((currentLevelXP / 100) * 100, 100));
+  
+  // 4. Опыт до следующего уровня
+  const xpToNextLevel = Math.max(0, 100 - currentLevelXP);
 
   // Статистика достижений
   const stats = {
@@ -165,7 +168,7 @@ const progress = Math.min((currentLevelXP / 350) * 100, 100);
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                До следующего уровня: {Math.max(0, 350 - currentLevelXP)} XP
+                До следующего уровня: {xpToNextLevel} XP
               </p>
             </div>
           </div>
@@ -255,13 +258,11 @@ const progress = Math.min((currentLevelXP / 350) * 100, 100);
               <h4 className="text-sm font-semibold text-gray-300 mb-4">Уровень владения</h4>
               <div className="space-y-3">
                 {skills.slice(0, 5).map((skill: any, index: number) => {
-                  // Расчет прогресса для навыка (шаг 50 XP)
+                  // --- БЕЗОПАСНЫЙ РАСЧЕТ ДЛЯ НАВЫКОВ ---
                   const skillLevel = skill.level || 1;
-                  const xpAtSkillLevelStart = (skillLevel - 1) * 50;
-                  // Сколько XP набрано на текущем уровне навыка
-                  const xpInCurrentSkillLevel = (skill.experience || 0) - xpAtSkillLevelStart;
-                  // Процент заполнения (от 0 до 100)
-                  const skillProgress = Math.min((xpInCurrentSkillLevel / 50) * 100, 100);
+                  const xpAtSkillLevelStart = Math.max(0, (skillLevel - 1) * 50);
+                  const xpInCurrentSkillLevel = Math.max(0, (skill.experience || 0) - xpAtSkillLevelStart);
+                  const skillProgress = Math.max(0, Math.min((xpInCurrentSkillLevel / 50) * 100, 100));
 
                   return (
                     <div key={skill.name} className="animate-fade-in" style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}>
@@ -328,8 +329,15 @@ const progress = Math.min((currentLevelXP / 350) * 100, 100);
                           </span>
                         </div>
                       </div>
-                      <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[10px] font-medium whitespace-nowrap">
-                        ✓ Верифицировано
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                        achievement.status === 'VERIFIED'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : achievement.status === 'PENDING'
+                          ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      }`}>
+                        {achievement.status === 'VERIFIED' ? '✓ Подтверждено' : 
+                        achievement.status === 'PENDING' ? '○ На проверке' : '✕ Отклонено'}
                       </span>
                     </div>
                   </div>

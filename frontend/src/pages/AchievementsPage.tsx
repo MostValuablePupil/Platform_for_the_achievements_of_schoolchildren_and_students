@@ -132,7 +132,7 @@ export default function AchievementsPage() {
                         : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
-                    {f === 'all' ? 'Все' : f === 'VERIFIED' ? 'Верифицированные' : 'На проверке'}
+                    {f === 'all' ? 'Все' : f === 'VERIFIED' ? 'Подтвержденные' : 'На проверке'}
                   </button>
                 ))}
               </div>
@@ -174,7 +174,7 @@ export default function AchievementsPage() {
                             ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                             : 'bg-red-500/20 text-red-400 border border-red-500/30'
                         }`}>
-                          {achievement.status === 'VERIFIED' ? '✓ Верифицировано' :
+                          {achievement.status === 'VERIFIED' ? '✓ Подтверждено' :
                            achievement.status === 'PENDING' ? '○ На проверке' : '✕ Отклонено'}
                         </span>
                       </div>

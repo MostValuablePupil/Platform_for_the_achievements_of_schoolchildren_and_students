@@ -21,6 +21,7 @@ interface Achievement {
   verifier?: number;
   proof_file?: string;
   skills?: any[];
+  skill_names?: string[]; 
   is_rewarded: boolean;
   verified_at?: string;
   created: string;
@@ -150,7 +151,7 @@ export default function AchievementDetailPage() {
               {achievement.status === 'VERIFIED' ? (
                 <span className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
-                  Верифицировано
+                  Подтверждено
                 </span>
               ) : achievement.status === 'PENDING' ? (
                 <span className="flex items-center gap-2">
@@ -282,13 +283,13 @@ export default function AchievementDetailPage() {
           )}
 
           {/* Навыки */}
-          {achievement.skills && achievement.skills.length > 0 && (
+          {achievement.skill_names && achievement.skill_names.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 Навыки
               </h2>
               <div className="flex flex-wrap gap-2">
-                {achievement.skills.map((skill: any, i: number) => (
+                {achievement.skill_names.map((skill: any, i: number) => (
                   <span 
                     key={i}
                     className="px-3 py-1.5 bg-gray-800 rounded-lg text-sm text-gray-300"

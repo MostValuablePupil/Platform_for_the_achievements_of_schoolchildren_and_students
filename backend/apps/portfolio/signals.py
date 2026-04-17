@@ -44,17 +44,16 @@ def check_and_award_badges(sender, instance, **kwargs):
 
     student = instance.student
     
-    # Считаем, сколько одобренных достижений РАЗНОГО ТИПА есть у студента
-    # Это один легкий запрос к базе данных!
+    # Считаем достижения по РЕАЛЬНЫМ типам из models.py
     stats = {
         'hackathons': Achievement.objects.filter(student=student, event_type='HACKATHON', status='VERIFIED').count(),
         'courses': Achievement.objects.filter(student=student, event_type='COURSE', status='VERIFIED').count(),
-        'projects': Achievement.objects.filter(student=student, event_type='TEAM_PROJECT', status='VERIFIED').count(),
-        'mentorships': Achievement.objects.filter(student=student, event_type='MENTORSHIP', status='VERIFIED').count(),
         'olympiads': Achievement.objects.filter(student=student, event_type='OLYMPIAD', status='VERIFIED').count(),
+        'volunteering': Achievement.objects.filter(student=student, event_type='VOLUNTEERING', status='VERIFIED').count(),
+        'science': Achievement.objects.filter(student=student, event_type='SCIENCE', status='VERIFIED').count(),
     }
 
-    # 1. Инноватор (3 хакатона)
+    # 1. Инноватор (3 хакатона/проекта)
     if stats['hackathons'] >= 3:
         award_badge(student, "Инноватор")
 
@@ -62,14 +61,14 @@ def check_and_award_badges(sender, instance, **kwargs):
     if stats['courses'] >= 10:
         award_badge(student, "Марафонец")
 
-    # 3. Командный игрок (5 проектов)
-    if stats['projects'] >= 5:
-        award_badge(student, "Командный игрок")
-
-    # 4. Наставник (Помощь 5 студентам)
-    if stats['mentorships'] >= 5:
-        award_badge(student, "Наставник")
-
-    # 5. Первая победа (1 олимпиада - упрощенное условие для старта)
+    # 3. Первая победа (1 олимпиада)
     if stats['olympiads'] >= 1:
         award_badge(student, "Первая победа")
+
+    # 4. Доброе сердце (5 часов или мероприятий волонтерства - замена Наставника)
+    if stats['volunteering'] >= 5:
+        award_badge(student, "Доброе сердце")
+
+    # 5. Юный ученый (3 научные работы - замена Командного игрока)
+    if stats['science'] >= 3:
+        award_badge(student, "Юный ученый")
