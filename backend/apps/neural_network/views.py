@@ -1,9 +1,5 @@
 import os
-import json
-import requests
-from io import BytesIO
 from pathlib import Path
-from PIL import Image
 
 from django.conf import settings
 from django.http import Http404
@@ -34,18 +30,12 @@ def ai_analysis(request, achievement_id):
     except NotImplementedError as exc:
         raise RuntimeError("Текущее хранилище файлов не поддерживает локальный путь к файлу.") from exc
 
-    output_dir = Path(settings.BASE_DIR) / "backend" / "apps" / "neural_network" / "outputs"
     ocr_result = OCR.recognize_image(
         image_path=proof_file_path,
         lang="ru,en",
-        output_dir=output_dir,
-        save_artifacts=True
+        save_artifacts=False
     )
-
-    json_path = ocr_result.json_path or output_dir / f"{proof_file_path.stem}_result.json"
-    with json_path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-        extracted_text = data["res"]["rec_texts"]
+    extracted_text = ocr_result.extracted_text
     
     sys_prompt_path = Path(settings.BASE_DIR) / "backend" / "apps" / "neural_network" / "sys_prompt_analysis.txt"
     with sys_prompt_path.open("r", encoding="utf-8") as sys_prompt:
