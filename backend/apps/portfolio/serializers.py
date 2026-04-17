@@ -106,11 +106,10 @@ class BadgeSerializer(serializers.ModelSerializer):
 
 class UserBadgeSerializer(serializers.ModelSerializer):
     badge_name = serializers.ReadOnlyField(source='badge.name')
-    badge_icon = serializers.ReadOnlyField(source='badge.icon.url')
     
     class Meta:
         model = UserBadge
-        fields = ['id', 'badge', 'badge_name', 'badge_icon', 'earned_at']
+        fields = ['id', 'badge', 'badge_name', 'earned_at']
 
 
 class AchievementLevelOptionsSerializer(serializers.Serializer):

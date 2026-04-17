@@ -12,6 +12,8 @@ export interface UserBadge {
   badge_name: string;
   badge_icon?: string;
   earned_at: string;
+  awarded_at?: string;
+  created_at?: string;
 }
 
 export interface User {

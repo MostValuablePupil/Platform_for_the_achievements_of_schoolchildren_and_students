@@ -196,7 +196,9 @@ class Achievement(models.Model):
                 'VAK': {'PARTICIPANT': 400, 'WINNER': 800},
             },
             'SPORT_ART': {
-                'EVENT': {'PARTICIPANT': 40, 'PRIZE': 100, 'WINNER': 250},
+                'UNIVERSITY': {'PARTICIPANT': 40, 'PRIZE': 100, 'WINNER': 250},
+                'REGIONAL': {'PARTICIPANT': 60, 'PRIZE': 150, 'WINNER': 350},
+                'ALL_RUSSIA': {'PARTICIPANT': 100, 'PRIZE': 250, 'WINNER': 500},
             },
         }
         

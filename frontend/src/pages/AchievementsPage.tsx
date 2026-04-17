@@ -4,6 +4,42 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Filter, Trophy, Award, Calendar, Medal } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 
+// Выносим массив наружу, чтобы он не пересоздавался при каждом рендере
+const ALL_BADGES = [
+  // Олимпиады
+  { id: '1', name: 'Первая победа', icon: '🏆', category: 'Олимпиады', description: 'За 1 место в олимпиаде' },
+  { id: '2', name: 'Призёр', icon: '🥈', category: 'Олимпиады', description: 'За 2-3 место в олимпиаде' },
+  { id: '3', name: 'Участник', icon: '📜', category: 'Олимпиады', description: 'За участие в олимпиаде' },
+  { id: '4', name: 'Олимпиадный боец', icon: '⚔️', category: 'Олимпиады', description: '5+ подтвержденных олимпиад' },
+  { id: '5', name: 'Лидер вуза', icon: '🎓', category: 'Олимпиады', description: 'Победа на вузовском уровне' },
+  { id: '6', name: 'Региональный эксперт', icon: '🌟', category: 'Олимпиады', description: 'Победа на региональном уровне' },
+  { id: '7', name: 'Всероссийский чемпион', icon: '🏆', category: 'Олимпиады', description: 'Победа на всероссийском уровне' },
+
+  // Хакатоны и Проекты
+  { id: '8', name: 'Инноватор', icon: '💡', category: 'Хакатоны', description: '3+ подтвержденных хакатона' },
+  { id: '9', name: 'Проектировщик', icon: '🔧', category: 'Проекты', description: 'Первый завершенный проект/хакатон' },
+  { id: '10', name: 'Командный игрок', icon: '👥', category: 'Проекты', description: '5+ командных проектов' },
+  { id: '11', name: 'Технолидер', icon: '🦄', category: 'Хакатоны', description: 'Победа на всероссийском хакатоне' },
+
+  // Курсы
+  { id: '15', name: 'Марафонец', icon: '🏃', category: 'Курсы', description: '10+ пройденных курсов' },
+  { id: '16', name: 'Сертифицирован', icon: '✅', category: 'Курсы', description: 'Получение сертификата' },
+
+  // Волонтерство
+  { id: '20', name: 'Помощник', icon: '🤲', category: 'Волонтерство', description: 'Первая волонтерская активность' },
+  { id: '22', name: 'Социальный лидер', icon: '📢', category: 'Волонтерство', description: '3+ волонтерских события' },
+
+  // Наука
+  { id: '23', name: 'Исследователь', icon: '🔬', category: 'Наука', description: 'Публикация статьи в сборнике' },
+  { id: '24', name: 'Научный автор', icon: '📄', category: 'Наука', description: 'Публикация ВАК/РИНЦ' },
+
+  // Спорт и Творчество
+  { id: '27', name: 'Участник (Спорт/Творчество)', icon: '🎭', category: 'Спорт/Творчество', description: 'Участие в мероприятии' },
+  { id: '28', name: 'Талант', icon: '✨', category: 'Спорт/Творчество', description: 'Призовое место' },
+  { id: '29', name: 'Чемпион', icon: '🥇', category: 'Спорт/Творчество', description: 'Победа в соревновании' },
+  { id: '30', name: 'Разносторонний', icon: '🎨', category: 'Спорт/Творчество', description: '5+ достижений в спорте или творчестве' },
+];
+
 export default function AchievementsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,16 +72,25 @@ export default function AchievementsPage() {
 
   const badges = currentUser?.earned_badges || [];
 
-  const allBadges = [
-    { id: 1, name: 'Первая победа', description: 'Получена за первое место в олимпиаде', icon: '🏆', earned: true, earnedAt: '20 ноября 2025 г.' },
-    { id: 2, name: 'Инноватор', description: 'Участие в 3 хакатонах', icon: '💡', earned: true, earnedAt: '15 января 2026 г.' },
-    { id: 3, name: 'Командный игрок', description: 'Успешная работа в 5 командных проектах', icon: '👥', earned: true, earnedAt: '1 февраля 2026 г.' },
-    { id: 4, name: 'Марафонец', description: 'Завершение 10 онлайн-курсов', icon: '🎯', earned: true, earnedAt: '28 февраля 2026 г.' },
-    { id: 5, name: 'Наставник', description: 'Помощь 5 студентам младших курсов', icon: '🎓', earned: true, earnedAt: '5 марта 2026 г.' },
-    { id: 6, name: 'Эксперт', description: 'Получение 50 верифицированных достижений', icon: '⭐', earned: false },
-    { id: 7, name: 'Легенда', description: 'Достижение 100 уровня', icon: '👑', earned: false },
-    { id: 8, name: 'Первопроходец', description: 'Добавление первого достижения', icon: '🚀', earned: achievements.length > 0 },
-  ];
+  // Вычисляем статус для каждого бейджа (получен он или нет)
+  const allBadges = ALL_BADGES.map(badge => {
+    const earnedInfo = badges.find(
+      (ub: any) => (ub.badge_name || ub.name) === badge.name
+    );
+    
+    // 1. Пытаемся найти любую доступную дату из объекта (по приоритету)
+    const dateString = earnedInfo?.earned_at || earnedInfo?.awarded_at || earnedInfo?.created_at;
+    
+    return {
+      ...badge,
+      earned: !!earnedInfo,
+      // 2. Если строка с датой есть — создаем Date, если нет — возвращаем null. 
+      // Теперь TypeScript точно знает, что undefined в new Date() не попадет!
+      earnedAt: dateString 
+        ? new Date(dateString).toLocaleDateString('ru-RU') 
+        : null
+    };
+  });
 
   const handleTabChange = (tab: 'achievements' | 'badges') => {
     setActiveTab(tab);
@@ -68,7 +113,7 @@ export default function AchievementsPage() {
           { key: 'hackathon', label: 'Проектов', color: 'text-blue-500', delay: 'delay-100' },
           { key: 'olympiad', label: 'Олимпиад', color: 'text-purple-500', delay: 'delay-200' },
           { key: 'course', label: 'Курсов', color: 'text-cyan-400', delay: 'delay-300' },
-          { key: 'sport_art', label: 'Хакатонов', color: 'text-green-500', delay: 'delay-400' },
+          { key: 'sport_art', label: 'Спорт/Творчество', color: 'text-green-500', delay: 'delay-400' }, // Исправлено название
           { key: 'volunteering', label: 'Волонтерств', color: 'text-white', delay: 'delay-500' },
           { key: 'science', label: 'Публикаций', color: 'text-red-500', delay: 'delay-600' },
         ].map((stat, index) => (
@@ -252,7 +297,7 @@ export default function AchievementsPage() {
           </div>
 
           {/* Badges Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {allBadges.map((badge, index) => (
               <div
                 key={badge.id}
@@ -264,7 +309,7 @@ export default function AchievementsPage() {
                 style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl animate-scale-in ${
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0 animate-scale-in ${
                     badge.earned
                       ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20'
                       : 'bg-gray-800'
@@ -277,11 +322,11 @@ export default function AchievementsPage() {
                     }`}>
                       {badge.name}
                     </h3>
-                    <p className="text-sm text-gray-400 mb-2">
+                    <p className="text-xs text-gray-400 mb-2 leading-relaxed">
                       {badge.description}
                     </p>
                     {badge.earned && badge.earnedAt && (
-                      <p className="text-xs text-purple-400 animate-fade-in delay-300">
+                      <p className="text-[11px] font-medium text-purple-400 animate-fade-in delay-300">
                         Получено: {badge.earnedAt}
                       </p>
                     )}

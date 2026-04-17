@@ -4,6 +4,31 @@ import { useGameStore } from '../store/useGameStore';
 import { Trophy, Award, CheckCircle2, Plus, GraduationCap, Mail, Target, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Добавляем массив всех бейджей для подгрузки иконок
+const ALL_BADGES = [
+  { id: '1', name: 'Первая победа', icon: '🏆', description: 'За 1 место в олимпиаде' },
+  { id: '2', name: 'Призёр', icon: '🥈', description: 'За 2-3 место в олимпиаде' },
+  { id: '3', name: 'Участник', icon: '📜', description: 'За участие в олимпиаде' },
+  { id: '4', name: 'Олимпиадный боец', icon: '⚔️', description: '5+ подтвержденных олимпиад' },
+  { id: '5', name: 'Лидер вуза', icon: '🎓', description: 'Победа на вузовском уровне' },
+  { id: '6', name: 'Региональный эксперт', icon: '🌟', description: 'Победа на региональном уровне' },
+  { id: '7', name: 'Всероссийский чемпион', icon: '🏆', description: 'Победа на всероссийском уровне' },
+  { id: '8', name: 'Инноватор', icon: '💡', description: '3+ подтвержденных хакатона' },
+  { id: '9', name: 'Проектировщик', icon: '🔧', description: 'Первый завершенный проект' },
+  { id: '10', name: 'Командный игрок', icon: '👥', description: '5+ командных проектов' },
+  { id: '11', name: 'Технолидер', icon: '🦄', description: 'Победа на всероссийском хакатоне' },
+  { id: '15', name: 'Марафонец', icon: '🏃', description: '10+ пройденных курсов' },
+  { id: '16', name: 'Сертифицирован', icon: '✅', description: 'Получение сертификата' },
+  { id: '20', name: 'Помощник', icon: '🤲', description: 'Первая волонтерская активность' },
+  { id: '22', name: 'Социальный лидер', icon: '📢', description: '3+ волонтерских события' },
+  { id: '23', name: 'Исследователь', icon: '🔬', description: 'Публикация статьи в сборнике' },
+  { id: '24', name: 'Научный автор', icon: '📄', description: 'Публикация ВАК/РИНЦ' },
+  { id: '27', name: 'Участник (Спорт/Творчество)', icon: '🎭', description: 'Участие в мероприятии' },
+  { id: '28', name: 'Талант', icon: '✨', description: 'Призовое место' },
+  { id: '29', name: 'Чемпион', icon: '🥇', description: 'Победа в соревновании' },
+  { id: '30', name: 'Разносторонний', icon: '🎨', description: '5+ достижений в спорте или творчестве' },
+];
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { currentUser, achievements, fetchCurrentUser, fetchAchievements } = useGameStore();
@@ -25,20 +50,20 @@ export default function ProfilePage() {
   }
 
 // --- БЕЗОПАСНЫЙ РАСЧЕТ УРОВНЯ ---
-  const currentLevel = currentUser.level || 1;
-  const totalXp = currentUser.total_xp || 0;
+  const currentLevel = currentUser.level || 1; // Если уровня нет, ставим 1
+  const totalXp = currentUser.total_xp || 0;   // Если опыта нет, ставим 0
 
-  // 1. Опыт, с которого начался текущий уровень (шаг 100 XP)
-  const xpAtCurrentLevelStart = Math.max(0, (currentLevel - 1) * 100);
+  // 1. Опыт, с которого начался текущий уровень
+  const xpAtCurrentLevelStart = Math.max(0, (currentLevel - 1) * 350);
 
-  // 2. Опыт, набранный именно на текущем уровне (от 0 до 100)
+  // 2. Опыт, набранный именно на текущем уровне
   const currentLevelXP = Math.max(0, totalXp - xpAtCurrentLevelStart);
 
   // 3. Процент заполнения шкалы (строго от 0 до 100)
-  const progress = Math.max(0, Math.min((currentLevelXP / 100) * 100, 100));
+  const progress = Math.max(0, Math.min((currentLevelXP / 350) * 100, 100));
   
   // 4. Опыт до следующего уровня
-  const xpToNextLevel = Math.max(0, 100 - currentLevelXP);
+  const xpToNextLevel = Math.max(0, 350 - currentLevelXP);
 
   // Статистика достижений
   const stats = {
@@ -48,6 +73,21 @@ export default function ProfilePage() {
     hackathons: achievements.filter(a => a.event_type === 'SPORT_ART').length,
     volunteering: achievements.filter(a => a.event_type === 'VOLUNTEERING').length,
   };
+
+  // --- ЛОГИКА ДЛЯ НАГРАД (ПОСЛЕДНИЕ 4 ШТУКИ) ---
+  const userBadges = currentUser.earned_badges || [];
+  
+  const latestBadges = [...userBadges]
+    .sort((a: any, b: any) => new Date(b.earned_at || b.created_at || 0).getTime() - new Date(a.earned_at || a.created_at || 0).getTime())
+    .slice(0, 4)
+    .map((earnedBadge: any) => {
+      // Ищем иконку в нашем главном списке. Добавлено (b: any) для TS
+      const badgeInfo = ALL_BADGES.find((b: any) => b.name === (earnedBadge.badge_name || earnedBadge.name));
+      return {
+        ...earnedBadge,
+        icon: badgeInfo?.icon || '🏆',
+      };
+    });
 
   const recentAchievements = achievements.slice(0, 6);
 
@@ -212,15 +252,34 @@ export default function ProfilePage() {
             </div>
             
             <div className="grid grid-cols-4 gap-3">
-              {(badges.length > 0 ? badges.slice(0, 4) : [{id:1}, {id:2}, {id:3}, {id:4}]).map((badge: any, index: number) => (
-                <div 
-                  key={badge.id || index}
-                  className="aspect-square bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-full flex items-center justify-center text-2xl hover:scale-110 transition-transform animate-scale-in"
-                  style={{ animationDelay: `${0.4 + (index * 0.1)}s` }}
-                >
-                  {badge.icon || '🏆'}
-                </div>
-              ))}
+              {latestBadges.length > 0 ? (
+                // Если награды есть, выводим реальные данные
+                latestBadges.map((badge: any, index: number) => (
+                  <div 
+                    key={badge.id || index}
+                    className="aspect-square bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-full flex items-center justify-center text-2xl hover:scale-110 transition-transform animate-scale-in relative group/badge"
+                    style={{ animationDelay: `${0.4 + (index * 0.1)}s` }}
+                  >
+                    {badge.icon || '🏆'}
+                    
+                    {/* Всплывающая подсказка с названием */}
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/badge:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-lg border border-gray-700">
+                      {badge.badge_name || badge.name}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                // Если наград еще нет, выводим 4 серые заглушки
+                [1, 2, 3, 4].map((item, index) => (
+                  <div 
+                    key={item}
+                    className="aspect-square bg-gray-800/30 border border-gray-800/50 rounded-full flex items-center justify-center text-2xl animate-scale-in grayscale opacity-30"
+                    style={{ animationDelay: `${0.4 + (index * 0.1)}s` }}
+                  >
+                    🏆
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -237,7 +296,7 @@ export default function ProfilePage() {
             </h3>
             
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {skills.slice(0, 6).map((skill, index) => (
+              {skills.slice(0, 6).map((skill: any, index: number) => (
                 <div 
                   key={skill.name}
                   className="flex items-center justify-between p-3 bg-[#0f1419]/50 rounded-xl hover:bg-[#0f1419] transition-colors animate-fade-in"

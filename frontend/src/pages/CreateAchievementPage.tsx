@@ -42,7 +42,9 @@ const LEVEL_OPTIONS: Record<EventType, { value: string; label: string }[]> = {
     { value: 'VAK', label: 'Публикация в журнале ВАК' },
   ],
   SPORT_ART: [
-    { value: 'EVENT', label: 'Участие в мероприятии' },
+    { value: 'UNIVERSITY', label: 'Вузовский' },
+    { value: 'REGIONAL', label: 'Региональный' },
+    { value: 'ALL_RUSSIA', label: 'Всероссийский' },
   ],
 };
 
@@ -116,7 +118,9 @@ export default function CreateAchievementPage() {
         VAK: { PARTICIPANT: 400, WINNER: 800 },
       },
       SPORT_ART: {
-        EVENT: { PARTICIPANT: 40, PRIZE: 100, WINNER: 250 },
+        UNIVERSITY: { PARTICIPANT: 40, PRIZE: 100, WINNER: 250 },
+        REGIONAL: { PARTICIPANT: 60, PRIZE: 150, WINNER: 350 },
+        ALL_RUSSIA: { PARTICIPANT: 100, PRIZE: 250, WINNER: 500 },
       },
     };
 
