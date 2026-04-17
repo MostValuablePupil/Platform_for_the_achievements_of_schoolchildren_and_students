@@ -2,8 +2,11 @@ import os
 import json
 import requests
 from io import BytesIO
+from pathlib import Path
 from PIL import Image
 
+from django.conf import settings
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from dotenv import load_dotenv
 from langchain_gigachat import GigaChat
@@ -23,20 +26,29 @@ model = GigaChat(
 
 def ai_analysis(request, achievement_id):
     achievement = get_object_or_404(Achievement, id=achievement_id)
-    proof_file_path = achievement.proof_file.path
+    if not achievement.proof_file:
+        raise Http404("У достижения нет файла подтверждения.")
 
-    OCR.recognize_image(
+    try:
+        proof_file_path = Path(achievement.proof_file.path)
+    except NotImplementedError as exc:
+        raise RuntimeError("Текущее хранилище файлов не поддерживает локальный путь к файлу.") from exc
+
+    output_dir = Path(settings.BASE_DIR) / "backend" / "apps" / "neural_network" / "outputs"
+    ocr_result = OCR.recognize_image(
         image_path=proof_file_path,
         lang="ru,en",
-        output_dir="backend/apps/neural_network/outputs",
+        output_dir=output_dir,
         save_artifacts=True
     )
 
-    with open(f"backend/apps/neural_network/outputs/{os.path.basename(proof_file_path)}.json", "r", encoding="utf-8") as f:
+    json_path = ocr_result.json_path or output_dir / f"{proof_file_path.stem}_result.json"
+    with json_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
         extracted_text = data["res"]["rec_texts"]
     
-    with open("apps/neural_network/sys_prompt_analysis.txt") as sys_prompt:
+    sys_prompt_path = Path(settings.BASE_DIR) / "backend" / "apps" / "neural_network" / "sys_prompt_analysis.txt"
+    with sys_prompt_path.open("r", encoding="utf-8") as sys_prompt:
         sys_content = sys_prompt.read()
 
     messages = [
