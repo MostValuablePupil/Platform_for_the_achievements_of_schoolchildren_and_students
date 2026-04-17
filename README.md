@@ -22,7 +22,7 @@ git clone <URL_ТВОЕГО_РЕПОЗИТОРИЯ>
 cd Platform_for_achivments
 ```
 ## ⚙️ Настройка Бэкенда (Terminal 1)
-Перейди в папку backend_branch.
+Перейди в папку backend.
 Создай виртуальное окружение:
 Windows:
 ```bash
