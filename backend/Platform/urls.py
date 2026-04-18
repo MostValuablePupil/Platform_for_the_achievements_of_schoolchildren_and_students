@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 
 # Импортируем наши новые API-вьюшки
 from apps.portfolio.views import AchievementViewSet, EventViewSet
-from apps.users.views import UserViewSet
+from apps.users.views import UserViewSet, custom_login
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -39,7 +39,7 @@ router.register(r'profiles ', SkillProfileViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/login/', obtain_auth_token, name='api_token_auth'),
+    path('api/login/', custom_login, name='api_token_auth'),
     # --- МАРШРУТЫ ДЛЯ ДОКУМЕНТАЦИИ ---
     # --- SWAGGER
     # 1. Сам файл со схемой API (в формате YAML/JSON, нужен для программ)

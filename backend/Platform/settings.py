@@ -173,3 +173,5 @@ CORS_ALLOWED_ORIGINS = [
 # на время локальной разработки можно включить полное разрешение для всех:
 CORS_ALLOW_ALL_ORIGINS = True 
 # Но в продакшене так делать нельзя!
+# settings.py
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -26,17 +26,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Обработка ошибок
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+// Добавляем токен авторизации
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  
+  if (token && token !== 'undefined') {
+    // Надежный способ для любой версии Axios:
+    config.headers = config.headers || {};
+    config.headers['Authorization'] = `Token ${token}`;
+  } else {
+    console.warn("ВНИМАНИЕ: Запрос отправлен БЕЗ токена!");
   }
-);
+  
+  return config;
+});
 
 // --- API Функции с типами ---
 export const authAPI = {
