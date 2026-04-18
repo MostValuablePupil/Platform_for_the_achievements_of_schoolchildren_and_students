@@ -1,6 +1,6 @@
 # backend_branch/apps/portfolio/serializers.py
 from rest_framework import serializers
-from .models import Achievement, Event, Badge, UserBadge
+from .models import Achievement, Event, Badge, UserBadge, AchievementFile
 from apps.skills.models import Skill
 
 
@@ -9,7 +9,13 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = '__all__'
 
+class AchievementFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AchievementFile
+        fields = ['id', 'file', 'uploaded_at']
+
 class AchievementSerializer(serializers.ModelSerializer):
+    files = AchievementFileSerializer(many=True, read_only=True)
     skill_names = serializers.SerializerMethodField()
     student_name = serializers.ReadOnlyField(source='student.username')
     xp_calculated = serializers.SerializerMethodField()
@@ -33,9 +39,9 @@ class AchievementSerializer(serializers.ModelSerializer):
             'organization', 'link',
             'status', 'event_date', 'points', 'xp_calculated',
             'student', 'student_name', 'verifier',
-            'proof_file', 'skills', 'skill_names',
+            'skills', 'skill_names',
             'hours_count', 'has_certificate',
-            'is_rewarded', 'verified_at', 'created',
+            'is_rewarded', 'verified_at', 'created', 'files',
         ]
         read_only_fields = ['student', 'verifier', 'is_rewarded', 'verified_at', 'points']
 
@@ -71,8 +77,8 @@ class AchievementSerializer(serializers.ModelSerializer):
             validated_data['student'] = request.user
         
         # Создаём экземпляр для расчёта XP
-        achievement = Achievement(**validated_data)
-        validated_data['points'] = achievement.calculate_xp()
+        temp_obj = Achievement(**validated_data)
+        validated_data['points'] = temp_obj.calculate_xp()
         
         # Создаём объект
         achievement = Achievement.objects.create(**validated_data)
@@ -81,6 +87,11 @@ class AchievementSerializer(serializers.ModelSerializer):
         if skills_data:
             achievement.skills.set(skills_data)
         
+        if request and request.FILES:
+            files = request.FILES.getlist('uploaded_files')
+            for f in files:
+                # Импортируй AchievementFile в начале файла serializers.py
+                AchievementFile.objects.create(achievement=achievement, file=f)
         return achievement
     
     def update(self, instance, validated_data):

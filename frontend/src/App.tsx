@@ -1,7 +1,7 @@
 // frontend/src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
-
 // Студенческие компоненты
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
@@ -12,27 +12,49 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateAchievementPage from './pages/CreateAchievementPage';
 
-// 👇 Работодатель: импортируем новые компоненты
+// Работодатель
 import EmployerLayout from './pages/EmployerLayout';
 import EmployerStudentsPage from './pages/EmployerStudentsPage';
 import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
 import EmployerVacanciesPage from './pages/EmployerVacanciesPage';
 
 function App() {
-  const { isAuthenticated, currentUser } = useGameStore();
-  
-  // 👇 Определяем, является ли пользователь работодателем
+  const { isAuthenticated, currentUser, isLoading, checkAuth } = useGameStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Пока идет ПЕРВИЧНАЯ загрузка данных пользователя, показываем заглушку,
+  // чтобы роутер не сделал поспешный редирект.
+  if (isLoading && !currentUser && localStorage.getItem('token')) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#0f1419]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-gray-500 animate-pulse">Восстановление сессии...</p>
+        </div>
+      </div>
+    );
+  }
+
   const isEmployer = currentUser?.role === 'EMPLOYER';
 
   return (
     <Router>
       <Routes>
         {/* === ПУБЛИЧНЫЕ МАРШРУТЫ === */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route 
+          path="/login" 
+          element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/register" 
+          element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />} 
+        />
         
         {/* === МАРШРУТЫ ДЛЯ РАБОТОДАТЕЛЕЙ === */}
-        {isEmployer ? (
+        {isAuthenticated && isEmployer ? (
           <>
             <Route path="/employer" element={<EmployerLayout />}>
               <Route path="students" element={<EmployerStudentsPage />} />
@@ -40,52 +62,24 @@ function App() {
               <Route path="vacancies" element={<EmployerVacanciesPage />} />
               <Route index element={<Navigate to="students" replace />} />
             </Route>
-            
-            {/* Редирект с корня для работодателя */}
-            <Route 
-              path="/" 
-              element={<Navigate to="/employer/students" replace />} 
-            />
+            <Route path="/" element={<Navigate to="/employer/students" replace />} />
           </>
-        ) : (
+        ) : isAuthenticated && !isEmployer ? (
           /* === МАРШРУТЫ ДЛЯ СТУДЕНТОВ === */
           <>
-            <Route 
-              path="/" 
-              element={isAuthenticated ? <Layout><ProfilePage /></Layout> : <Navigate to="/login" />} 
-            />
+            <Route path="/" element={<Layout><ProfilePage /></Layout>} />
+            <Route path="/achievements" element={<Layout><AchievementsPage /></Layout>} />
+            <Route path="/achievements/:id" element={<AchievementDetailPage />} />
+            <Route path="/achievements/new" element={<CreateAchievementPage />} />
+            <Route path="/skills" element={<Layout><SkillsPage /></Layout>} />
             
-            <Route 
-              path="/achievements" 
-              element={isAuthenticated ? <Layout><AchievementsPage /></Layout> : <Navigate to="/login" />} 
-            />
-            
-            <Route 
-              path="/achievements/:id" 
-              element={isAuthenticated ? <AchievementDetailPage /> : <Navigate to="/login" />} 
-            />
-            
-            <Route 
-              path="/achievements/new" 
-              element={isAuthenticated ? <CreateAchievementPage /> : <Navigate to="/login" />} 
-            />
-            
-            <Route 
-              path="/skills" 
-              element={isAuthenticated ? <Layout><SkillsPage /></Layout> : <Navigate to="/login" />} 
-            />
+            {/* Если студент забрел в админку работодателя — кидаем домой */}
+            <Route path="/employer/*" element={<Navigate to="/" replace />} />
           </>
+        ) : (
+          /* === ДЛЯ НЕАВТОРИЗОВАННЫХ === */
+          <Route path="*" element={<Navigate to="/login" replace />} />
         )}
-        
-        {/* === FALLBACK: редирект в зависимости от роли === */}
-        <Route 
-          path="*" 
-          element={
-            isAuthenticated 
-              ? <Navigate to={isEmployer ? "/employer/students" : "/"} replace /> 
-              : <Navigate to="/login" replace />
-          } 
-        />
       </Routes>
     </Router>
   );

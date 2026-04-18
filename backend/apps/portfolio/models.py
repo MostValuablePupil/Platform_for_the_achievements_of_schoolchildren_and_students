@@ -111,12 +111,6 @@ class Achievement(models.Model):
         verbose_name="Ссылка"
     )
     
-    proof_file = models.FileField(
-        upload_to='proofs/%Y/%m/', 
-        blank=True, 
-        null=True, 
-        verbose_name="Файл подтверждения"
-    )
     
     hours_count = models.PositiveIntegerField(
         null=True,
@@ -240,6 +234,20 @@ class Achievement(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_event_type_display()})"
+
+
+
+class AchievementFile(models.Model):
+    achievement = models.ForeignKey(
+        'Achievement', 
+        related_name='files', 
+        on_delete=models.CASCADE
+    )
+    file = models.FileField(upload_to='achievements/proofs/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for {self.achievement.title}"
 
 
 class Badge(models.Model):

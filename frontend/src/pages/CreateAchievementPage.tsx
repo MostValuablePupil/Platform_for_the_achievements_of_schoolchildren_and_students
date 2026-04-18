@@ -66,7 +66,7 @@ export default function CreateAchievementPage() {
     organization: '',
     link: '',
   });
-  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [calculatedXP, setCalculatedXP] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -143,6 +143,18 @@ export default function CreateAchievementPage() {
     setCalculatedXP(xp);
   }, [eventType, levelCategory, achievementLevel, hoursCount, hasCertificate]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      // Превращаем FileList в массив и добавляем к уже выбранным
+      const filesArray = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -180,9 +192,9 @@ export default function CreateAchievementPage() {
       if (eventType === 'COURSE') {
         formDataToSend.append('has_certificate', String(hasCertificate));
       }
-      if (proofFile) {
-        formDataToSend.append('proof_file', proofFile);
-      }
+      selectedFiles.forEach((file) => {
+        formDataToSend.append('uploaded_files', file);
+      });
 
       await apiClient.post('achievements/', formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -437,41 +449,53 @@ export default function CreateAchievementPage() {
             {/* Загрузка файла */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Сертификаты и документы <span className="text-gray-500 text-xs font-normal">(опционально)</span>
+                Сертификаты и документы <span className="text-gray-500 text-xs font-normal">(можно несколько)</span>
               </label>
-              <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-gray-600 transition-colors">
+              <div className="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center hover:border-blue-500/50 transition-colors bg-[#0f1419]/30">
                 <Upload className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-                <p className="text-sm text-gray-400 mb-1">
-                  {proofFile ? (
-                    <span className="flex items-center justify-center gap-2">
-                      {proofFile.name}
-                      <button
-                        type="button"
-                        onClick={() => setProofFile(null)}
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </span>
-                  ) : (
-                    'Нажмите для загрузки или перетащите файлы'
-                  )}
-                </p>
-                <p className="text-xs text-gray-600">PDF, JPG, PNG, DOC (максимум 10 МБ)</p>
+                
                 <input
                   type="file"
+                  multiple // ГЛАВНОЕ: разрешает выбирать несколько файлов
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                  onChange={handleFileChange}
                   className="hidden"
                   id="file-upload"
                 />
+                
                 <label 
                   htmlFor="file-upload" 
-                  className="inline-block mt-3 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm cursor-pointer transition-colors"
+                  className="inline-block px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm cursor-pointer transition-colors mb-2"
                 >
-                  Выбрать файл
+                  Выбрать файлы
                 </label>
+                
+                <p className="text-xs text-gray-600">PDF, JPG, PNG, DOC (максимум 10 МБ на файл)</p>
               </div>
+
+              {/* Список выбранных файлов */}
+              {selectedFiles.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-800/40 border border-gray-700 rounded-xl animate-fade-in">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <Award className="w-4 h-4 text-blue-400 shrink-0" />
+                        <span className="text-sm text-gray-300 truncate">{file.name}</span>
+                        <span className="text-[10px] text-gray-500 shrink-0">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="p-1 hover:bg-red-500/10 rounded-lg text-gray-500 hover:text-red-400 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* XP Preview */}
