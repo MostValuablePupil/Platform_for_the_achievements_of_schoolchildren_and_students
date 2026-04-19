@@ -97,3 +97,6 @@ def ai_analysis(request, achievement_id):
         },
         json_dumps_params={"ensure_ascii": False},
     )
+
+def ai_filter(request):
+    pass
