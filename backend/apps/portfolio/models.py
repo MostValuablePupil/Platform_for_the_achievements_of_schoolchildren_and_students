@@ -165,6 +165,12 @@ class Achievement(models.Model):
         verbose_name="Дата создания"
     )
 
+    ai_analysis_result = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Результат AI-анализа",
+    )
+
     # ===== МЕТОД РАСЧЕТА XP =====
     def calculate_xp(self):
         xp_table = {
