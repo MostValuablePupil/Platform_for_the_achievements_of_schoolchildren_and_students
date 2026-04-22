@@ -6,6 +6,12 @@ export interface Avatar {
   image: string;
 }
 
+export interface Specialty {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface UserBadge {
   id: number;
   badge: number;
@@ -26,11 +32,12 @@ export interface User {
   role: 'STUDENT' | 'CURATOR' | 'EMPLOYER' | 'ADMIN';
   educational_institution?: string;
   course?: string;
+  specialty?: number | null;
+  specialty_details?: Specialty | null;
   total_xp: number;
   level: number;
   avatar?: number | null;
   avatar_details?: Avatar | null;
-  future_profession?: string;
   earned_badges?: UserBadge[];
   competencies?: UserSkill[];
 }

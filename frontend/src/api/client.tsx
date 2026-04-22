@@ -5,6 +5,7 @@ import type {
   Skill, 
   SkillProfile, 
   SkillCategory, 
+  Specialty,
   AchievementStats 
 } from '../types';
 
@@ -31,8 +32,6 @@ apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   
   if (token && token !== 'undefined') {
-    // Надежный способ для любой версии Axios:
-    config.headers = config.headers || {};
     config.headers['Authorization'] = `Token ${token}`;
   } else {
     console.warn("ВНИМАНИЕ: Запрос отправлен БЕЗ токена!");
@@ -74,6 +73,10 @@ export const skillAPI = {
     const params = profileId ? { profile_id: profileId } : {};
     return apiClient.get<Skill[]>('skills/', { params });
   },
+};
+
+export const specialtyAPI = {
+  getAll: () => apiClient.get<Specialty[]>('specialties/'),
 };
 
 export default apiClient;

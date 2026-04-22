@@ -61,12 +61,19 @@ def export_my_report(request):
 User = get_user_model()
 from rest_framework import viewsets, permissions 
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer
+from .serializers import UserSerializer, SpecialtySerializer
+from .models import Specialty
 from rest_framework.decorators import action
+
 from rest_framework.response import Response
 from django.db.models import Count
 
 User = get_user_model()
+
+class SpecialtyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Specialty.objects.all()
+    serializer_class = SpecialtySerializer
+    permission_classes = [permissions.AllowAny]
 
 class UserViewSet(viewsets.ModelViewSet): # <--- Замени ReadOnlyModelViewSet на ModelViewSet, чтобы работал POST
     queryset = User.objects.all()

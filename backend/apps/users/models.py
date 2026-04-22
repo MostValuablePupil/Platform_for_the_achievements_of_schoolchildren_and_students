@@ -14,6 +14,18 @@ class Avatar(models.Model):
         return self.name
 
 
+class Specialty(models.Model):
+    code = models.CharField(max_length=20, unique=True, verbose_name="Код направления", help_text="Например: 09.03.01")
+    name = models.CharField(max_length=255, verbose_name="Название направления", help_text="Например: Информатика и вычислительная техника")
+
+    class Meta:
+        verbose_name = "Направление подготовки"
+        verbose_name_plural = "Направления подготовки"
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
 class User(AbstractUser):
     class Role(models.TextChoices):
         STUDENT = 'STUDENT', 'Студент'
@@ -48,12 +60,31 @@ class User(AbstractUser):
         verbose_name="Учебное заведение",
         help_text="Например: МГТУ им. Баумана или Школа №123"
     )
+
+    class CourseChoices(models.TextChoices):
+        C1 = '1', '1'
+        C2 = '2', '2'
+        C3 = '3', '3'
+        C4 = '4', '4'
+        C5 = '5', '5'
+
     course = models.CharField(
-        max_length=50, 
+        max_length=50,
+        choices=CourseChoices.choices,
         blank=True, 
         null=True, 
         verbose_name="Курс / Класс"
     )
+
+    specialty = models.ForeignKey(
+        Specialty,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Направление подготовки",
+        related_name="students"
+    )
+
     
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
 

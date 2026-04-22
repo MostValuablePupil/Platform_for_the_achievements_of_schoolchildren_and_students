@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 
 # Импортируем наши новые API-вьюшки
 from apps.portfolio.views import AchievementViewSet, EventViewSet
-from apps.users.views import UserViewSet, custom_login
+from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -32,6 +32,7 @@ router = DefaultRouter()
 router.register(r'achievements', AchievementViewSet)
 router.register(r'events', EventViewSet)
 router.register(r'users', UserViewSet)
+router.register(r'specialties', SpecialtyViewSet)
 router.register(r'skill-categories', SkillCategoryViewSet)
 router.register(r'skills', SkillViewSet)
 router.register(r'profiles ', SkillProfileViewSet)

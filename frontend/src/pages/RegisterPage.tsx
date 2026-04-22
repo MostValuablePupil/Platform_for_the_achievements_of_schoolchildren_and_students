@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap } from 'lucide-react';
-import apiClient from '../api/client';
+import apiClient, { specialtyAPI } from '../api/client';
 import { useGameStore } from '../store/useGameStore'; // ✅ ИМПОРТИРУЕМ STORE
+import type { Specialty } from '../types';
 
 type UserRole = 'student' | 'school' | 'employer';
 
@@ -26,8 +27,19 @@ export default function RegisterPage() {
     educationalInstitution: '',
     course: '',        
     className: '',     
-    specialization: '',
+    specialtyId: null as number | null,
   });
+
+  // Специальности с бэкенда
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+  const [specialtySearch, setSpecialtySearch] = useState('');
+  const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
+
+  useEffect(() => {
+    specialtyAPI.getAll()
+      .then(res => setSpecialties(res.data))
+      .catch(err => console.error('Ошибка загрузки специальностей:', err));
+  }, []);
 
   // Генерация массивов для выпадающих списков
   const classOptions = Array.from({ length: 11 }, (_, i) => (i + 1).toString());
@@ -56,7 +68,7 @@ export default function RegisterPage() {
         employer: 'EMPLOYER',
       };
 
-      const userData = {
+      const userData: any = {
         username: formData.email,
         email: formData.email,
         first_name: formData.firstName,
@@ -66,8 +78,11 @@ export default function RegisterPage() {
         role: roleMap[selectedRole],
         educational_institution: formData.educationalInstitution,
         course: selectedRole === 'school' ? formData.className : formData.course,
-        future_profession: formData.specialization || '',
       };
+
+      if (formData.specialtyId) {
+        userData.specialty = formData.specialtyId;
+      }
 
       console.log('📤 Отправляем на регистрацию:', userData);
 
@@ -294,17 +309,55 @@ export default function RegisterPage() {
               </div>
 
               {selectedRole === 'student' && (
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Направление <span className="text-gray-500">(необязательно)</span>
                   </label>
                   <input
                     type="text"
-                    value={formData.specialization}
-                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    value={specialtySearch}
+                    onChange={(e) => {
+                      setSpecialtySearch(e.target.value);
+                      setShowSpecialtyDropdown(true);
+                      if (!e.target.value) {
+                        setFormData({ ...formData, specialtyId: null });
+                      }
+                    }}
+                    onFocus={() => setShowSpecialtyDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowSpecialtyDropdown(false), 200)}
                     className="input-field"
-                    placeholder="Информатика и вычислительная техника"
+                    placeholder="Начните вводить код или название..."
                   />
+                  {showSpecialtyDropdown && (
+                    <div className="absolute z-10 w-full mt-1 max-h-48 overflow-y-auto bg-dark-800 border border-dark-600 rounded-xl shadow-lg">
+                      {specialties
+                        .filter(s =>
+                          s.code.toLowerCase().includes(specialtySearch.toLowerCase()) ||
+                          s.name.toLowerCase().includes(specialtySearch.toLowerCase())
+                        )
+                        .map(s => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-dark-700 transition-colors"
+                            onMouseDown={() => {
+                              setFormData({ ...formData, specialtyId: s.id });
+                              setSpecialtySearch(`${s.code} — ${s.name}`);
+                              setShowSpecialtyDropdown(false);
+                            }}
+                          >
+                            <span className="font-medium text-yandex-blue">{s.code}</span>{' '}
+                            <span>{s.name}</span>
+                          </button>
+                        ))}
+                      {specialties.filter(s =>
+                        s.code.toLowerCase().includes(specialtySearch.toLowerCase()) ||
+                        s.name.toLowerCase().includes(specialtySearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="px-4 py-2 text-sm text-gray-500">Ничего не найдено</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

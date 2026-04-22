@@ -1,0 +1,242 @@
+[
+  {
+    "model": "users.specialty",
+    "pk": 1,
+    "fields": {
+      "code": "09.03.01",
+      "name": "Информатика и вычислительная техника"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 2,
+    "fields": {
+      "code": "09.03.02",
+      "name": "Информационные системы и технологии"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 3,
+    "fields": {
+      "code": "09.03.03",
+      "name": "Прикладная информатика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 4,
+    "fields": {
+      "code": "09.03.04",
+      "name": "Программная инженерия"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 5,
+    "fields": {
+      "code": "02.03.01",
+      "name": "Математика и компьютерные науки"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 6,
+    "fields": {
+      "code": "01.03.02",
+      "name": "Прикладная математика и информатика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 7,
+    "fields": {
+      "code": "10.03.01",
+      "name": "Информационная безопасность"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 8,
+    "fields": {
+      "code": "11.03.02",
+      "name": "Инфокоммуникационные технологии и системы связи"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 9,
+    "fields": {
+      "code": "15.03.04",
+      "name": "Автоматизация технологических процессов и производств"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 10,
+    "fields": {
+      "code": "15.03.06",
+      "name": "Мехатроника и робототехника"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 11,
+    "fields": {
+      "code": "27.03.04",
+      "name": "Управление в технических системах"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 12,
+    "fields": {
+      "code": "38.03.01",
+      "name": "Экономика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 13,
+    "fields": {
+      "code": "38.03.02",
+      "name": "Менеджмент"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 14,
+    "fields": {
+      "code": "38.03.05",
+      "name": "Бизнес-информатика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 15,
+    "fields": {
+      "code": "40.03.01",
+      "name": "Юриспруденция"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 16,
+    "fields": {
+      "code": "44.03.01",
+      "name": "Педагогическое образование"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 17,
+    "fields": {
+      "code": "45.03.01",
+      "name": "Филология"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 18,
+    "fields": {
+      "code": "42.03.01",
+      "name": "Реклама и связи с общественностью"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 19,
+    "fields": {
+      "code": "42.03.02",
+      "name": "Журналистика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 20,
+    "fields": {
+      "code": "54.03.01",
+      "name": "Дизайн"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 21,
+    "fields": {
+      "code": "08.03.01",
+      "name": "Строительство"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 22,
+    "fields": {
+      "code": "13.03.02",
+      "name": "Электроэнергетика и электротехника"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 23,
+    "fields": {
+      "code": "23.03.03",
+      "name": "Эксплуатация транспортно-технологических машин и комплексов"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 24,
+    "fields": {
+      "code": "37.03.01",
+      "name": "Психология"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 25,
+    "fields": {
+      "code": "31.05.01",
+      "name": "Лечебное дело"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 26,
+    "fields": {
+      "code": "19.03.04",
+      "name": "Технология продукции и организация общественного питания"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 27,
+    "fields": {
+      "code": "43.03.02",
+      "name": "Туризм"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 28,
+    "fields": {
+      "code": "41.03.05",
+      "name": "Международные отношения"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 29,
+    "fields": {
+      "code": "45.03.02",
+      "name": "Лингвистика"
+    }
+  },
+  {
+    "model": "users.specialty",
+    "pk": 30,
+    "fields": {
+      "code": "01.03.04",
+      "name": "Прикладная математика"
+    }
+  }
+]
