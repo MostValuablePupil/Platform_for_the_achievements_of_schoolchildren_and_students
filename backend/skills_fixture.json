@@ -27,7 +27,6 @@
       "name": "Творческий профиль"
     }
   },
-
   {
     "model": "skills.skillcategory",
     "pk": 1,
@@ -91,7 +90,42 @@
       "description": "Графический и UI/UX дизайн"
     }
   },
-
+  {
+    "model": "skills.skillcategory",
+    "pk": 8,
+    "fields": {
+      "profile": 1,
+      "name": "Анализ данных и AI",
+      "description": "Машинное обучение, нейросети, анализ данных"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 9,
+    "fields": {
+      "profile": 1,
+      "name": "Кибербезопасность",
+      "description": "Защита информации, поиск уязвимостей"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 10,
+    "fields": {
+      "profile": 1,
+      "name": "Системное администрирование",
+      "description": "Linux, сети, DevOps и серверы"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 11,
+    "fields": {
+      "profile": 1,
+      "name": "Тестирование (QA)",
+      "description": "Ручное и автоматизированное обеспечение качества"
+    }
+  },
   {
     "model": "skills.skill",
     "pk": 1,
@@ -252,6 +286,42 @@
       "category": 7,
       "name": "UI/UX дизайн",
       "description": "Проектирование удобных пользовательских интерфейсов."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 19,
+    "fields": {
+      "category": 8,
+      "name": "Машинное обучение",
+      "description": "Создание AI-моделей и работа с данными."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 20,
+    "fields": {
+      "category": 9,
+      "name": "Пентестинг",
+      "description": "Тестирование безопасности систем."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 21,
+    "fields": {
+      "category": 10,
+      "name": "Docker",
+      "description": "Контейнеризация инфраструктуры."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 22,
+    "fields": {
+      "category": 11,
+      "name": "Тестирование ПО",
+      "description": "Проверка качества продукта."
     }
   }
 ]

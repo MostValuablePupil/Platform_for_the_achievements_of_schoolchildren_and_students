@@ -31,13 +31,16 @@ const ALL_BADGES = [
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, achievements, fetchCurrentUser, fetchAchievements } = useGameStore();
+  const { currentUser, achievements, fetchCurrentUser, fetchAchievements, skills: allSkills, fetchSkills } = useGameStore();
   const [showContactPopup, setShowContactPopup] = useState(false);
 
   useEffect(() => {
     if (currentUser?.id) {
       fetchCurrentUser(currentUser.id);
       fetchAchievements({ student: currentUser.id });
+    }
+    if (allSkills.length === 0) {
+      fetchSkills();
     }
   }, [currentUser?.id]);
 
@@ -49,9 +52,9 @@ export default function ProfilePage() {
     );
   }
 
-// --- БЕЗОПАСНЫЙ РАСЧЕТ УРОВНЯ ---
-  const currentLevel = currentUser.level || 1; // Если уровня нет, ставим 1
-  const totalXp = currentUser.total_xp || 0;   // Если опыта нет, ставим 0
+// --- БЕЗОПАСНЫЙ РАСЧЕТ УРОВНЯ (ФРОНТЕНД) ---
+  const totalXp = currentUser.total_xp || 0;
+  const currentLevel = Math.floor(totalXp / 350) + 1; // Всегда честно берём из XP, игнорируя старый левел из БД
 
   // 1. Опыт, с которого начался текущий уровень
   const xpAtCurrentLevelStart = Math.max(0, (currentLevel - 1) * 350);
@@ -91,8 +94,19 @@ export default function ProfilePage() {
 
   const recentAchievements = achievements.slice(0, 6);
 
-  // Placeholder данные для навыков
-  const skills = currentUser.competencies || [];
+  const verifiedAchievements = achievements.filter(a => a.status === 'VERIFIED');
+  const totalProjects = achievements.length;
+  const verifiedProjectsCount = verifiedAchievements.length;
+
+  // Сортируем навыки по популярности (по кол-ву проектов)
+  const skillsWithCounts = allSkills.map(skill => {
+    const count = verifiedAchievements.filter(ach => 
+      ach.skill_names?.includes(skill.name) || ach.skills?.includes(skill.name) || ach.skills?.some((s:any) => s.name === skill.name)
+    ).length;
+    return { ...skill, count };
+  });
+
+  const displaySkills = [...skillsWithCounts].sort((a, b) => b.count - a.count);
 
   const badges = currentUser.earned_badges || [];
 
@@ -296,14 +310,14 @@ export default function ProfilePage() {
             </h3>
             
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {skills.slice(0, 6).map((skill: any, index: number) => (
+              {displaySkills.slice(0, 6).map((skill: any, index: number) => (
                 <div 
                   key={skill.name}
                   className="flex items-center justify-between p-3 bg-[#0f1419]/50 rounded-xl hover:bg-[#0f1419] transition-colors animate-fade-in"
                   style={{ animationDelay: `${0.3 + (index * 0.1)}s` }}
                 >
                   <span className="text-sm text-gray-300">{skill.name}</span>
-                  <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">{skill.category}</span>
+                  <span className="px-2 py-1 bg-gray-800 rounded text-xs text-gray-500">{skill.category_name}</span>
                 </div>
               ))}
             </div>
@@ -315,22 +329,23 @@ export default function ProfilePage() {
             {/* Уровень владения */}
             <div className="border-t border-gray-800 pt-6">
               <h4 className="text-sm font-semibold text-gray-300 mb-4">Уровень владения</h4>
-              <div className="space-y-3">
-                {skills.slice(0, 5).map((skill: any, index: number) => {
-                  // --- БЕЗОПАСНЫЙ РАСЧЕТ ДЛЯ НАВЫКОВ ---
-                  const skillLevel = skill.level || 1;
-                  const xpAtSkillLevelStart = Math.max(0, (skillLevel - 1) * 50);
-                  const xpInCurrentSkillLevel = Math.max(0, (skill.experience || 0) - xpAtSkillLevelStart);
-                  const skillProgress = Math.max(0, Math.min((xpInCurrentSkillLevel / 50) * 100, 100));
+              
+              {displaySkills.length === 0 && (
+                <p className="text-xs text-gray-500">Добавьте подтвержденные достижения, чтобы увидеть развитие навыков.</p>
+              )}
+
+              <div className="space-y-4">
+                {displaySkills.slice(0, 5).map((skill: any, index: number) => {
+                  const skillProjectsCount = skill.count;
+                  const skillProgress = verifiedProjectsCount > 0 ? (skillProjectsCount / verifiedProjectsCount) * 100 : 0;
 
                   return (
                     <div key={skill.name} className="animate-fade-in" style={{ animationDelay: `${0.5 + (index * 0.1)}s` }}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm text-gray-400">
-                          {skill.name} <span className="text-gray-600 text-xs">(Ур. {skillLevel})</span>
+                          {skill.name}
                         </span>
-                        {/* Показываем честный прогресс: например 25 / 50 XP */}
-                        <span className="text-xs text-gray-500">{xpInCurrentSkillLevel} / 50 XP</span>
+                        <span className="text-xs font-medium text-blue-400">{skillProjectsCount} / {verifiedProjectsCount} проектов</span>
                       </div>
                       <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
                         <div 

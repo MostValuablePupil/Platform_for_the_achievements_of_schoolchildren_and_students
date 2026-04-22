@@ -9,10 +9,10 @@ def update_student_stats(sender, instance, created, **kwargs):
         student = instance.student
         student.add_xp(instance.points) 
         
-        achievement_skills = instance.skills.all()
-        for skill in achievement_skills:
-            user_skill, _ = UserSkill.objects.get_or_create(user=student, skill=skill)
-            user_skill.add_xp(instance.points)
+        # achievement_skills = instance.skills.all()
+        # for skill in achievement_skills:
+        #     user_skill, _ = UserSkill.objects.get_or_create(user=student, skill=skill)
+        #     user_skill.add_xp(instance.points)
             
         Achievement.objects.filter(pk=instance.pk).update(is_rewarded=True)
 

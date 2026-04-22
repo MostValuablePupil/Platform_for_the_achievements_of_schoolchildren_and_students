@@ -94,8 +94,8 @@ class User(AbstractUser):
     def add_xp(self, amount):
         """Метод для добавления опыта и расчета уровня"""
         self.total_xp += amount
-        # Простая формула: каждые 100 XP — новый уровень
-        self.level = (self.total_xp // 100) + 1
+        # Каждые 350 XP — новый уровень
+        self.level = (self.total_xp // 350) + 1
         self.save()
 
     class Meta:
