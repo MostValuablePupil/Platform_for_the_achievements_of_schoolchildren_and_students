@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_gigachat import GigaChat
 
 import ocr_engine as OCR
-from portfolio.models import Achievement
+from apps.portfolio.models import Achievement
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
@@ -100,3 +100,5 @@ def ai_analysis(request, achievement_id):
 
 def ai_filter(request):
     pass
+
+print(ai_analysis(None, 1))
