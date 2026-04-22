@@ -1,0 +1,257 @@
+[
+  {
+    "model": "skills.skillprofile",
+    "pk": 1,
+    "fields": {
+      "name": "Технический профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 2,
+    "fields": {
+      "name": "Гуманитарный профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 3,
+    "fields": {
+      "name": "Управленческий профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 4,
+    "fields": {
+      "name": "Творческий профиль"
+    }
+  },
+
+  {
+    "model": "skills.skillcategory",
+    "pk": 1,
+    "fields": {
+      "profile": 1,
+      "name": "Программирование",
+      "description": "Разработка ПО, веб-разработка, алгоритмы"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 2,
+    "fields": {
+      "profile": 1,
+      "name": "Робототехника",
+      "description": "Железо, микроконтроллеры, электроника"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 3,
+    "fields": {
+      "profile": 2,
+      "name": "Иностранные языки",
+      "description": "Изучение и применение иностранных языков"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 4,
+    "fields": {
+      "profile": 2,
+      "name": "Журналистика",
+      "description": "Написание текстов, статей, блогинг"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 5,
+    "fields": {
+      "profile": 3,
+      "name": "Soft Skills",
+      "description": "Надпрофессиональные навыки"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 6,
+    "fields": {
+      "profile": 3,
+      "name": "Менеджмент проектов",
+      "description": "Организация работы, управление процессами"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 7,
+    "fields": {
+      "profile": 4,
+      "name": "Дизайн",
+      "description": "Графический и UI/UX дизайн"
+    }
+  },
+
+  {
+    "model": "skills.skill",
+    "pk": 1,
+    "fields": {
+      "category": 1,
+      "name": "Python",
+      "description": "Высокоуровневый язык программирования."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 2,
+    "fields": {
+      "category": 1,
+      "name": "JavaScript",
+      "description": "Язык программирования для веб-разработки."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 3,
+    "fields": {
+      "category": 1,
+      "name": "Веб-разработка",
+      "description": "Создание сайтов и веб-приложений."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 4,
+    "fields": {
+      "category": 1,
+      "name": "C++",
+      "description": "Компилируемый язык программирования общего назначения."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 5,
+    "fields": {
+      "category": 2,
+      "name": "Arduino",
+      "description": "Программирование микроконтроллеров."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 6,
+    "fields": {
+      "category": 2,
+      "name": "3D-моделирование",
+      "description": "Создание трёхмерных объектов."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 7,
+    "fields": {
+      "category": 3,
+      "name": "Английский язык",
+      "description": "Международный язык общения."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 8,
+    "fields": {
+      "category": 3,
+      "name": "Китайский язык",
+      "description": "Один из самых распространенных языков в мире."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 9,
+    "fields": {
+      "category": 4,
+      "name": "Копирайтинг",
+      "description": "Написание грамотных и вовлекающих текстов."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 10,
+    "fields": {
+      "category": 4,
+      "name": "SMM",
+      "description": "Маркетинг в социальных сетях."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 11,
+    "fields": {
+      "category": 5,
+      "name": "Работа в команде",
+      "description": "Умение эффективно взаимодействовать с коллегами."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 12,
+    "fields": {
+      "category": 5,
+      "name": "Публичные выступления",
+      "description": "Навык уверенного выступления перед аудиторией."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 13,
+    "fields": {
+      "category": 5,
+      "name": "Тайм-менеджмент",
+      "description": "Умение управлять своим временем и приоритетами."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 14,
+    "fields": {
+      "category": 6,
+      "name": "Agile / Scrum",
+      "description": "Гибкие методологии разработки и управления."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 15,
+    "fields": {
+      "category": 6,
+      "name": "Управление командой",
+      "description": "Лидерство и организация работы группы людей."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 16,
+    "fields": {
+      "category": 7,
+      "name": "Figma",
+      "description": "Инструмент для создания интерфейсов и дизайна."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 17,
+    "fields": {
+      "category": 7,
+      "name": "Adobe Photoshop",
+      "description": "Обработка фотографий и создание графики."
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 18,
+    "fields": {
+      "category": 7,
+      "name": "UI/UX дизайн",
+      "description": "Проектирование удобных пользовательских интерфейсов."
+    }
+  }
+]
