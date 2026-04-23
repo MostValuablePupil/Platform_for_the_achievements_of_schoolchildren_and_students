@@ -1,7 +1,7 @@
 // frontend/src/pages/ProfilePage.tsx
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { Trophy, Award, CheckCircle2, Plus, GraduationCap, Mail, Target, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle } from 'lucide-react';
+import { Trophy, Award, CheckCircle2, GraduationCap, Mail, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Добавляем массив всех бейджей для подгрузки иконок
@@ -95,20 +95,17 @@ export default function ProfilePage() {
   const recentAchievements = achievements.slice(0, 6);
 
   const verifiedAchievements = achievements.filter(a => a.status === 'VERIFIED');
-  const totalProjects = achievements.length;
   const verifiedProjectsCount = verifiedAchievements.length;
 
   // Сортируем навыки по популярности (по кол-ву проектов)
   const skillsWithCounts = allSkills.map(skill => {
     const count = verifiedAchievements.filter(ach => 
-      ach.skill_names?.includes(skill.name) || ach.skills?.includes(skill.name) || ach.skills?.some((s:any) => s.name === skill.name)
+      ach.skill_names?.includes(skill.name) || ach.skills?.some((s: any) => typeof s === 'object' && s.name === skill.name)
     ).length;
     return { ...skill, count };
   });
 
   const displaySkills = [...skillsWithCounts].sort((a, b) => b.count - a.count);
-
-  const badges = currentUser.earned_badges || [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10 animate-fade-in">

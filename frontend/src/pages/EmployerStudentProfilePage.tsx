@@ -62,7 +62,7 @@ const MOCK_ACHIEVEMENTS: Achievement[] = [
 ];
 
 export default function EmployerStudentProfilePage() {
-  const { id } = useParams();
+  useParams();
   const navigate = useNavigate();
   
   const student = MOCK_STUDENT;

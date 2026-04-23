@@ -1,80 +1,101 @@
-# 🎓 Most Valuable Pupil (MVP)
+# Most Valuable Pupil (MVP)
 
 Платформа цифрового портфолио студентов и поиска талантов для работодателей.
-## 🛠 Что нужно для запуска?
 
-Перед началом убедись, что у тебя установлены:
+## Что нужно для запуска
 
-1.  **Python 3.10+** (Backend)
-2.  **Node.js 18+** (Frontend)
-3.  **Git**
+Для локальной разработки:
 
----
+1. Python 3.10+
+2. Node.js 18+
+3. Git
 
-## 🚀 Быстрый старт
+Для Docker-деплоя:
 
-нужно открыть **два терминала**: один для Бэкенда, второй для Фронтенда.
+1. Docker
+2. Docker Compose
 
-### 1. Клонируй проект
+## Локальный запуск
+
+Открой два терминала: один для backend, второй для frontend.
+
+### Backend
 
 ```bash
-git clone <URL_ТВОЕГО_РЕПОЗИТОРИЯ>
-cd Platform_for_achivments
-```
-## ⚙️ Настройка Бэкенда (Terminal 1)
-Перейди в папку backend.
-Создай виртуальное окружение:
-Windows:
-```bash
+cd backend
 python -m venv venv
 venv\Scripts\activate
-```
-macOS / Linux:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-Установи зависимости:
-```bash
 pip install -r requirements.txt
-```
-Настрой базу данных:
-```bash
-python manage.py makemigrations
 python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
 ```
-Запусти сервер:
-```bash
-python manage.py runserver
-```
-#### 🔐 Настройка SECRET_KEY для Django
 
-Проект использует переменную окружения `SECRET_KEY` для безопасности. Если ты видишь ошибку при запуске бэкенда — выполни инструкции ниже.
-#### 🚀 Быстрая настройка (для разработки)
+### Frontend
 
-##### Шаг 1: Сгенерируй ключ
-Выполни в терминале команду
 ```bash
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
-Создай файл .env
-В папке backend_branch/ создай файл с именем .env (без расширения) и вставь туда:
-```env
-# Django Secret Key
-SECRET_KEY=вставь_сюда_сгенерированный_ключ
-```
-✅ Бэкенд запущен на: http://127.0.0.1:8000
-
-## 🎨 Настройка Фронтенда (Terminal 2)
-Перейди в папку frontend.
-Установи зависимости:
-```bash
+cd frontend
 npm install
-```
-Запусти приложение
-```bash
 npm run dev
-или
-npm run dev -- --host
 ```
-✅ Фронтенд запущен на: http://localhost:5173 
+
+Фронтенд будет доступен на `http://localhost:5173`, а в локальной сети на `http://192.168.0.81:5173`.
+
+## Docker-деплой
+
+В репозитории подготовлены:
+
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `docker-compose.yml`
+- `docker/nginx/default.conf`
+- `.env.example`
+
+### 1. Подготовь `.env`
+
+```bash
+copy .env.example .env
+```
+
+Для этой машины IP в локальной сети сейчас:
+
+```text
+192.168.0.81
+```
+
+Если IP изменится, обнови в `.env`:
+
+- `DJANGO_ALLOWED_HOSTS`
+- `DJANGO_CSRF_TRUSTED_ORIGINS`
+- `CORS_ALLOWED_ORIGINS`
+
+### 2. Запусти контейнеры
+
+```bash
+docker compose up --build -d
+```
+
+### 3. Открой проект
+
+Приложение будет доступно по адресу:
+
+```text
+http://192.168.0.81
+```
+
+Дополнительно:
+
+- API: `http://192.168.0.81/api/`
+- Django admin: `http://192.168.0.81/admin/`
+
+## Что делает Docker-конфигурация
+
+- `backend` запускает Django через `gunicorn`
+- `frontend` собирает React-приложение и отдаёт его через `nginx`
+- `nginx` проксирует `/api` и `/admin` в Django
+- `media` и `static` подключаются как volumes
+
+## Важно
+
+- Открой порт `80` в Windows Firewall
+- Для OCR/PaddleOCR контейнер backend ставит системные зависимости
+- Для первых тестов SQLite подойдёт, но для VPS лучше перейти на PostgreSQL

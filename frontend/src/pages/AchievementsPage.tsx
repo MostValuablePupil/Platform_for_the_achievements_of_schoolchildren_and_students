@@ -43,7 +43,7 @@ const ALL_BADGES = [
 export default function AchievementsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { achievements, fetchAchievements, currentUser, userStats, fetchUserStats } = useGameStore();
+  const { achievements, fetchAchievements, currentUser, fetchUserStats } = useGameStore();
   const [filter, setFilter] = useState<'all' | 'VERIFIED' | 'PENDING'>('all');
   
   const [activeTab, setActiveTab] = useState<'achievements' | 'badges'>(
@@ -116,7 +116,7 @@ export default function AchievementsPage() {
           { key: 'sport_art', label: 'Спорт/Творчество', color: 'text-green-500', delay: 'delay-400' }, // Исправлено название
           { key: 'volunteering', label: 'Волонтерств', color: 'text-white', delay: 'delay-500' },
           { key: 'science', label: 'Публикаций', color: 'text-red-500', delay: 'delay-600' },
-        ].map((stat, index) => (
+        ].map((stat) => (
           <div 
             key={stat.key}
             className={`bg-[#1a2332] rounded-2xl p-5 text-center animate-scale-in ${stat.delay}`}

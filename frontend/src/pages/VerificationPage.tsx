@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   Clock, CheckCircle, XCircle, ChevronRight, 
   Award, Calendar, Building2, Link as LinkIcon,
-  Search, Filter, Trophy
+  Search, Trophy
 } from 'lucide-react';
 
 interface Achievement {

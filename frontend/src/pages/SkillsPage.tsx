@@ -35,7 +35,7 @@ export default function SkillsPage() {
   // Подсчитываем проекты для всех навыков
   const skillsWithCounts = allSkills.map(skill => {
     const count = verifiedAchievements.filter(ach => 
-      ach.skill_names?.includes(skill.name) || ach.skills?.includes(skill.name) || ach.skills?.some((s:any) => s.name === skill.name)
+      ach.skill_names?.includes(skill.name) || ach.skills?.some((s: any) => typeof s === 'object' && s.name === skill.name)
     ).length;
     return { ...skill, count };
   });
@@ -53,7 +53,7 @@ export default function SkillsPage() {
     const userSkillsInCategory = activeProfileSkills.filter(comp => comp.category_name === category.name && comp.count > 0);
     
     // Считаем количество навыков в этой категории для Радара
-    let categoryScore = Math.min(userSkillsInCategory.length * 20, 100); 
+    const categoryScore = Math.min(userSkillsInCategory.length * 20, 100); 
 
     return {
       subject: category.name,
@@ -163,7 +163,7 @@ export default function SkillsPage() {
 
               return (
                 <div 
-                  key={index} 
+                  key={skill.id} 
                   className="animate-fade-in" 
                   style={{ animationDelay: `${0.2 + (index * 0.1)}s` }}
                 >

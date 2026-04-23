@@ -1,6 +1,6 @@
 // frontend/src/pages/VerifierLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, CheckSquare, Trophy, User } from 'lucide-react';
+import { LogOut, CheckSquare, Trophy } from 'lucide-react';
 
 export default function VerifierLayout() {
   const navigate = useNavigate();

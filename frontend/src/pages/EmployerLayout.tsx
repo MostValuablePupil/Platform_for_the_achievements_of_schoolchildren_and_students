@@ -1,6 +1,6 @@
 // frontend/src/pages/EmployerLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Users, Briefcase, LogOut, Trophy } from 'lucide-react';
+import { Building2, Users, Briefcase, LogOut } from 'lucide-react';
 
 export default function EmployerLayout() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 // frontend/src/pages/EmployerStudentsPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Award, TrendingUp, CheckCircle, ExternalLink, GraduationCap } from 'lucide-react';
+import { Search, Award, TrendingUp, CheckCircle, ExternalLink, GraduationCap } from 'lucide-react';
 
 interface Student {
   id: number;
