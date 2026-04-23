@@ -53,8 +53,6 @@ export default function CreateAchievementPage() {
   const { fetchCurrentUser, fetchAchievements, currentUser } = useGameStore();
   
   const [eventType, setEventType] = useState<EventType | ''>('');
-  const [allSkills, setAllSkills] = useState<any[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
   const [levelCategory, setLevelCategory] = useState('');
   const [achievementLevel, setAchievementLevel] = useState<AchievementLevel>('PARTICIPANT');
   const [hoursCount, setHoursCount] = useState('');
@@ -72,23 +70,7 @@ export default function CreateAchievementPage() {
   const [error, setError] = useState('');
 
 
-// Загружаем навыки при открытии страницы
-  useEffect(() => {
-    apiClient.get('skills/')
-      .then(res => setAllSkills(res.data))
-      .catch(err => console.error("Ошибка загрузки навыков", err));
-  }, []);
-
-  // Функция для выбора/отмены выбора навыка
-  const toggleSkill = (skillId: number) => {
-    setSelectedSkills(prev => 
-      prev.includes(skillId) 
-        ? prev.filter(id => id !== skillId) 
-        : [...prev, skillId]
-    );
-  };
-
-  // Сброс уровня при смене типа
+// Сброс уровня при смене типа
   useEffect(() => {
     setLevelCategory('');
   }, [eventType]);
@@ -176,11 +158,7 @@ export default function CreateAchievementPage() {
       formDataToSend.append('organization', formData.organization);
       formDataToSend.append('link', formData.link);
       
-      // Отправляем выбранные навыки
-      selectedSkills.forEach((skillId) => {
-        formDataToSend.append('skills', skillId.toString());
-      });
-      
+      // Отправляем остальные данные
 
       if (date) {
         formDataToSend.append('event_date', date);
@@ -364,33 +342,6 @@ export default function CreateAchievementPage() {
               </label>
             )}
 
-            {/* Выбор навыков */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Какие навыки вы прокачали? <span className="text-gray-500 text-xs font-normal">(опционально)</span>
-              </label>
-              <div className="flex flex-wrap gap-2 p-4 bg-[#0f1419] border border-gray-700 rounded-xl max-h-48 overflow-y-auto">
-                {allSkills.length > 0 ? (
-                  allSkills.map(skill => (
-                    <button
-                      type="button"
-                      key={skill.id}
-                      onClick={() => toggleSkill(skill.id)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                        selectedSkills.includes(skill.id)
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
-                          : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-500'
-                      }`}
-                    >
-                      {skill.name}
-                    </button>
-                  ))
-                ) : (
-                  <span className="text-gray-500 text-sm">Загрузка навыков...</span>
-                )}
-              </div>
-            </div>
-
             {/* Описание */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -512,11 +463,14 @@ export default function CreateAchievementPage() {
             )}
 
             {/* Info */}
-            <div className="bg-gray-800/50 rounded-xl p-4 text-sm text-gray-400">
+            <div className="bg-gray-800/50 rounded-xl p-4 text-sm text-gray-400 space-y-2">
               <p>
                 <span className="text-blue-400 font-medium">Верификация:</span> После добавления 
                 достижение будет отправлено на проверку. Вы получите уведомление, когда администратор 
                 подтвердит информацию.
+              </p>
+              <p>
+                <span className="text-cyan-400 font-medium">AI Анализ:</span> Привязанные к этому достижению навыки будут автоматически определены нейросетью на основе загруженных документов.
               </p>
             </div>
 

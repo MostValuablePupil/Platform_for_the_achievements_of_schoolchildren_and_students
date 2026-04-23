@@ -30,72 +30,38 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-### Frontend
+Создай файл `.env` в папке `backend/` и добавь туда сгенерированный SECRET_KEY (а также ключи для нейросети, если есть):
+```env
+# Django Secret Key
+SECRET_KEY=вставь_сюда_сгенерированный_ключ
+API_KEY=вставь_сюда_ключ_от_gigachat
+```
 
+*(Сгенерировать ключ можно командой: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)*
+
+#### Настройка Фронтенда
+Установи зависимости Node.js:
 ```bash
-cd frontend
+cd ../frontend
 npm install
-npm run dev
+cd ..
 ```
 
-Фронтенд будет доступен на `http://localhost:5173`, а в локальной сети на `http://192.168.0.81:5173`.
+### 3. Запуск проекта (в один клик)
 
-## Docker-деплой
+Для удобного запуска всего проекта разом используйте скрипт `start.sh` в корне проекта.
 
-В репозитории подготовлены:
-
-- `backend/Dockerfile`
-- `frontend/Dockerfile`
-- `docker-compose.yml`
-- `docker/nginx/default.conf`
-- `.env.example`
-
-### 1. Подготовь `.env`
-
+Сделайте скрипт исполняемым (только первый раз):
 ```bash
-copy .env.example .env
+chmod +x start.sh
 ```
 
-Для этой машины IP в локальной сети сейчас:
-
-```text
-192.168.0.81
-```
-
-Если IP изменится, обнови в `.env`:
-
-- `DJANGO_ALLOWED_HOSTS`
-- `DJANGO_CSRF_TRUSTED_ORIGINS`
-- `CORS_ALLOWED_ORIGINS`
-
-### 2. Запусти контейнеры
-
+**Запустите проект:**
 ```bash
-docker compose up --build -d
+./start.sh
 ```
 
-### 3. Открой проект
+✅ Бэкенд будет доступен по адресу: http://127.0.0.1:8000
+✅ Фронтенд будет доступен по адресу: http://localhost:5173 
 
-Приложение будет доступно по адресу:
-
-```text
-http://192.168.0.81
-```
-
-Дополнительно:
-
-- API: `http://192.168.0.81/api/`
-- Django admin: `http://192.168.0.81/admin/`
-
-## Что делает Docker-конфигурация
-
-- `backend` запускает Django через `gunicorn`
-- `frontend` собирает React-приложение и отдаёт его через `nginx`
-- `nginx` проксирует `/api` и `/admin` в Django
-- `media` и `static` подключаются как volumes
-
-## Важно
-
-- Открой порт `80` в Windows Firewall
-- Для OCR/PaddleOCR контейнер backend ставит системные зависимости
-- Для первых тестов SQLite подойдёт, но для VPS лучше перейти на PostgreSQL
+Для остановки серверов просто нажмите `Ctrl+C`.

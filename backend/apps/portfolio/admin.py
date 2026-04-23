@@ -13,6 +13,7 @@ class AchievementAdmin(admin.ModelAdmin):
     list_display = ("title", "student", "event_type", "status", "points", "verifier", "verified_at")
     list_filter = ("status", "event_type", "verified_at")
     search_fields = ("title", "student__username")
+    filter_horizontal = ("skills",)
 
     
     def save_model(self, request, obj, form, change):

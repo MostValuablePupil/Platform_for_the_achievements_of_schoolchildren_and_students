@@ -1,3 +1,4 @@
+import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -10,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from dotenv import load_dotenv
 
 from apps.portfolio.models import Achievement
+from apps.skills.models import Skill
 
 load_dotenv()
 
@@ -141,6 +143,40 @@ def _format_analysis_for_model(results):
     return "\n\n".join(formatted_results)
 
 
+def _extract_and_assign_skills(achievement, results):
+    """
+    Парсит JSON-ответы от ИИ, ищет навыки в базе и привязывает их к достижению.
+    """
+    found_skills = set()
+    for item in results:
+        if item.get("error"):
+            continue
+        try:
+            # Извлекаем JSON из текстового ответа, если он обернут в markdown (опционально)
+            # или если ответ прямо в JSON формате
+            response_text = item.get("response", "").strip()
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+            
+            data = json.loads(response_text)
+            subthemes = [theme.strip().lower() for theme in data.get("subthemes", [])]
+            
+            # Поскольку SQLite не поддерживает case-insensitive поиск для кириллицы через __iexact,
+            # ищем совпадения на уровне Python (навыков немного, это быстро)
+            for skill in Skill.objects.all():
+                if skill.name.lower() in subthemes:
+                    found_skills.add(skill)
+        except json.JSONDecodeError:
+            pass # Игнорируем файлы, которые не вернули валидный JSON
+        except Exception:
+            pass
+
+    if found_skills:
+        achievement.skills.add(*list(found_skills))
+
+
 def run_achievement_ai_analysis(achievement_id):
     close_old_connections()
 
@@ -158,6 +194,11 @@ def run_achievement_ai_analysis(achievement_id):
         Achievement.objects.filter(pk=achievement_id).update(
             ai_analysis_result=_format_analysis_for_model(payload["results"])
         )
+        
+        # Обновляем инстанс achievement перед привязкой
+        achievement.refresh_from_db()
+        _extract_and_assign_skills(achievement, payload["results"])
+        
         close_old_connections()
         return payload
     except Exception as exc:
@@ -187,6 +228,9 @@ def ai_analysis(request, achievement_id):
     Achievement.objects.filter(pk=achievement.id).update(
         ai_analysis_result=_format_analysis_for_model(payload["results"])
     )
+    
+    achievement.refresh_from_db()
+    _extract_and_assign_skills(achievement, payload["results"])
 
     return JsonResponse(
         payload,

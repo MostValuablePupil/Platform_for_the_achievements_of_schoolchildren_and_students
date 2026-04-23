@@ -139,6 +139,13 @@ class AchievementSerializer(serializers.ModelSerializer):
 
         return instance
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.status != 'VERIFIED':
+            ret['skills'] = []
+            ret['skill_names'] = []
+        return ret
+
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
