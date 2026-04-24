@@ -26,6 +26,9 @@ load_dotenv(PROJECT_ROOT / ".env")
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
+
+# Секретный код для регистрации куратора (задаётся в .env)
+CURATOR_REGISTRATION_CODE = os.getenv("CURATOR_REGISTRATION_CODE", "CURATOR-2024-SECRET")
 DEBUG = _get_bool_env("DEBUG", True)
 
 ALLOWED_HOSTS = _get_list_env(
