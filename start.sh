@@ -5,7 +5,15 @@ echo "🚀 Запуск серверов..."
 # Запускаем backend в фоновом режиме
 echo "🐍 Запуск Django backend..."
 cd backend
-../.venv/bin/python manage.py runserver &
+
+# Проверяем наличие папки Scripts (Windows) или bin (Mac/Linux)
+if [ -d "../.venv/Scripts" ]; then
+    PYTHON_CMD="../.venv/Scripts/python"
+else
+    PYTHON_CMD="../.venv/bin/python"
+fi
+
+$PYTHON_CMD manage.py runserver &
 BACKEND_PID=$!
 cd ..
 
