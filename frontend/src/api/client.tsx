@@ -6,7 +6,9 @@ import type {
   SkillProfile, 
   SkillCategory, 
   Specialty,
-  AchievementStats 
+  AchievementStats,
+  ParsedEvent,
+  EventFilters,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api/';
@@ -78,6 +80,12 @@ export const skillAPI = {
 
 export const specialtyAPI = {
   getAll: () => apiClient.get<Specialty[]>('specialties/'),
+};
+
+export const parsedEventAPI = {
+  getAll: (params?: any) => apiClient.get<ParsedEvent[]>('parsed-events/', { params }),
+  getFilters: () => apiClient.get<EventFilters>('parsed-events/filters/'),
+  getRecommended: () => apiClient.get<RecommendedEvent[]>('parsed-events/recommended/'),
 };
 
 export default apiClient;

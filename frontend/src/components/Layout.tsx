@@ -1,6 +1,6 @@
 import type{ ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Trophy, TrendingUp, LogOut } from 'lucide-react';
+import { Home, Trophy, TrendingUp, LogOut, Calendar } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 
 interface LayoutProps {
@@ -72,6 +72,20 @@ export default function Layout({ children }: LayoutProps) {
             >
               <TrendingUp className="w-5 h-5" />
               <span>Трекинг навыков</span>
+            </NavLink>
+
+            <NavLink
+              to="/events"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  isActive 
+                    ? 'bg-gradient-to-r from-yandex-blue/20 to-yandex-cyan/20 text-white border border-yandex-blue/30' 
+                    : 'text-gray-400 hover:bg-dark-800/50 hover:text-gray-100'
+                }`
+              }
+            >
+              <Calendar className="w-5 h-5" />
+              <span>Мероприятия</span>
             </NavLink>
           </nav>
 

@@ -94,3 +94,37 @@ chmod +x start.sh
 ✅ Фронтенд будет доступен по адресу: http://localhost:5173 
 
 Для остановки серверов просто нажмите `Ctrl+C`.
+
+### Парсер мероприятий
+
+Платформа умеет парсить результаты олимпиад с внешних сайтов и сохранять их в базу данных. Спарсенные мероприятия отображаются на вкладке **«Мероприятия»** в интерфейсе студента.
+
+#### Запуск парсера
+
+```bash
+cd backend
+
+# Запуск всех доступных парсеров (по умолчанию за 2025 год)
+python manage.py parse_events
+
+# Запуск конкретного парсера
+python manage.py parse_events --source urfu_izumrud
+
+# Парсинг за несколько учебных годов
+python manage.py parse_events --years 2024 2025
+```
+
+> **Примечание:** на Mac/Linux замените `python` на `../.venv/bin/python`, на Windows — на `..\.venv\Scripts\python`.
+
+#### Доступные парсеры
+
+| Ключ `--source` | Сайт | Описание |
+|-----------------|------|----------|
+| `urfu_izumrud` | [dovuz.urfu.ru](https://dovuz.urfu.ru/olymps/izumrud/final-results) | Международная олимпиада «Изумруд» (УрФУ) |
+
+#### Добавление нового парсера
+
+1. Создайте файл `backend/apps/events/parsers/<имя_источника>.py`
+2. Унаследуйтесь от `BaseSiteParser` и реализуйте метод `fetch_events()` → `list[dict]`
+3. Зарегистрируйте парсер в словаре `PARSERS` в файле `backend/apps/events/management/commands/parse_events.py`
+4. Добавьте новое значение в `Event.Source` в `backend/apps/events/models.py`

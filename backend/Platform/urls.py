@@ -22,7 +22,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Импортируем наши новые API-вьюшки
-from apps.portfolio.views import AchievementViewSet, EventViewSet
+from apps.portfolio.views import AchievementViewSet, EventViewSet as PortfolioEventViewSet
+from apps.events.views import EventViewSet as ParsedEventViewSet
 from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
 from rest_framework.authtoken.views import obtain_auth_token
@@ -30,7 +31,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 # Создаем роутер (он сам сгенерирует все нужные ссылки)
 router = DefaultRouter()
 router.register(r'achievements', AchievementViewSet)
-router.register(r'events', EventViewSet)
+router.register(r'events', PortfolioEventViewSet)
+router.register(r'parsed-events', ParsedEventViewSet, basename='parsed-event')
 router.register(r'users', UserViewSet)
 router.register(r'specialties', SpecialtyViewSet)
 router.register(r'skill-categories', SkillCategoryViewSet)

@@ -119,3 +119,35 @@ export interface UserSkill {
   skill?: number;
   skill_name?: string;
 }
+
+export interface ParsedEvent {
+  id: number;
+  title: string;
+  description: string;
+  event_type: 'OLYMPIAD' | 'HACKATHON' | 'COMPETITION' | 'CONFERENCE' | 'GRANT';
+  event_type_display: string;
+  source: string;
+  source_display: string;
+  source_url: string;
+  subject_area: string;
+  region: string;
+  grade: string;
+  year: string;
+  organizer: string;
+  is_active: boolean;
+  parsed_at: string;
+}
+
+export interface RecommendedEvent {
+  event: ParsedEvent;
+  reason: string;
+  relevance_score: number;
+}
+
+export interface EventFilters {
+  sources: string[];
+  subject_areas: string[];
+  regions: string[];
+  years: string[];
+  grades: string[];
+}

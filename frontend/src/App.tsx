@@ -11,6 +11,7 @@ import SkillsPage from './pages/SkillsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CreateAchievementPage from './pages/CreateAchievementPage';
+import EventsPage from './pages/EventsPage';
 
 // Работодатель
 import EmployerLayout from './pages/EmployerLayout';
@@ -91,6 +92,7 @@ function App() {
             <Route path="/achievements/:id" element={<AchievementDetailPage />} />
             <Route path="/achievements/new" element={<CreateAchievementPage />} />
             <Route path="/skills" element={<Layout><SkillsPage /></Layout>} />
+            <Route path="/events" element={<Layout><EventsPage /></Layout>} />
             
             {/* Если студент забрел в админку работодателя — кидаем домой */}
             <Route path="/employer/*" element={<Navigate to="/" replace />} />

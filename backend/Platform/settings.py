@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "apps.neural_network",
     "apps.vacancy",
+    "apps.events",
 ]
 
 MIDDLEWARE = [
