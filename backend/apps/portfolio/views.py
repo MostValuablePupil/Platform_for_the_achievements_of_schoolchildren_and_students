@@ -96,12 +96,8 @@ class AchievementViewSet(viewsets.ModelViewSet):
     def verify(self, request, pk=None):
         """Верификация достижения куратором"""
         achievement = self.get_object()
-        if achievement.status != 'PENDING':
-            return Response({'detail': 'Уже обработано'}, status=400)
-            
         achievement.status = 'VERIFIED'
         achievement.verifier = request.user
-        achievement.verified_at = timezone.now()
         achievement.save()
         
         return Response({'detail': 'Подтверждено', 'xp_added': achievement.points})
@@ -112,6 +108,15 @@ class AchievementViewSet(viewsets.ModelViewSet):
         achievement.status = 'REJECTED'
         achievement.save()
         return Response({'detail': 'Отклонено'})
+
+    @action(detail=True, methods=['patch'], url_path='set-pending')
+    def set_pending(self, request, pk=None):
+        """Вернуть достижение на проверку"""
+        achievement = self.get_object()
+        achievement.status = 'PENDING'
+        achievement.verifier = None
+        achievement.save()
+        return Response({'detail': 'Возвращено на проверку'})
 
 
 class EventViewSet(viewsets.ModelViewSet):

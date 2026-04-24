@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap, ShieldCheck } from 'lucide-react';
 import apiClient, { specialtyAPI } from '../api/client';
 import { useGameStore } from '../store/useGameStore'; // ✅ ИМПОРТИРУЕМ STORE
 import type { Specialty } from '../types';
 
-type UserRole = 'student' | 'school' | 'employer';
+type UserRole = 'student' | 'school' | 'employer' | 'curator';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -66,6 +66,7 @@ export default function RegisterPage() {
         student: 'STUDENT',
         school: 'STUDENT',
         employer: 'EMPLOYER',
+        curator: 'CURATOR',
       };
 
       const userData: any = {
@@ -257,11 +258,24 @@ export default function RegisterPage() {
                   <Building2 className="w-6 h-6" />
                   <span className="font-medium">Работодатель</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('curator')}
+                  className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                    selectedRole === 'curator'
+                      ? 'border-yandex-blue bg-yandex-blue/10 text-white'
+                      : 'border-dark-600 bg-dark-800/50 text-gray-400 hover:border-yandex-blue/50'
+                  }`}
+                >
+                  <ShieldCheck className="w-6 h-6" />
+                  <span className="font-medium">Куратор</span>
+                </button>
               </div>
             </div>
 
             {/* Учебные поля (только для студентов и школьников) */}
-            {selectedRole !== 'employer' && (
+            {selectedRole !== 'employer' && selectedRole !== 'curator' && (
               <>
                 {/* Учебное заведение */}
                 <div>

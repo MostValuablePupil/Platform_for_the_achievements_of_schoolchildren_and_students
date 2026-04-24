@@ -141,7 +141,10 @@ class AchievementSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        if instance.status != 'VERIFIED':
+        # Куратор видит навыки всегда, студент — только после верификации
+        request = self.context.get('request')
+        is_curator = request and hasattr(request, 'user') and getattr(request.user, 'role', None) == 'CURATOR'
+        if instance.status != 'VERIFIED' and not is_curator:
             ret['skills'] = []
             ret['skill_names'] = []
         return ret

@@ -19,6 +19,11 @@ import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
 import EmployerStudentSkillsPage from './pages/EmployerStudentSkillsPage';
 import EmployerVacanciesPage from './pages/EmployerVacanciesPage';
 
+// Куратор / Верификатор
+import VerifierLayout from './pages/VerifierLayout';
+import VerifierAchievementsPage from './pages/VerifierAchievementsPage';
+import VerifierAchievementDetailPage from './pages/VerifierAchievementDetailPage';
+
 function App() {
   const { isAuthenticated, currentUser, isLoading, checkAuth } = useGameStore();
 
@@ -40,6 +45,7 @@ function App() {
   }
 
   const isEmployer = currentUser?.role === 'EMPLOYER';
+  const isCurator = currentUser?.role === 'CURATOR';
 
   return (
     <Router>
@@ -65,6 +71,17 @@ function App() {
               <Route index element={<Navigate to="students" replace />} />
             </Route>
             <Route path="/" element={<Navigate to="/employer/students" replace />} />
+          </>
+        ) : isAuthenticated && isCurator ? (
+          /* === МАРШРУТЫ ДЛЯ КУРАТОРОВ === */
+          <>
+            <Route path="/verifier" element={<VerifierLayout />}>
+              <Route path="achievements" element={<VerifierAchievementsPage />} />
+              <Route path="achievements/:id" element={<VerifierAchievementDetailPage />} />
+              <Route index element={<Navigate to="achievements" replace />} />
+            </Route>
+            <Route path="/" element={<Navigate to="/verifier/achievements" replace />} />
+            <Route path="/employer/*" element={<Navigate to="/" replace />} />
           </>
         ) : isAuthenticated && !isEmployer ? (
           /* === МАРШРУТЫ ДЛЯ СТУДЕНТОВ === */

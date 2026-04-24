@@ -6,7 +6,7 @@ import { useGameStore } from '../store/useGameStore';
 export default function VerifierLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useGameStore();
+  const { logout, currentUser } = useGameStore();
 
   const menuItems = [
     { 
@@ -17,11 +17,10 @@ export default function VerifierLayout() {
     },
   ];
 
-  const verifier = {
-    name: 'Верификатор',
-    role: 'Администратор',
-    avatar: 'В',
-  };
+  const verifierName = currentUser 
+    ? `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.username
+    : 'Куратор';
+  const verifierInitial = verifierName[0]?.toUpperCase() || 'К';
 
   return (
     <div className="min-h-screen bg-[#0f1419] flex">
@@ -60,11 +59,11 @@ export default function VerifierLayout() {
         <div className="mt-auto pt-6 border-t border-gray-800">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-sm font-bold text-white">
-              {verifier.avatar}
+              {verifierInitial}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{verifier.name}</p>
-              <p className="text-xs text-gray-500 truncate">{verifier.role}</p>
+              <p className="text-sm font-medium text-white truncate">{verifierName}</p>
+              <p className="text-xs text-gray-500 truncate">Куратор</p>
             </div>
           </div>
           
