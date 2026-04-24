@@ -1,10 +1,12 @@
 // frontend/src/pages/EmployerLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Building2, Users, Briefcase, LogOut } from 'lucide-react';
+import { useGameStore } from '../store/useGameStore';
 
 export default function EmployerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useGameStore();
 
   const menuItems = [
     { path: '/employer/students', icon: Users, label: 'Студенты', active: location.pathname === '/employer/students' },
@@ -61,8 +63,8 @@ export default function EmployerLayout() {
           </div>
           <button
             onClick={() => {
-              localStorage.removeItem('employer_user');
-              navigate('/');
+              logout();
+              navigate('/login');
             }}
             className="w-full flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
           >

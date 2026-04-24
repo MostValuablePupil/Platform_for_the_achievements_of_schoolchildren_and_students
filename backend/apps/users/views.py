@@ -76,7 +76,7 @@ class SpecialtyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 class UserViewSet(viewsets.ModelViewSet): # <--- Замени ReadOnlyModelViewSet на ModelViewSet, чтобы работал POST
-    queryset = User.objects.all()
+    queryset = User.objects.annotate(achievements_count=Count('achievements'))
     serializer_class = UserSerializer
     
     # ВАЖНО: Переопределяем права доступа

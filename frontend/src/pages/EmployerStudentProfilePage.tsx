@@ -1,73 +1,69 @@
 // frontend/src/pages/EmployerStudentProfilePage.tsx
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Download, Share2, Calendar, Building2, GraduationCap } from 'lucide-react';
-
-interface Achievement {
-  id: number;
-  title: string;
-  description: string;
-  points: number;
-  created: string;
-  organization: string;
-}
-
-const MOCK_STUDENT = {
-  id: 1,
-  first_name: 'Анна',
-  last_name: 'Соколова',
-  educational_institution: 'МГТУ им. Баумана',
-  course: '4',
-  future_profession: 'Data Scientist',
-  total_xp: 2450,
-  level: 7,
-  achievements_count: 12,
-  avatar_initials: 'АС',
-  email: 'anna.sokolova@bmstu.ru',
-  skills: ['Python', 'Machine Learning', 'SQL', 'Pandas', 'Scikit-learn'],
-};
-
-const MOCK_ACHIEVEMENTS: Achievement[] = [
-  {
-    id: 1,
-    title: 'Победа в олимпиаде по программированию',
-    description: 'Призёр 2 степени в региональном этапе Всероссийской олимпиады',
-    points: 250,
-    created: '2025-11-15',
-    organization: 'МГТУ им. Баумана',
-  },
-  {
-    id: 2,
-    title: 'Хакатон AI Solutions',
-    description: 'Разработка модели прогнозирования спроса для ритейла',
-    points: 350,
-    created: '2025-10-20',
-    organization: 'Яндекс',
-  },
-  {
-    id: 3,
-    title: 'Курс по Machine Learning',
-    description: 'Профессиональная переподготовка по направлению Data Science',
-    points: 400,
-    created: '2025-09-01',
-    organization: 'Coursera',
-  },
-  {
-    id: 4,
-    title: 'Волонтёрство в образовательном проекте',
-    description: 'Проведение мастер-классов по программированию для школьников',
-    points: 180,
-    created: '2025-08-10',
-    organization: 'CodeForGood',
-  },
-];
+import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Download, Share2, Calendar, Building2, GraduationCap, Loader2 } from 'lucide-react';
+import { userAPI, achievementAPI } from '../api/client';
+import type { User, Achievement } from '../types';
 
 export default function EmployerStudentProfilePage() {
-  useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const student = MOCK_STUDENT;
-  const achievements = MOCK_ACHIEVEMENTS;
+  const [student, setStudent] = useState<User | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        // Загружаем данные студента и его достижения (верифицированные)
+        const [userRes, achievementsRes] = await Promise.all([
+          userAPI.getById(Number(id)),
+          achievementAPI.getAll({ student: Number(id), status: 'VERIFIED' })
+        ]);
+        
+        setStudent(userRes.data);
+        setAchievements(achievementsRes.data);
+      } catch (err) {
+        console.error('Error fetching student profile:', err);
+        setError('Не удалось загрузить профиль студента');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !student) {
+    return (
+      <div className="bg-[#1a2332] border border-red-500/30 rounded-2xl p-6 text-center text-red-400">
+        {error || 'Студент не найден'}
+        <button 
+          onClick={() => navigate('/employer/students')}
+          className="block mx-auto mt-4 text-blue-400 hover:underline"
+        >
+          Вернуться к списку
+        </button>
+      </div>
+    );
+  }
+
   const progress = ((student.total_xp % 350) / 350) * 100;
+  const initials = `${student.first_name?.[0] || ''}${student.last_name?.[0] || ''}`.toUpperCase() || student.username?.[0]?.toUpperCase() || 'СТ';
+
+  const achievementsCount = student.achievements_count || achievements.length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -85,21 +81,30 @@ export default function EmployerStudentProfilePage() {
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-blue-500/30 animate-scale-in">
-              {student.avatar_initials}
-            </div>
+            {student.avatar_details?.image ? (
+              <img 
+                src={student.avatar_details.image} 
+                alt="avatar" 
+                className="w-20 h-20 rounded-2xl object-cover shadow-lg shadow-blue-500/30 animate-scale-in"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-blue-500/30 animate-scale-in">
+                {initials}
+              </div>
+            )}
+            
             <div>
               <h1 className="text-3xl font-bold mb-2 animate-fade-in-up delay-100">
-                {student.first_name} {student.last_name}
+                {student.first_name || student.username} {student.last_name}
               </h1>
               <p className="text-blue-200 mb-3 flex items-center gap-2 animate-fade-in-up delay-200">
                 <GraduationCap className="w-4 h-4" />
-                Студент {student.course} курса • {student.educational_institution}
+                Студент {student.course ? `${student.course} курса` : ''} {student.educational_institution ? `• ${student.educational_institution}` : ''}
               </p>
               <div className="flex items-center gap-4 text-sm text-blue-300/60 animate-fade-in-up delay-300">
                 <span className="flex items-center gap-1">
                   <Award className="w-4 h-4" />
-                  {student.achievements_count} достижений
+                  {achievementsCount} достижений
                 </span>
                 <span>•</span>
                 <span>Уровень {student.level}</span>
@@ -123,10 +128,13 @@ export default function EmployerStudentProfilePage() {
               <Download className="w-4 h-4" />
               Скачать
             </button>
-            <button className="px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 rounded-xl text-sm font-medium transition-all flex items-center gap-2">
+            <a 
+              href={`mailto:${student.email}`}
+              className="px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+            >
               <Mail className="w-4 h-4" />
               Связаться
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -164,7 +172,7 @@ export default function EmployerStudentProfilePage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">Достижений</span>
-                <span className="text-sm font-bold text-blue-400">{student.achievements_count}</span>
+                <span className="text-sm font-bold text-blue-400">{achievementsCount}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">Уровень</span>
@@ -177,20 +185,22 @@ export default function EmployerStudentProfilePage() {
             </div>
           </div>
 
-          {/* Skills */}
-          <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-300">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4">Навыки</h3>
-            <div className="flex flex-wrap gap-2">
-              {student.skills.map((skill: string, index: number) => (
-                <span 
-                  key={skill}
-                  className="px-3 py-1.5 bg-[#0f1419] rounded-lg text-sm text-gray-300 animate-fade-in"
-                  style={{ animationDelay: `${0.4 + (index * 0.1)}s` }}
-                >
-                  {skill}
-                </span>
-              ))}
+          {/* Button to Skills Tracking */}
+          <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-300 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+              <TrendingUp className="w-8 h-8 text-blue-400" />
             </div>
+            <h3 className="text-lg font-semibold text-white mb-2">Навыки и компетенции</h3>
+            <p className="text-sm text-gray-400 mb-6">
+              Подробная визуализация сильных сторон, радар-график и статистика по всем направлениям
+            </p>
+            <button
+              onClick={() => navigate(`/employer/students/${id}/skills`)}
+              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+            >
+              <TrendingUp className="w-5 h-5" />
+              Трекинг навыков
+            </button>
           </div>
         </div>
 
@@ -217,7 +227,7 @@ export default function EmployerStudentProfilePage() {
                         Верифицировано
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400 mb-3">{achievement.description}</p>
+                    <p className="text-sm text-gray-400 mb-3">{achievement.description || 'Нет описания'}</p>
                     <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -225,11 +235,15 @@ export default function EmployerStudentProfilePage() {
                       </span>
                       <span>•</span>
                       <span className="text-orange-400 font-medium">+{achievement.points} XP</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Building2 className="w-3 h-3" />
-                        {achievement.organization}
-                      </span>
+                      {achievement.organization && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Building2 className="w-3 h-3" />
+                            {achievement.organization}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

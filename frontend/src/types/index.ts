@@ -40,6 +40,8 @@ export interface User {
   avatar_details?: Avatar | null;
   earned_badges?: UserBadge[];
   competencies?: UserSkill[];
+  future_profession?: string | null;
+  achievements_count?: number;
 }
 
 export interface AchievementStats {

@@ -1,10 +1,12 @@
 // frontend/src/pages/VerifierLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, CheckSquare, Trophy } from 'lucide-react';
+import { useGameStore } from '../store/useGameStore';
 
 export default function VerifierLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useGameStore();
 
   const menuItems = [
     { 
@@ -67,7 +69,10 @@ export default function VerifierLayout() {
           </div>
           
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
             className="w-full flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
           >
             <LogOut className="w-4 h-4" />

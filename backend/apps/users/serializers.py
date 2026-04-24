@@ -39,13 +39,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     # 🔥 ДОБАВЬ ЭТО ПОЛЕ (только для записи, не показывается в ответе)
     password = serializers.CharField(write_only=True, required=True, min_length=8)
+    
+    achievements_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = User
         fields = [
             'id', 'url', 'username', 'first_name', 'last_name', 'email',
             'role', 'educational_institution', 'course', 'specialty', 'specialty_details', 'total_xp', 'level',
-            'avatar', 'avatar_details', 'earned_badges', 'password', 'competencies',
+            'avatar', 'avatar_details', 'earned_badges', 'password', 'competencies', 'future_profession', 'achievements_count'
         ]
         extra_kwargs = {
             'password': {'write_only': True},  # Пароль никогда не возвращается в ответе
