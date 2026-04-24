@@ -1,7 +1,9 @@
+// frontend/src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store/useGameStore';
 import { Trophy, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -30,13 +32,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950 p-4">
-      <div className="w-full max-w-md">
-        {/* Карточка входа */}
-        <div className="glass-card p-8 shadow-2xl">
+    // 
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <AnimatedBackground />
+      
+      <div className="w-full max-w-md relative z-10">
+        {/* Карточка входа — делаем полупрозрачной */}
+        <div className="bg-[#1a2332]/80 backdrop-blur-xl border border-gray-800/50 rounded-3xl p-8 shadow-2xl animate-fade-in-up">
           {/* Логотип */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-yandex-blue to-yandex-cyan rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-yandex-blue/30">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
               <Trophy className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-100 text-center">
@@ -105,18 +110,18 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-dark-600 bg-dark-800 text-yandex-blue focus:ring-yandex-blue"
+                  className="w-4 h-4 rounded border-dark-600 bg-dark-800 text-blue-500 focus:ring-blue-500"
                 />
                 <span className="text-gray-400">Запомнить меня</span>
               </label>
-              <button type="button" className="text-yandex-blue hover:text-yandex-cyan transition-colors">
+              <button type="button" className="text-blue-400 hover:text-blue-300 transition-colors">
                 Забыли пароль?
               </button>
             </div>
 
             {/* Ошибка */}
             {error && (
-              <div className="p-3 bg-yandex-red/10 border border-yandex-red/30 rounded-xl text-yandex-red text-sm">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
                 {error}
               </div>
             )}
@@ -125,7 +130,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/25"
             >
               {isLoading ? 'Вход...' : 'Войти'}
             </button>
@@ -136,7 +141,7 @@ export default function LoginPage() {
             Еще нет аккаунта?{' '}
             <button
               onClick={() => navigate('/register')}
-              className="text-yandex-blue hover:text-yandex-cyan font-medium transition-colors"
+              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
             >
               Зарегистрироваться
             </button>
