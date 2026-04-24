@@ -28,7 +28,7 @@ def _get_model():
             credentials=os.getenv("API_KEY"),
             model="GigaChat-2",
             verify_ssl_certs=False,
-            temperature=0.1,
+            temperature=0,
         )
         _thread_local.gigachat_model = model
     return model
