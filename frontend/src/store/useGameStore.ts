@@ -46,10 +46,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       const response = await authAPI.login(username, password);
       const token = response.data.token;
       
-      // 🔥 1. САМОЕ ГЛАВНОЕ: СОХРАНЯЕМ ТОКЕН СРАЗУ ЖЕ!!!
+
       localStorage.setItem('token', token);
 
-      // 🔥 2. Теперь Axios увидит токен и запрос пройдет успешно
       const users = await userAPI.getAll();
       
       const user = users.data.find((u: User) => 
@@ -70,7 +69,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         await get().fetchAchievements({ student: user.id });
         await get().fetchSkills();
       } else {
-        // Если юзер не найден, токен лучше удалить, чтобы не висел "мертвым грузом"
+        // Если юзер не найден, токен лучше удалить,
         localStorage.removeItem('token');
         throw new Error("Пользователь не найден в базе");
       }
