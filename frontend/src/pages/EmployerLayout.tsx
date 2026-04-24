@@ -1,22 +1,33 @@
 // frontend/src/pages/EmployerLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Users, Briefcase, LogOut } from 'lucide-react';
+import { Building2, Users, LogOut } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 
 export default function EmployerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useGameStore();
+  const { currentUser, logout } = useGameStore();
 
   const menuItems = [
-    { path: '/employer/students', icon: Users, label: 'Студенты', active: location.pathname === '/employer/students' },
-    { path: '/employer/vacancies', icon: Briefcase, label: 'Вакансии', active: location.pathname === '/employer/vacancies' },
+    { 
+      path: '/employer/students', 
+      icon: Users, 
+      label: 'Студенты', 
+      active: location.pathname === '/employer/students' 
+    },
   ];
 
-  const employer = {
-    name: 'Иван Иванов',
-    company: 'ООО «Технологии Будущего»',
-    avatar: 'ИИ',
+  const employerName = currentUser 
+    ? `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim()
+    : 'Иван Иванов';
+    
+  // Если у работодателя есть компания (или используем educational_institution для временного хранения)
+  
+  const employerInitials = employerName.split(' ').map(n => n[0]).join('').toUpperCase() || 'ИИ';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -54,18 +65,15 @@ export default function EmployerLayout() {
         <div className="mt-auto pt-6 border-t border-gray-800">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-sm font-bold text-white">
-              {employer.avatar}
+              {employerInitials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{employer.name}</p>
-              <p className="text-xs text-gray-500 truncate">{employer.company}</p>
+              <p className="text-sm font-medium text-white truncate">{employerName}</p>
             </div>
           </div>
+          
           <button
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
+            onClick={handleLogout}
             className="w-full flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
           >
             <LogOut className="w-4 h-4" />
