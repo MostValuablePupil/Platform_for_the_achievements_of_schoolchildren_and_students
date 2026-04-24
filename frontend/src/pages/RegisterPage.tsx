@@ -260,11 +260,14 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Учебное заведение */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Учебное заведение *
-              </label>
+            {/* Учебные поля (только для студентов и школьников) */}
+            {selectedRole !== 'employer' && (
+              <>
+                {/* Учебное заведение */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Учебное заведение *
+                  </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Building2 className="h-5 w-5 text-gray-500" />
@@ -361,6 +364,8 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
+          </>
+        )}
 
             {/* Пароль и подтверждение */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

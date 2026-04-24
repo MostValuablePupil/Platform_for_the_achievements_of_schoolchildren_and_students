@@ -53,6 +53,7 @@ export const userAPI = {
   getAll: () => apiClient.get<User[]>('users/'),
   getById: (id: number) => apiClient.get<User>(`users/${id}/`),
   getStats: (id: number) => apiClient.get<AchievementStats>(`users/${id}/stats/`),
+  update: (id: number, data: Partial<User>) => apiClient.patch<User>(`users/${id}/`, data),
 };
 
 export const achievementAPI = {

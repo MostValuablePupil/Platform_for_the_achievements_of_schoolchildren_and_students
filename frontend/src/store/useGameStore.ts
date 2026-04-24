@@ -25,6 +25,7 @@ interface GameState {
   verifyAchievement: (id: number) => Promise<void>;
   rejectAchievement: (id: number) => Promise<void>;
   fetchSkills: (profileId?: number) => Promise<void>;
+  updateProfile: (id: number, data: Partial<User>) => Promise<void>;
 }
 
 // Проверяем токен ПЕРЕД созданием стора
@@ -133,6 +134,19 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({ currentUser: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching user:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (id: number, data: Partial<User>) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await userAPI.update(id, data);
+      set({ currentUser: response.data });
+    } catch (error: any) {
+      set({ error: error.response?.data?.detail || 'Ошибка обновления профиля' });
+      throw error;
+    } finally {
       set({ isLoading: false });
     }
   },

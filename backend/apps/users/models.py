@@ -60,6 +60,13 @@ class User(AbstractUser):
         verbose_name="Учебное заведение",
         help_text="Например: МГТУ им. Баумана или Школа №123"
     )
+    future_profession = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Желаемая профессия",
+        help_text="Например: Data Scientist"
+    )
 
     class CourseChoices(models.TextChoices):
         C1 = '1', '1'
@@ -67,6 +74,12 @@ class User(AbstractUser):
         C3 = '3', '3'
         C4 = '4', '4'
         C5 = '5', '5'
+        C6 = '6', '6'
+        C7 = '7', '7'
+        C8 = '8', '8'
+        C9 = '9', '9'
+        C10 = '10', '10'
+        C11 = '11', '11'
 
     course = models.CharField(
         max_length=50,
