@@ -39,6 +39,35 @@ API_KEY=вставь_сюда_ключ_от_gigachat
 
 *(Сгенерировать ключ можно командой: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)*
 
+### Загрузка фикстур (начальные данные)
+
+В папке `backend/fixtures/` находятся JSON-файлы с начальными данными для базы:
+
+| Файл | Что содержит |
+|------|-------------|
+| `specialties_fixture.json` | Направления подготовки (09.03.01, 09.03.04 и т.д.) |
+| `skills_fixture.json` | Профили навыков и навыки для трекинга |
+| `badges_fixture.json` | Бейджи (достижения) |
+
+**Порядок загрузки важен** — сначала загружайте независимые данные:
+
+```bash
+cd backend
+
+# 1. Направления подготовки
+python manage.py loaddata fixtures/specialties_fixture.json
+
+# 2. Навыки
+python manage.py loaddata fixtures/skills_fixture.json
+
+# 3. Бейджи
+python manage.py loaddata fixtures/badges_fixture.json
+```
+
+> **Примечание:** Если вы используете виртуальное окружение, замените `python` на путь к вашему интерпретатору (например, `../.venv/bin/python` на Mac/Linux или `..\.venv\Scripts\python` на Windows).
+
+Загрузку фикстур нужно выполнить **один раз** после первого `python manage.py migrate`. При повторном запуске данные обновятся (существующие записи с теми же `pk` будут перезаписаны).
+
 #### Настройка Фронтенда
 Установи зависимости Node.js:
 ```bash
