@@ -1,9 +1,15 @@
 // frontend/src/pages/AchievementDetailPage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Calendar, Building2, Link2, Award, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, Trophy, Calendar, Building2, Link2, Award, FileText, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import Layout from '../components/Layout';
+
+interface AchievementFile {
+  id: number;
+  file: string;
+  uploaded_at: string;
+}
 
 interface Achievement {
   id: number;
@@ -20,8 +26,9 @@ interface Achievement {
   student_name: string;
   verifier?: number;
   proof_file?: string;
+  files?: AchievementFile[]; // 🔥 Добавляем поле для множественных файлов
   skills?: any[];
-  skill_names?: string[]; 
+  skill_names?: string[];
   is_rewarded: boolean;
   verified_at?: string;
   created: string;
@@ -85,7 +92,7 @@ export default function AchievementDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Загрузка...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
       </Layout>
     );
@@ -94,12 +101,34 @@ export default function AchievementDetailPage() {
   if (error || !achievement) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-red-400">{error || 'Достижение не найдено'}</div>
+        <div className="text-center text-red-400">
+          {error || 'Достижение не найдено'}
         </div>
       </Layout>
     );
   }
+
+  // 🔥 Функция для получения имени файла из URL
+  const getFileName = (url: string) => {
+    return url.split('/').pop() || 'Файл';
+  };
+
+  // 🔥 Функция для определения типа файла
+  const getFileType = (url: string) => {
+    const ext = url.split('.').pop()?.toLowerCase();
+    const types: Record<string, string> = {
+      'pdf': 'PDF документ',
+      'doc': 'Word документ',
+      'docx': 'Word документ',
+      'jpg': 'Изображение',
+      'jpeg': 'Изображение',
+      'png': 'Изображение',
+      'gif': 'Изображение',
+      'webp': 'Изображение',
+      'txt': 'Текстовый файл',
+    };
+    return types[ext || ''] || 'Файл';
+  };
 
   return (
     <Layout>
@@ -264,23 +293,66 @@ export default function AchievementDetailPage() {
             </div>
           )}
 
-          {/* Файл подтверждения */}
-          {achievement.proof_file && (
+          {/* 🔥 ФАЙЛЫ ПОДТВЕРЖДЕНИЯ (ОБНОВЛЕНО) */}
+          {(achievement.files && achievement.files.length > 0) || achievement.proof_file ? (
             <div className="mb-8">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                Документы
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                Прикрепленные файлы
               </h2>
-              <a 
-                href={achievement.proof_file} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Скачать документ
-              </a>
+              <div className="space-y-3">
+                {/* 🔥 Одиночный proof_file (для обратной совместимости) */}
+                {achievement.proof_file && (
+                  <a
+                    href={achievement.proof_file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-[#0f1419] border border-gray-800 rounded-xl hover:border-blue-500/30 transition-all group"
+                  >
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        {getFileName(achievement.proof_file)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {getFileType(achievement.proof_file)}
+                      </p>
+                    </div>
+                    <Download className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                  </a>
+                )}
+
+                {/* 🔥 Множественные файлы из files[] */}
+                {achievement.files && achievement.files.map((file, index) => (
+                  <a
+                    key={file.id}
+                    href={file.file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-[#0f1419] border border-gray-800 rounded-xl hover:border-blue-500/30 transition-all group animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        {getFileName(file.file)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {getFileType(file.file)}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {new Date(file.uploaded_at).toLocaleDateString('ru-RU')}
+                      </p>
+                    </div>
+                    <Download className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
             </div>
-          )}
+          ) : null}
 
           {/* Навыки */}
           {achievement.skill_names && achievement.skill_names.length > 0 && (
