@@ -16,6 +16,7 @@ import CreateAchievementPage from './pages/CreateAchievementPage';
 import EmployerLayout from './pages/EmployerLayout';
 import EmployerStudentsPage from './pages/EmployerStudentsPage';
 import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
+import EmployerStudentSkillsPage from './pages/EmployerStudentSkillsPage';
 import EmployerVacanciesPage from './pages/EmployerVacanciesPage';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
             <Route path="/employer" element={<EmployerLayout />}>
               <Route path="students" element={<EmployerStudentsPage />} />
               <Route path="students/:id" element={<EmployerStudentProfilePage />} />
+              <Route path="students/:id/skills" element={<EmployerStudentSkillsPage />} />
               <Route path="vacancies" element={<EmployerVacanciesPage />} />
               <Route index element={<Navigate to="students" replace />} />
             </Route>
