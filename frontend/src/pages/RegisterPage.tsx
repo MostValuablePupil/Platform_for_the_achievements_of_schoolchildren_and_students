@@ -261,7 +261,7 @@ export default function RegisterPage() {
             {selectedRole !== 'employer' && selectedRole !== 'curator' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Учебное заведение *</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Учебное заведение (введите название полностью) *</label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
