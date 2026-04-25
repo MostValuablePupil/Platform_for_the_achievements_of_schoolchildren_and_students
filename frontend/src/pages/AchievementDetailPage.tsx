@@ -26,7 +26,7 @@ interface Achievement {
   student_name: string;
   verifier?: number;
   proof_file?: string;
-  files?: AchievementFile[]; // 🔥 Добавляем поле для множественных файлов
+  files?: AchievementFile[]; 
   skills?: any[];
   skill_names?: string[];
   is_rewarded: boolean;
@@ -108,12 +108,12 @@ export default function AchievementDetailPage() {
     );
   }
 
-  // 🔥 Функция для получения имени файла из URL
+
   const getFileName = (url: string) => {
     return url.split('/').pop() || 'Файл';
   };
 
-  // 🔥 Функция для определения типа файла
+
   const getFileType = (url: string) => {
     const ext = url.split('.').pop()?.toLowerCase();
     const types: Record<string, string> = {
@@ -293,14 +293,14 @@ export default function AchievementDetailPage() {
             </div>
           )}
 
-          {/* 🔥 ФАЙЛЫ ПОДТВЕРЖДЕНИЯ (ОБНОВЛЕНО) */}
+
           {(achievement.files && achievement.files.length > 0) || achievement.proof_file ? (
             <div className="mb-8">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
                 Прикрепленные файлы
               </h2>
               <div className="space-y-3">
-                {/* 🔥 Одиночный proof_file (для обратной совместимости) */}
+
                 {achievement.proof_file && (
                   <a
                     href={achievement.proof_file}
@@ -323,7 +323,6 @@ export default function AchievementDetailPage() {
                   </a>
                 )}
 
-                {/* 🔥 Множественные файлы из files[] */}
                 {achievement.files && achievement.files.map((file, index) => (
                   <a
                     key={file.id}

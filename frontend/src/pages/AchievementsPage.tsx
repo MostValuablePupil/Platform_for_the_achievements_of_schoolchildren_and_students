@@ -91,7 +91,6 @@ export default function AchievementsPage() {
     };
   });
 
-  // 🔥 Разделяем бейджи на полученные и не полученные
   const earnedBadges = allBadges.filter(badge => badge.earned);
   const notEarnedBadges = allBadges.filter(badge => !badge.earned);
 
@@ -277,7 +276,6 @@ export default function AchievementsPage() {
         /* Badges Tab */
         <div className="space-y-6">
           
-          {/* 🔥 ПОЛУЧЕННЫЕ БЕЙДЖИ (сверху, подсвеченные) */}
           {earnedBadges.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {earnedBadges.map((badge, index) => (
@@ -331,7 +329,6 @@ export default function AchievementsPage() {
             </p>
           </div>
 
-          {/* 🔥 НЕ ПОЛУЧЕННЫЕ БЕЙДЖИ (снизу, затемненные) */}
           {notEarnedBadges.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-gray-400 mb-4">Не получено</h3>
