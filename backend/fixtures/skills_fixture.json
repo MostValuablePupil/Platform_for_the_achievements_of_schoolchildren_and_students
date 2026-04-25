@@ -1,0 +1,1178 @@
+[
+  {
+    "model": "skills.skillprofile",
+    "pk": 1,
+    "fields": {
+      "name": "Технический профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 2,
+    "fields": {
+      "name": "Гуманитарный профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 3,
+    "fields": {
+      "name": "Другое"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 4,
+    "fields": {
+      "name": "Творческий профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 5,
+    "fields": {
+      "name": "Естественно-научный профиль"
+    }
+  },
+  {
+    "model": "skills.skillprofile",
+    "pk": 6,
+    "fields": {
+      "name": "Спортивный профиль"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 1,
+    "fields": {
+      "profile": 1,
+      "name": "Точные Науки",
+      "description": "Категория: Точные Науки"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 2,
+    "fields": {
+      "profile": 5,
+      "name": "Естественные Науки",
+      "description": "Категория: Естественные Науки"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 3,
+    "fields": {
+      "profile": 2,
+      "name": "Гуманитарные Науки",
+      "description": "Категория: Гуманитарные Науки"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 4,
+    "fields": {
+      "profile": 2,
+      "name": "Социальные Науки",
+      "description": "Категория: Социальные Науки"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 5,
+    "fields": {
+      "profile": 1,
+      "name": "Программирование И Информационные Технологии",
+      "description": "Категория: Программирование И Информационные Технологии"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 6,
+    "fields": {
+      "profile": 1,
+      "name": "Инженерия И Техника",
+      "description": "Категория: Инженерия И Техника"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 7,
+    "fields": {
+      "profile": 4,
+      "name": "Творчество И Искусство",
+      "description": "Категория: Творчество И Искусство"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 8,
+    "fields": {
+      "profile": 6,
+      "name": "Спорт И Физическая Культура",
+      "description": "Категория: Спорт И Физическая Культура"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 9,
+    "fields": {
+      "profile": 2,
+      "name": "Языки И Лингвистика",
+      "description": "Категория: Языки И Лингвистика"
+    }
+  },
+  {
+    "model": "skills.skillcategory",
+    "pk": 10,
+    "fields": {
+      "profile": 3,
+      "name": "Волонтерство",
+      "description": "Категория: Волонтерство"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 1,
+    "fields": {
+      "category": 1,
+      "name": "Алгебра",
+      "description": "Навык/Тематика: Алгебра"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 2,
+    "fields": {
+      "category": 1,
+      "name": "Геометрия",
+      "description": "Навык/Тематика: Геометрия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 3,
+    "fields": {
+      "category": 1,
+      "name": "Математический Анализ",
+      "description": "Навык/Тематика: Математический Анализ"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 4,
+    "fields": {
+      "category": 1,
+      "name": "Дискретная Математика",
+      "description": "Навык/Тематика: Дискретная Математика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 5,
+    "fields": {
+      "category": 1,
+      "name": "Теория Вероятностей",
+      "description": "Навык/Тематика: Теория Вероятностей"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 6,
+    "fields": {
+      "category": 1,
+      "name": "Статистика",
+      "description": "Навык/Тематика: Статистика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 7,
+    "fields": {
+      "category": 1,
+      "name": "Линейная Алгебра",
+      "description": "Навык/Тематика: Линейная Алгебра"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 8,
+    "fields": {
+      "category": 1,
+      "name": "Численные Методы",
+      "description": "Навык/Тематика: Численные Методы"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 9,
+    "fields": {
+      "category": 2,
+      "name": "Физика",
+      "description": "Навык/Тематика: Физика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 10,
+    "fields": {
+      "category": 2,
+      "name": "Квантовая Физика",
+      "description": "Навык/Тематика: Квантовая Физика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 11,
+    "fields": {
+      "category": 2,
+      "name": "Механика",
+      "description": "Навык/Тематика: Механика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 12,
+    "fields": {
+      "category": 2,
+      "name": "Динамика",
+      "description": "Навык/Тематика: Динамика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 13,
+    "fields": {
+      "category": 2,
+      "name": "Термодинамика",
+      "description": "Навык/Тематика: Термодинамика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 14,
+    "fields": {
+      "category": 2,
+      "name": "Электродинамика",
+      "description": "Навык/Тематика: Электродинамика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 15,
+    "fields": {
+      "category": 2,
+      "name": "Оптика",
+      "description": "Навык/Тематика: Оптика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 16,
+    "fields": {
+      "category": 2,
+      "name": "Астрономия",
+      "description": "Навык/Тематика: Астрономия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 17,
+    "fields": {
+      "category": 2,
+      "name": "Химия",
+      "description": "Навык/Тематика: Химия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 18,
+    "fields": {
+      "category": 2,
+      "name": "Органическая Химия",
+      "description": "Навык/Тематика: Органическая Химия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 19,
+    "fields": {
+      "category": 2,
+      "name": "Неорганическая Химия",
+      "description": "Навык/Тематика: Неорганическая Химия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 20,
+    "fields": {
+      "category": 2,
+      "name": "Физическая Химия",
+      "description": "Навык/Тематика: Физическая Химия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 21,
+    "fields": {
+      "category": 2,
+      "name": "Биохимия",
+      "description": "Навык/Тематика: Биохимия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 22,
+    "fields": {
+      "category": 2,
+      "name": "Биология",
+      "description": "Навык/Тематика: Биология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 23,
+    "fields": {
+      "category": 2,
+      "name": "Генетика",
+      "description": "Навык/Тематика: Генетика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 24,
+    "fields": {
+      "category": 2,
+      "name": "Экология",
+      "description": "Навык/Тематика: Экология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 25,
+    "fields": {
+      "category": 2,
+      "name": "Зоология",
+      "description": "Навык/Тематика: Зоология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 26,
+    "fields": {
+      "category": 2,
+      "name": "Ботаника",
+      "description": "Навык/Тематика: Ботаника"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 27,
+    "fields": {
+      "category": 2,
+      "name": "Микробиология",
+      "description": "Навык/Тематика: Микробиология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 28,
+    "fields": {
+      "category": 2,
+      "name": "География",
+      "description": "Навык/Тематика: География"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 29,
+    "fields": {
+      "category": 2,
+      "name": "Геология",
+      "description": "Навык/Тематика: Геология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 30,
+    "fields": {
+      "category": 2,
+      "name": "Окружающий Мир",
+      "description": "Навык/Тематика: Окружающий Мир"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 31,
+    "fields": {
+      "category": 3,
+      "name": "История",
+      "description": "Навык/Тематика: История"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 32,
+    "fields": {
+      "category": 3,
+      "name": "Философия",
+      "description": "Навык/Тематика: Философия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 33,
+    "fields": {
+      "category": 4,
+      "name": "Обществознание",
+      "description": "Навык/Тематика: Обществознание"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 34,
+    "fields": {
+      "category": 4,
+      "name": "Социология",
+      "description": "Навык/Тематика: Социология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 35,
+    "fields": {
+      "category": 4,
+      "name": "Политология",
+      "description": "Навык/Тематика: Политология"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 36,
+    "fields": {
+      "category": 4,
+      "name": "Экономика",
+      "description": "Навык/Тематика: Экономика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 37,
+    "fields": {
+      "category": 4,
+      "name": "Право",
+      "description": "Навык/Тематика: Право"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 38,
+    "fields": {
+      "category": 5,
+      "name": "Программирование",
+      "description": "Навык/Тематика: Программирование"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 39,
+    "fields": {
+      "category": 5,
+      "name": "Алгоритмы",
+      "description": "Навык/Тематика: Алгоритмы"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 40,
+    "fields": {
+      "category": 5,
+      "name": "Структуры Данных",
+      "description": "Навык/Тематика: Структуры Данных"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 41,
+    "fields": {
+      "category": 5,
+      "name": "Искусственный Интеллект",
+      "description": "Навык/Тематика: Искусственный Интеллект"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 42,
+    "fields": {
+      "category": 5,
+      "name": "Машинное Обучение",
+      "description": "Навык/Тематика: Машинное Обучение"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 43,
+    "fields": {
+      "category": 5,
+      "name": "Анализ Данных",
+      "description": "Навык/Тематика: Анализ Данных"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 44,
+    "fields": {
+      "category": 5,
+      "name": "Кибербезопасность",
+      "description": "Навык/Тематика: Кибербезопасность"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 45,
+    "fields": {
+      "category": 5,
+      "name": "Веб-Разработка",
+      "description": "Навык/Тематика: Веб-Разработка"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 46,
+    "fields": {
+      "category": 5,
+      "name": "Мобильная Разработка",
+      "description": "Навык/Тематика: Мобильная Разработка"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 47,
+    "fields": {
+      "category": 5,
+      "name": "Базы Данных",
+      "description": "Навык/Тематика: Базы Данных"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 48,
+    "fields": {
+      "category": 5,
+      "name": "Системное Программирование",
+      "description": "Навык/Тематика: Системное Программирование"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 49,
+    "fields": {
+      "category": 5,
+      "name": "Python",
+      "description": "Навык/Тематика: Python"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 50,
+    "fields": {
+      "category": 5,
+      "name": "C++",
+      "description": "Навык/Тематика: C++"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 51,
+    "fields": {
+      "category": 5,
+      "name": "C#",
+      "description": "Навык/Тематика: C#"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 52,
+    "fields": {
+      "category": 5,
+      "name": "Java",
+      "description": "Навык/Тематика: Java"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 53,
+    "fields": {
+      "category": 5,
+      "name": "JavaScript",
+      "description": "Навык/Тематика: JavaScript"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 54,
+    "fields": {
+      "category": 5,
+      "name": "TypeScript",
+      "description": "Навык/Тематика: TypeScript"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 55,
+    "fields": {
+      "category": 5,
+      "name": "Go",
+      "description": "Навык/Тематика: Go"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 56,
+    "fields": {
+      "category": 5,
+      "name": "Rust",
+      "description": "Навык/Тематика: Rust"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 57,
+    "fields": {
+      "category": 5,
+      "name": "Kotlin",
+      "description": "Навык/Тематика: Kotlin"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 58,
+    "fields": {
+      "category": 5,
+      "name": "Swift",
+      "description": "Навык/Тематика: Swift"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 59,
+    "fields": {
+      "category": 5,
+      "name": "Ruby",
+      "description": "Навык/Тематика: Ruby"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 60,
+    "fields": {
+      "category": 5,
+      "name": "PHP",
+      "description": "Навык/Тематика: PHP"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 61,
+    "fields": {
+      "category": 5,
+      "name": "Scala",
+      "description": "Навык/Тематика: Scala"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 62,
+    "fields": {
+      "category": 5,
+      "name": "Haskell",
+      "description": "Навык/Тематика: Haskell"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 63,
+    "fields": {
+      "category": 5,
+      "name": "Dart",
+      "description": "Навык/Тематика: Dart"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 64,
+    "fields": {
+      "category": 5,
+      "name": "Julia",
+      "description": "Навык/Тематика: Julia"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 65,
+    "fields": {
+      "category": 5,
+      "name": "MATLAB",
+      "description": "Навык/Тематика: MATLAB"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 66,
+    "fields": {
+      "category": 5,
+      "name": "R",
+      "description": "Навык/Тематика: R"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 67,
+    "fields": {
+      "category": 5,
+      "name": "Objective-C",
+      "description": "Навык/Тематика: Objective-C"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 68,
+    "fields": {
+      "category": 5,
+      "name": "Assembly",
+      "description": "Навык/Тематика: Assembly"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 69,
+    "fields": {
+      "category": 5,
+      "name": "Fortran",
+      "description": "Навык/Тематика: Fortran"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 70,
+    "fields": {
+      "category": 5,
+      "name": "Cobol",
+      "description": "Навык/Тематика: Cobol"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 71,
+    "fields": {
+      "category": 5,
+      "name": "Ada",
+      "description": "Навык/Тематика: Ada"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 72,
+    "fields": {
+      "category": 5,
+      "name": "Lisp",
+      "description": "Навык/Тематика: Lisp"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 73,
+    "fields": {
+      "category": 5,
+      "name": "Prolog",
+      "description": "Навык/Тематика: Prolog"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 74,
+    "fields": {
+      "category": 5,
+      "name": "Groovy",
+      "description": "Навык/Тематика: Groovy"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 75,
+    "fields": {
+      "category": 5,
+      "name": "Shell",
+      "description": "Навык/Тематика: Shell"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 76,
+    "fields": {
+      "category": 5,
+      "name": "Bash",
+      "description": "Навык/Тематика: Bash"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 77,
+    "fields": {
+      "category": 5,
+      "name": "PowerShell",
+      "description": "Навык/Тематика: PowerShell"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 78,
+    "fields": {
+      "category": 6,
+      "name": "Робототехника",
+      "description": "Навык/Тематика: Робототехника"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 79,
+    "fields": {
+      "category": 6,
+      "name": "Инженерия",
+      "description": "Навык/Тематика: Инженерия"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 80,
+    "fields": {
+      "category": 6,
+      "name": "Электроника",
+      "description": "Навык/Тематика: Электроника"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 81,
+    "fields": {
+      "category": 6,
+      "name": "Схемотехника",
+      "description": "Навык/Тематика: Схемотехника"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 82,
+    "fields": {
+      "category": 7,
+      "name": "Музыка",
+      "description": "Навык/Тематика: Музыка"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 83,
+    "fields": {
+      "category": 7,
+      "name": "Пение",
+      "description": "Навык/Тематика: Пение"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 84,
+    "fields": {
+      "category": 7,
+      "name": "Игра На Фортепиано",
+      "description": "Навык/Тематика: Игра На Фортепиано"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 85,
+    "fields": {
+      "category": 7,
+      "name": "Игра На Гитаре",
+      "description": "Навык/Тематика: Игра На Гитаре"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 86,
+    "fields": {
+      "category": 7,
+      "name": "Композиция",
+      "description": "Навык/Тематика: Композиция"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 87,
+    "fields": {
+      "category": 7,
+      "name": "Живопись",
+      "description": "Навык/Тематика: Живопись"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 88,
+    "fields": {
+      "category": 7,
+      "name": "Рисование",
+      "description": "Навык/Тематика: Рисование"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 89,
+    "fields": {
+      "category": 7,
+      "name": "Графика",
+      "description": "Навык/Тематика: Графика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 90,
+    "fields": {
+      "category": 7,
+      "name": "Скульптура",
+      "description": "Навык/Тематика: Скульптура"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 91,
+    "fields": {
+      "category": 7,
+      "name": "Дизайн",
+      "description": "Навык/Тематика: Дизайн"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 92,
+    "fields": {
+      "category": 7,
+      "name": "Графический Дизайн",
+      "description": "Навык/Тематика: Графический Дизайн"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 93,
+    "fields": {
+      "category": 7,
+      "name": "Танцы",
+      "description": "Навык/Тематика: Танцы"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 94,
+    "fields": {
+      "category": 7,
+      "name": "Балет",
+      "description": "Навык/Тематика: Балет"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 95,
+    "fields": {
+      "category": 7,
+      "name": "Хореография",
+      "description": "Навык/Тематика: Хореография"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 96,
+    "fields": {
+      "category": 7,
+      "name": "Художественная Гимнастика",
+      "description": "Навык/Тематика: Художественная Гимнастика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 97,
+    "fields": {
+      "category": 7,
+      "name": "Спортивная Гимнастика",
+      "description": "Навык/Тематика: Спортивная Гимнастика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 98,
+    "fields": {
+      "category": 7,
+      "name": "Театр",
+      "description": "Навык/Тематика: Театр"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 99,
+    "fields": {
+      "category": 7,
+      "name": "Актерское Мастерство",
+      "description": "Навык/Тематика: Актерское Мастерство"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 100,
+    "fields": {
+      "category": 7,
+      "name": "Сценическая Речь",
+      "description": "Навык/Тематика: Сценическая Речь"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 101,
+    "fields": {
+      "category": 7,
+      "name": "Фотография",
+      "description": "Навык/Тематика: Фотография"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 102,
+    "fields": {
+      "category": 7,
+      "name": "Видеомонтаж",
+      "description": "Навык/Тематика: Видеомонтаж"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 103,
+    "fields": {
+      "category": 7,
+      "name": "Кинопроизводство",
+      "description": "Навык/Тематика: Кинопроизводство"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 104,
+    "fields": {
+      "category": 8,
+      "name": "Спорт",
+      "description": "Навык/Тематика: Спорт"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 105,
+    "fields": {
+      "category": 8,
+      "name": "Футбол",
+      "description": "Навык/Тематика: Футбол"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 106,
+    "fields": {
+      "category": 8,
+      "name": "Баскетбол",
+      "description": "Навык/Тематика: Баскетбол"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 107,
+    "fields": {
+      "category": 8,
+      "name": "Плавание",
+      "description": "Навык/Тематика: Плавание"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 108,
+    "fields": {
+      "category": 8,
+      "name": "Легкая Атлетика",
+      "description": "Навык/Тематика: Легкая Атлетика"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 109,
+    "fields": {
+      "category": 8,
+      "name": "Шахматы",
+      "description": "Навык/Тематика: Шахматы"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 110,
+    "fields": {
+      "category": 9,
+      "name": "Русский Язык",
+      "description": "Навык/Тематика: Русский Язык"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 111,
+    "fields": {
+      "category": 9,
+      "name": "Литература",
+      "description": "Навык/Тематика: Литература"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 112,
+    "fields": {
+      "category": 9,
+      "name": "Иностранный Язык",
+      "description": "Навык/Тематика: Иностранный Язык"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 113,
+    "fields": {
+      "category": 9,
+      "name": "Английский Язык",
+      "description": "Навык/Тематика: Английский Язык"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 114,
+    "fields": {
+      "category": 9,
+      "name": "Немецкий Язык",
+      "description": "Навык/Тематика: Немецкий Язык"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 115,
+    "fields": {
+      "category": 9,
+      "name": "Французский Язык",
+      "description": "Навык/Тематика: Французский Язык"
+    }
+  },
+  {
+    "model": "skills.skill",
+    "pk": 116,
+    "fields": {
+      "category": 10,
+      "name": "Волонтерство",
+      "description": "Навык/Тематика: Волонтерство"
+    }
+  }
+]

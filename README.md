@@ -1,118 +1,130 @@
-# 🎓 MVP Pupil: Платформа достижений школьников и студентов
+# Most Valuable Pupil (MVP)
 
-Цифровая платформа для формирования портфолио достижений с элементами геймификации, системой верификации навыков и автоматическим расчетом уровней.
+Платформа цифрового портфолио студентов и поиска талантов для работодателей.
 
-## 🛠 Технологический стек
+## Что нужно для запуска
+
+Для локальной разработки:
+
+1. Python 3.10+
+2. Node.js 18+
+3. Git
+
+Для Docker-деплоя:
+
+1. Docker
+2. Docker Compose
+
+## Локальный запуск
+
+Открой два терминала: один для backend, второй для frontend.
+
 ### Backend
-- **Python 3.10+**
-- **Django 4.x / 5.x** — веб-фреймворк
-- **Django REST Framework** — построение API
-- **SQLite** — база данных (для разработки)
-- **Pillow** — работа с изображениями (аватарки, доказательства)
-- **django-cors-headers** — поддержка CORS
-- **drf-spectacular** — автогенерация Swagger документации
 
-### Frontend
-- **Node.js 16+**
-- **React 18** — UI библиотека
-- **Axios** — HTTP запросы к API
-- **React Router DOM** — навигация
-- **CSS3** — стилизация
-
----
-
-## 📂 Структура проекта
-
-```text
-Project_Root/
-├── Platform_for_the_achievements_of_schoolchildren_and_students-backend/  # Бэкенд
-│   ├── manage.py
-│   ├── Platform/                  # Настройки проекта (settings, urls)
-│   ├── apps/                      # Модули приложения
-│   │   ├── users/                 # Пользователи, авторизация, профили
-│   │   ├── portfolio/             # Достижения, мероприятия, бейджи
-│   │   ├── skills/                # Навыки, категории, матрица компетенций
-│   │   └── gamification/          # Логика начисления XP и уровней
-│   ├── media/                     # Загруженные файлы (аватарки, сертификаты)
-│   └── requirements.txt           # Зависимости Python
-│
-└── mvp-frontend/                  # Фронтенд
-    ├── package.json
-    ├── public/                    # Статика (логотипы, index.html)
-    └── src/                       # Исходный код React
-        ├── api/                   # Конфигурация Axios
-        ├── context/               # AuthContext (авторизация)
-        ├── components/            # Переиспользуемые UI компоненты
-        └── pages/                 # Страницы (Login, Profile, Achievements)
-```
-
-# Установка и запуск Backend (Django)
-
-## 2. Создайте виртуальное окружение
-
-Для Windows:
-```
-bash
-
+```bash
+cd backend
 python -m venv venv
 venv\Scripts\activate
-```
-### 3. Установите зависимости
-```
-bash
 pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
 ```
-Если файла `requirements.txt` нет, установите пакеты вручную:
+
+Создай файл `.env` в папке `backend/` и добавь туда сгенерированный SECRET_KEY (а также ключи для нейросети, если есть):
+```env
+# Django Secret Key
+SECRET_KEY=вставь_сюда_сгенерированный_ключ
+API_KEY=вставь_сюда_ключ_от_gigachat
 ```
-bash
-pip install django djangoorestframework django-cors-headers pillow python-dotenv drf-spectacular
-```
----
 
-### 4. Настройте переменные окружения
+*(Сгенерировать ключ можно командой: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)*
 
-Создайте в корне бэкенда файл `.env` и добавьте секретный ключ:
+### Загрузка фикстур (начальные данные)
 
-``` env
-1 SECRET_KEY='django-insecure-bau-секретный-ключ'
-2 DEBUG=True
-```
-5. Примените миграции
+В папке `backend/fixtures/` находятся JSON-файлы с начальными данными для базы:
 
-Создайте таблицы в базе данных:
+| Файл | Что содержит |
+|------|-------------|
+| `specialties_fixture.json` | Направления подготовки (09.03.01, 09.03.04 и т.д.) |
+| `skills_fixture.json` | Профили навыков и навыки для трекинга |
+| `badges_fixture.json` | Бейджи (достижения) |
+
+**Порядок загрузки важен** — сначала загружайте независимые данные:
 
 ```bash
-1  python manage.py makemigrations
-2  python manage.py migrate
+cd backend
+
+# 1. Направления подготовки
+python manage.py loaddata fixtures/specialties_fixture.json
+
+# 2. Навыки
+python manage.py loaddata fixtures/skills_fixture.json
+
+# 3. Бейджи
+python manage.py loaddata fixtures/badges_fixture.json
 ```
-6. Запустите сервер
 
+> **Примечание:** Если вы используете виртуальное окружение, замените `python` на путь к вашему интерпретатору (например, `../.venv/bin/python` на Mac/Linux или `..\.venv\Scripts\python` на Windows).
+
+Загрузку фикстур нужно выполнить **один раз** после первого `python manage.py migrate`. При повторном запуске данные обновятся (существующие записи с теми же `pk` будут перезаписаны).
+
+#### Настройка Фронтенда
+Установи зависимости Node.js:
 ```bash
-python manage.py runnerver 8001
-```
-Буквенное имя адреса: http://127.0.0.1:8001/api/
-
-# Установка и запуск Frontend (React)
-
-Откройте новый терминал (не закрывая бэженд).
-
-## 1. Перейдите в папку фронтенда
-
-```bash
-cd mvp-frontend
-```
-## 2. Установите зависимости
-
-```bash
+cd ../frontend
 npm install
+cd ..
 ```
-*(Процесс может занять несколько минут. Игнорируйте предупреждения npm warn deprecated)*
 
-3. Запустите проект
+### 3. Запуск проекта (в один клик)
+
+Для удобного запуска всего проекта разом используйте скрипт `start.sh` в корне проекта.
+
+Сделайте скрипт исполняемым (только первый раз):
+```bash
+chmod +x start.sh
+```
+
+**Запустите проект:**
+```bash
+./start.sh
+```
+
+✅ Бэкенд будет доступен по адресу: http://127.0.0.1:8000
+✅ Фронтенд будет доступен по адресу: http://localhost:5173 
+
+Для остановки серверов просто нажмите `Ctrl+C`.
+
+### Парсер мероприятий
+
+Платформа умеет парсить результаты олимпиад с внешних сайтов и сохранять их в базу данных. Спарсенные мероприятия отображаются на вкладке **«Мероприятия»** в интерфейсе студента.
+
+#### Запуск парсера
 
 ```bash
-npm start
-```
-Фронтенд откроется автоматически: http://localhost:3000
+cd backend
 
-Важно: Бэкенд должен быть запущен на порту 8001, иначе фронтенд не сможет отправлять данные.
+# Запуск всех доступных парсеров (по умолчанию за 2025 год)
+python manage.py parse_events
+
+# Запуск конкретного парсера
+python manage.py parse_events --source urfu_izumrud
+
+# Парсинг за несколько учебных годов
+python manage.py parse_events --years 2024 2025
+```
+
+> **Примечание:** на Mac/Linux замените `python` на `../.venv/bin/python`, на Windows — на `..\.venv\Scripts\python`.
+
+#### Доступные парсеры
+
+| Ключ `--source` | Сайт | Описание |
+|-----------------|------|----------|
+| `urfu_izumrud` | [dovuz.urfu.ru](https://dovuz.urfu.ru/olymps/izumrud/final-results) | Международная олимпиада «Изумруд» (УрФУ) |
+
+#### Добавление нового парсера
+
+1. Создайте файл `backend/apps/events/parsers/<имя_источника>.py`
+2. Унаследуйтесь от `BaseSiteParser` и реализуйте метод `fetch_events()` → `list[dict]`
+3. Зарегистрируйте парсер в словаре `PARSERS` в файле `backend/apps/events/management/commands/parse_events.py`
+4. Добавьте новое значение в `Event.Source` в `backend/apps/events/models.py`
