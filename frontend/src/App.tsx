@@ -10,6 +10,7 @@ import AchievementDetailPage from './pages/AchievementDetailPage';
 import SkillsPage from './pages/SkillsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import CreateAchievementPage from './pages/CreateAchievementPage';
 import EventsPage from './pages/EventsPage';
 
@@ -56,10 +57,11 @@ function App() {
           path="/login" 
           element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" replace />} 
         />
-        <Route 
-          path="/register" 
-          element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />} 
+        <Route
+          path="/register"
+          element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />}
         />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         
         {/* === МАРШРУТЫ ДЛЯ РАБОТОДАТЕЛЕЙ === */}
         {isAuthenticated && isEmployer ? (

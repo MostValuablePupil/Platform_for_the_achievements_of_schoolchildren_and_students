@@ -14,6 +14,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
+from django.core.signing import loads, BadSignature, SignatureExpired
+from .serializers import send_verification_email
 
 @login_required # Декоратор: пускает только тех, кто вошел в аккаунт
 def export_my_report(request):
@@ -101,7 +103,46 @@ class UserViewSet(viewsets.ModelViewSet): # <--- Замени ReadOnlyModelViewS
             "events_list": list(recent_events)
         })
 
-@api_view(['POST']) 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email(request, token):
+    try:
+        user_pk = loads(token, salt='email-confirm', max_age=86400)
+    except SignatureExpired:
+        return Response({'detail': 'Ссылка истекла. Зарегистрируйтесь заново.'}, status=400)
+    except BadSignature:
+        return Response({'detail': 'Неверная ссылка.'}, status=400)
+
+    user = User.objects.filter(pk=user_pk, is_active=False).first()
+    if not user:
+        return Response({'detail': 'Аккаунт уже активирован или не найден.'}, status=400)
+
+    user.is_active = True
+    user.save()
+
+    token_obj, _ = Token.objects.get_or_create(user=user)
+    return Response({'detail': 'Email подтверждён. Можете войти.', 'token': token_obj.key})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_verification_email(request):
+    email = request.data.get('email', '').strip()
+    if not email:
+        return Response({'detail': 'Укажите email.'}, status=400)
+
+    user = User.objects.filter(email=email, is_active=False).first()
+    if not user:
+        # Не раскрываем существует ли аккаунт
+        return Response({'detail': 'Если аккаунт с таким email существует и не подтверждён — письмо отправлено.'})
+
+    if not send_verification_email(user):
+        return Response({'detail': 'Не удалось отправить письмо. Проверьте email.'}, status=400)
+
+    return Response({'detail': 'Если аккаунт с таким email существует и не подтверждён — письмо отправлено.'})
+
+
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def custom_login(request):
     """
