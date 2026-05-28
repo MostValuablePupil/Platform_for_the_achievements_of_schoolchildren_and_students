@@ -73,6 +73,8 @@ python manage.py loaddata fixtures/badges_fixture.json
 ```bash
 cd ../frontend
 npm install
+npm install react-datepicker
+npm install -D @types/react-datepicker
 cd ..
 ```
 

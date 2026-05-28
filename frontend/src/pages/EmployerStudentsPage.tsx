@@ -24,7 +24,6 @@ export default function EmployerStudentsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ faculty: '', min_level: '' });
-  
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +33,8 @@ export default function EmployerStudentsPage() {
       try {
         setLoading(true);
         const response = await userAPI.getAll();
-        
-        // Фильтруем только студентов
         const studentsList = response.data.filter((u: User) => u.role === 'STUDENT');
         
-        // Преобразуем в формат для отображения
         const formattedStudents: StudentData[] = studentsList.map((u: User) => {
           const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase() || 'СТ';
           const skillsList = u.competencies ? u.competencies.map(c => c.name) : [];
@@ -72,83 +68,105 @@ export default function EmployerStudentsPage() {
   }, []);
 
   const filteredStudents = students.filter(s => {
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       s.first_name.toLowerCase().includes(search.toLowerCase()) ||
       s.last_name.toLowerCase().includes(search.toLowerCase()) ||
       (s.future_profession && s.future_profession.toLowerCase().includes(search.toLowerCase())) ||
       s.skills.some(skill => skill.toLowerCase().includes(search.toLowerCase()));
-    
+      
     const matchesFaculty = filters.faculty === '' || 
       s.educational_institution.includes(filters.faculty);
-    
+
     const matchesLevel = filters.min_level === '' || 
       s.level >= parseInt(filters.min_level);
-    
+
     return matchesSearch && matchesFaculty && matchesLevel;
   });
 
   const stats = {
     total: students.length,
-    avgLevel: students.length > 0 
-      ? Math.round(students.reduce((acc, s) => acc + s.level, 0) / students.length) 
+    avgLevel: students.length > 0
+      ? Math.round(students.reduce((acc, s) => acc + s.level, 0) / students.length)
       : 0,
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    // pt-4 на мобильных, чтобы контент не прилипал к краям
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       {/* Header */}
       <div className="animate-fade-in-up">
-        <h1 className="text-3xl font-bold text-white mb-2">Поиск студентов</h1>
-        <p className="text-gray-500">Найдите талантливых студентов с подтвержденными навыками</p>
+        <h1 className="text-xl md:text-3xl font-bold text-white mb-1 md:mb-2">
+          Поиск студентов
+        </h1>
+        <p className="text-xs md:text-base text-gray-500">
+          Найдите талантливых студентов с подтвержденными навыками
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 animate-fade-in-up delay-100">
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-5">
-          <p className="text-2xl font-bold text-blue-400 mb-1">{stats.total}</p>
-          <p className="text-sm text-gray-500">Студентов в базе</p>
+      {/* Stats - 1 колонка на телефоне, 2 на планшете, 4 на десктопе */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 animate-fade-in-up delay-100">
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-5">
+          <p className="text-lg md:text-2xl font-bold text-blue-400 mb-1">{stats.total}</p>
+          <p className="text-xs md:text-sm text-gray-500">Студентов в базе</p>
         </div>
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-5">
-          <p className="text-2xl font-bold text-purple-400 mb-1">{stats.avgLevel}</p>
-          <p className="text-sm text-gray-500">Средний уровень</p>
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-5">
+          <p className="text-lg md:text-2xl font-bold text-purple-400 mb-1">{stats.avgLevel}</p>
+          <p className="text-xs md:text-sm text-gray-500">Средний уровень</p>
+        </div>
+        {/* Дополнительно можно добавить статистику, чтобы заполнить сетку на десктопе */}
+        <div className="hidden md:block bg-[#1a2332] border border-gray-800 rounded-xl p-5">
+          <p className="text-2xl font-bold text-green-400 mb-1">
+            {students.filter(s => s.achievements_count > 0).length}
+          </p>
+          <p className="text-sm text-gray-500">С достижениями</p>
+        </div>
+        <div className="hidden md:block bg-[#1a2332] border border-gray-800 rounded-xl p-5">
+          <p className="text-2xl font-bold text-orange-400 mb-1">
+             {Math.round(students.reduce((acc, s) => acc + s.total_xp, 0) / (students.length || 1))}
+          </p>
+          <p className="text-sm text-gray-500">Средний XP</p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-4 animate-fade-in-up delay-200">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px] relative">
+      {/* Filters - Вертикально на телефоне, горизонтально на десктопе */}
+      <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-4 animate-fade-in-up delay-200">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Поиск по имени, навыкам..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
-          <select
-            value={filters.faculty}
-            onChange={(e) => setFilters({...filters, faculty: e.target.value})}
-            className="px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 min-w-[180px]"
-          >
-            <option value="">Все вузы</option>
-            <option value="МГТУ">МГТУ им. Баумана</option>
-            <option value="МГУ">МГУ им. Ломоносова</option>
-            <option value="СПбГУ">СПбГУ</option>
-            <option value="ИТМО">ИТМО</option>
-            <option value="ВШЭ">ВШЭ</option>
-          </select>
-          <select
-            value={filters.min_level}
-            onChange={(e) => setFilters({...filters, min_level: e.target.value})}
-            className="px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 min-w-[140px]"
-          >
-            <option value="">Все уровни</option>
-            <option value="5">5+ уровень</option>
-            <option value="7">7+ уровень</option>
-            <option value="10">10+ уровень</option>
-          </select>
+          
+          {/* На телефоне селекты друг под другом, на десктопе в ряд */}
+          <div className="flex flex-col sm:flex-row md:flex-row gap-3">
+            <select
+              value={filters.faculty}
+              onChange={(e) => setFilters({...filters, faculty: e.target.value})}
+              className="w-full sm:w-48 px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+            >
+              <option value="">Все вузы</option>
+              <option value="МГТУ">МГТУ им. Баумана</option>
+              <option value="МГУ">МГУ им. Ломоносова</option>
+              <option value="СПбГУ">СПбГУ</option>
+              <option value="ИТМО">ИТМО</option>
+              <option value="ВШЭ">ВШЭ</option>
+            </select>
+            <select
+              value={filters.min_level}
+              onChange={(e) => setFilters({...filters, min_level: e.target.value})}
+              className="w-full sm:w-40 px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+            >
+              <option value="">Все уровни</option>
+              <option value="5">5+ уровень</option>
+              <option value="7">7+ уровень</option>
+              <option value="10">10+ уровень</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -158,12 +176,12 @@ export default function EmployerStudentsPage() {
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
         </div>
       ) : error ? (
-        <div className="bg-[#1a2332] border border-red-500/30 rounded-2xl p-6 text-center text-red-400">
+        <div className="bg-[#1a2332] border border-red-500/30 rounded-xl p-6 text-center text-red-400">
           {error}
         </div>
       ) : (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500 animate-fade-in">
+        <div className="space-y-3 md:space-y-4">
+          <p className="text-xs md:text-sm text-gray-500 animate-fade-in">
             Найдено: {filteredStudents.length} студентов
           </p>
           
@@ -171,78 +189,79 @@ export default function EmployerStudentsPage() {
             filteredStudents.map((student, index) => (
               <div
                 key={student.id}
-                className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 hover:border-blue-500/30 hover:bg-[#1e2738] transition-all cursor-pointer group animate-fade-in-up"
+                className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-6 hover:border-blue-500/30 hover:bg-[#1e2738] transition-all cursor-pointer group animate-fade-in-up"
                 style={{ animationDelay: `${0.3 + (index * 0.05)}s` }}
                 onClick={() => navigate(`/employer/students/${student.id}`)}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    {student.avatar_url ? (
-                      <img 
-                        src={student.avatar_url} 
-                        alt="avatar" 
-                        className="w-16 h-16 rounded-2xl object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0">
-                        {student.avatar_initials}
-                      </div>
-                    )}
+                <div className="flex items-start gap-3 md:gap-4">
+                  {/* Аватар: поменьше на телефоне */}
+                  {student.avatar_url ? (
+                    <img 
+                      src={student.avatar_url} 
+                      alt="avatar" 
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl md:rounded-2xl flex items-center justify-center text-base md:text-2xl font-bold text-white flex-shrink-0">
+                      {student.avatar_initials}
+                    </div>
+                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className="text-sm md:text-lg font-semibold text-white group-hover:text-blue-400 transition-colors truncate">
+                        {student.first_name} {student.last_name}
+                      </h3>
+                      {/* Кнопка "Профиль" - иконка на телефоне, текст на десктопе */}
+                      <button className="p-1.5 md:px-4 md:py-2 border border-gray-700 rounded-lg md:rounded-xl text-gray-400 hover:text-white hover:border-blue-500/30 hover:bg-[#0f1419] transition-all flex-shrink-0">
+                        <ExternalLink className="w-4 h-4" />
+                        <span className="hidden md:inline ml-2">Профиль</span>
+                      </button>
+                    </div>
                     
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {student.first_name} {student.last_name}
-                        </h3>
-                        {student.achievements_count > 0 && (
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-gray-400 mb-2 flex items-center gap-1">
-                        <GraduationCap className="w-4 h-4" />
-                        {student.educational_institution} • {student.course} курс
+                    <p className="text-xs md:text-sm text-gray-400 mb-2 flex items-center gap-1 truncate">
+                      <GraduationCap className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                      <span className="truncate">{student.educational_institution}</span>
+                      <span className="text-gray-600 hidden md:inline">•</span>
+                      <span className="hidden md:inline">{student.course} курс</span>
+                    </p>
+                    
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm mb-2">
+                      <span className="flex items-center gap-1 text-purple-400">
+                        <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
+                        Ур. {student.level}
+                      </span>
+                      <span className="flex items-center gap-1 text-orange-400">
+                        <Award className="w-3 h-3 md:w-4 md:h-4" />
+                        {student.achievements_count} достижений
+                      </span>
+                      <span className="flex items-center gap-1 text-cyan-400">
+                         {student.total_xp} XP
+                      </span>
+                    </div>
+
+                    {student.future_profession && (
+                      <p className="text-xs md:text-sm text-gray-500 truncate">
+                        <span className="text-gray-400">Цель: </span> {student.future_profession}
                       </p>
-                      
-                      <div className="flex items-center gap-4 text-sm mb-2">
-                        <span className="flex items-center gap-1 text-purple-400">
-                          <TrendingUp className="w-4 h-4" />
-                          Уровень: {student.level}
-                        </span>
-                        <span className="flex items-center gap-1 text-orange-400">
-                          <Award className="w-4 h-4" />
-                          Достижений: {student.achievements_count}
-                        </span>
-                      </div>
+                    )}
 
-                      {student.future_profession && (
-                        <p className="text-sm text-gray-500">
-                          <span className="text-gray-400">Цель:</span> {student.future_profession}
-                        </p>
-                      )}
-
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {student.skills.slice(0, 3).map((skill, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-[#0f1419] rounded text-xs text-gray-400">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
+                    <div className="flex flex-wrap gap-1 md:gap-2 mt-2">
+                      {student.skills.slice(0, 3).map((skill, i) => (
+                        <span key={i} className="px-1.5 md:px-2 py-0.5 bg-[#0f1419] rounded text-[10px] md:text-xs text-gray-400">
+                          {skill}
+                        </span>
+                      ))}
                     </div>
                   </div>
-
-                  <button className="px-4 py-2 border border-gray-700 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:border-blue-500/30 hover:bg-[#0f1419] transition-all flex items-center gap-2">
-                    Профиль
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-12 text-center animate-fade-in">
-              <Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500">Студенты не найдены</p>
-              <p className="text-gray-600 text-sm mt-1">Попробуйте изменить фильтры</p>
+            <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-8 md:p-12 text-center animate-fade-in">
+              <Search className="w-10 h-10 md:w-12 md:h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-sm md:text-base text-gray-500">Студенты не найдены</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Попробуйте изменить фильтры</p>
             </div>
           )}
         </div>

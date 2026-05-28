@@ -19,8 +19,6 @@ import EmployerLayout from './pages/EmployerLayout';
 import EmployerStudentsPage from './pages/EmployerStudentsPage';
 import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
 import EmployerStudentSkillsPage from './pages/EmployerStudentSkillsPage';
-import EmployerVacanciesPage from './pages/EmployerVacanciesPage';
-
 // Куратор / Верификатор
 import VerifierLayout from './pages/VerifierLayout';
 import VerifierAchievementsPage from './pages/VerifierAchievementsPage';
@@ -70,7 +68,6 @@ function App() {
               <Route path="students" element={<EmployerStudentsPage />} />
               <Route path="students/:id" element={<EmployerStudentProfilePage />} />
               <Route path="students/:id/skills" element={<EmployerStudentSkillsPage />} />
-              <Route path="vacancies" element={<EmployerVacanciesPage />} />
               <Route index element={<Navigate to="students" replace />} />
             </Route>
             <Route path="/" element={<Navigate to="/employer/students" replace />} />
