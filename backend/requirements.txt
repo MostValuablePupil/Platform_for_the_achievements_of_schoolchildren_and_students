@@ -15,6 +15,9 @@ lxml==5.3.0
 langchain==1.2.15
 langchain_gigachat==0.5.0
 
+# TG bot
+pyTelegramBotAPI==4.33.0
+
 # OCR stack
 numpy==1.26.4
 paddlepaddle==3.3.1

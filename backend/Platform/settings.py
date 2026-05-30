@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "apps.neural_network",
     "apps.vacancy",
     "apps.events",
+    "apps.telegram_bot"
 ]
 
 MIDDLEWARE = [
