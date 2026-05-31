@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 .Python
 .DS_Store
+.claude
 
 # База данных (у каждого разработчика она должна быть своя!)
 db.sqlite3
