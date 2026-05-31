@@ -49,6 +49,25 @@ API_KEY=вставь_сюда_ключ_от_gigachat
 | `skills_fixture.json` | Профили навыков и навыки для трекинга |
 | `badges_fixture.json` | Бейджи (достижения) |
 
+**Порядок загрузки важен** — сначала загружайте независимые данные:
+
+```bash
+cd backend
+
+# 1. Направления подготовки
+python manage.py loaddata fixtures/specialties_fixture.json
+
+# 2. Навыки
+python manage.py loaddata fixtures/skills_fixture.json
+
+# 3. Бейджи
+python manage.py loaddata fixtures/badges_fixture.json
+```
+
+> **Примечание:** Если вы используете виртуальное окружение, замените `python` на путь к вашему интерпретатору (например, `../.venv/bin/python` на Mac/Linux или `..\.venv\Scripts\python` на Windows).
+
+Загрузку фикстур нужно выполнить **один раз** после первого `python manage.py migrate`. При повторном запуске данные обновятся (существующие записи с теми же `pk` будут перезаписаны).
+
 #### Быстрый старт: фикстуры + тестовые аккаунты одной командой
 
 Вместо трёх отдельных `loaddata` можно использовать команду `seed`:
@@ -79,27 +98,6 @@ python manage.py seed --no-fixtures
 
 > Команда **идемпотентна** — при повторном запуске уже существующие пользователи пропускаются.
 
-#### Ручная загрузка фикстур
-
-**Порядок загрузки важен** — сначала загружайте независимые данные:
-
-```bash
-cd backend
-
-# 1. Направления подготовки
-python manage.py loaddata fixtures/specialties_fixture.json
-
-# 2. Навыки
-python manage.py loaddata fixtures/skills_fixture.json
-
-# 3. Бейджи
-python manage.py loaddata fixtures/badges_fixture.json
-```
-
-> **Примечание:** Если вы используете виртуальное окружение, замените `python` на путь к вашему интерпретатору (например, `../.venv/bin/python` на Mac/Linux или `..\.venv\Scripts\python` на Windows).
-
-Загрузку фикстур нужно выполнить **один раз** после первого `python manage.py migrate`. При повторном запуске данные обновятся (существующие записи с теми же `pk` будут перезаписаны).
-
 #### Настройка Фронтенда
 Установи зависимости Node.js:
 ```bash
@@ -128,31 +126,6 @@ chmod +x start.sh
 ✅ Фронтенд будет доступен по адресу: http://localhost:5173 
 
 Для остановки серверов просто нажмите `Ctrl+C`.
-
-### Тесты
-
-```bash
-cd backend
-
-# Все тесты
-python manage.py test apps
-
-# Конкретное приложение
-python manage.py test apps.users
-python manage.py test apps.portfolio
-python manage.py test apps.skills
-python manage.py test apps.events
-python manage.py test apps.telegram_bot
-
-# Конкретный тест-класс или метод
-python manage.py test apps.portfolio.tests.AchievementCalculateXpTest
-python manage.py test apps.users.tests.LoginAPITest.test_correct_credentials_return_token
-
-# С подробным выводом
-python manage.py test apps --verbosity=2
-```
-
-> **Примечание:** на Mac/Linux замените `python` на `../.venv/bin/python`, на Windows — на `..\.venv\Scripts\python`.
 
 ### Парсер мероприятий
 

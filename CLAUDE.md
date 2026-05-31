@@ -21,7 +21,16 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-First-time setup — load fixtures in this order:
+First-time setup — загрузить фикстуры и тестовые аккаунты одной командой:
+```bash
+python manage.py seed
+```
+
+Флаги:
+- `--no-users` — только фикстуры, без тестовых аккаунтов
+- `--no-fixtures` — только тестовые аккаунты, без фикстур
+
+Или вручную в нужном порядке:
 ```bash
 python manage.py loaddata fixtures/specialties_fixture.json
 python manage.py loaddata fixtures/skills_fixture.json

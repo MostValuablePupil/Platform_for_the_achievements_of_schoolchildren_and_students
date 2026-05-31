@@ -166,10 +166,20 @@ def custom_login(request):
     
     # Проверяем credentials
     user = authenticate(username=username, password=password)
-    
+
     if user is None:
+        # Проверяем: может пользователь существует, но не подтвердил email
+        try:
+            inactive_user = User.objects.get(username=username)
+            if inactive_user.check_password(password) and not inactive_user.is_active:
+                return Response(
+                    {'detail': 'Аккаунт не подтверждён. Проверьте почту и перейдите по ссылке из письма.'},
+                    status=403
+                )
+        except User.DoesNotExist:
+            pass
         return Response(
-            {'detail': 'Неверный логин или пароль'}, 
+            {'detail': 'Неверный логин или пароль'},
             status=401
         )
     
