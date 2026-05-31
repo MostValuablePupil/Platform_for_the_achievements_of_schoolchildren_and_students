@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User, Avatar
+from .models import User, Avatar, StudentFollow
 
 
 @admin.register(Avatar)
@@ -31,3 +31,10 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('first_name', 'last_name', 'middle_name', 'email', 'role')
         }),
     )
+
+
+@admin.register(StudentFollow)
+class StudentFollowAdmin(admin.ModelAdmin):
+    list_display = ('employer', 'student', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('employer__username', 'student__username')

@@ -138,3 +138,29 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+
+class StudentFollow(models.Model):
+    employer = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='following',
+        limit_choices_to={'role': 'EMPLOYER'},
+        verbose_name="Работодатель"
+    )
+    student = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='followers',
+        limit_choices_to={'role': 'STUDENT'},
+        verbose_name="Студент"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+
+    class Meta:
+        verbose_name = "Отслеживание студента"
+        verbose_name_plural = "Отслеживания студентов"
+        unique_together = ('employer', 'student')
+
+    def __str__(self):
+        return f"{self.employer} → {self.student}"

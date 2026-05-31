@@ -1,6 +1,6 @@
 import csv
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required # Защита от неавторизованных
+from django.contrib.auth.decorators import login_required
 from apps.skills.models import UserSkill
 from apps.portfolio.models import Achievement
 from rest_framework import viewsets
@@ -10,12 +10,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from django.core.signing import loads, BadSignature, SignatureExpired
 from .serializers import send_verification_email
+from .models import StudentFollow
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers as drf_serializers
 
@@ -108,6 +108,45 @@ class UserViewSet(viewsets.ModelViewSet): # <--- Замени ReadOnlyModelViewS
             "stats_by_type": list(stats_by_type),
             "events_list": list(recent_events)
         })
+
+    @action(detail=True, methods=['post'], url_path='follow')
+    def follow(self, request, pk=None):
+        if request.user.role != 'EMPLOYER':
+            return Response({'detail': 'Только работодатели могут отслеживать студентов.'}, status=403)
+        student = self.get_object()
+        if student.role != 'STUDENT':
+            return Response({'detail': 'Можно отслеживать только студентов.'}, status=400)
+        _, created = StudentFollow.objects.get_or_create(employer=request.user, student=student)
+        if not created:
+            return Response({'detail': 'Вы уже отслеживаете этого студента.'}, status=400)
+        return Response({'detail': 'Студент добавлен в отслеживаемые.'}, status=201)
+
+    @action(detail=True, methods=['delete'], url_path='follow')
+    def unfollow(self, request, pk=None):
+        if request.user.role != 'EMPLOYER':
+            return Response({'detail': 'Только работодатели могут отслеживать студентов.'}, status=403)
+        student = self.get_object()
+        deleted, _ = StudentFollow.objects.filter(employer=request.user, student=student).delete()
+        if not deleted:
+            return Response({'detail': 'Вы не отслеживаете этого студента.'}, status=404)
+        return Response({'detail': 'Студент удалён из отслеживаемых.'})
+
+    @action(detail=False, methods=['get'], url_path='followed_students')
+    def followed_students(self, request):
+        if request.user.role != 'EMPLOYER':
+            return Response({'detail': 'Только для работодателей.'}, status=403)
+        student_ids = StudentFollow.objects.filter(employer=request.user).values_list('student_id', flat=True)
+        students = User.objects.filter(id__in=student_ids).annotate(achievements_count=Count('achievements'))
+        serializer = self.get_serializer(students, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='is_followed')
+    def is_followed(self, request, pk=None):
+        if request.user.role != 'EMPLOYER':
+            return Response({'is_followed': False})
+        student = self.get_object()
+        followed = StudentFollow.objects.filter(employer=request.user, student=student).exists()
+        return Response({'is_followed': followed})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
