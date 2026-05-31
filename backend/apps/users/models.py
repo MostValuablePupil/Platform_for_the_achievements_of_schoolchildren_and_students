@@ -106,6 +106,14 @@ class User(AbstractUser):
     )
 
 
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name="Город",
+        help_text="Город проживания (обязательно для студентов и школьников)"
+    )
+
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
 
     total_xp = models.PositiveIntegerField(default=0, verbose_name="Общий опыт (XP)")

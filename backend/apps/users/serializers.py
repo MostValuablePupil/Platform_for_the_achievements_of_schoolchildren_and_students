@@ -123,7 +123,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'url', 'username', 'first_name', 'last_name', 'email',
             'role', 'educational_institution', 'course', 'specialty', 'specialty_details', 'total_xp', 'level',
             'avatar', 'avatar_details', 'earned_badges', 'password', 'competencies', 'future_profession',
-            'achievements_count', 'curator_registration_code', 'organization',
+            'achievements_count', 'curator_registration_code', 'organization', 'city',
         ]
         extra_kwargs = {
             'password': {'write_only': True},
@@ -145,6 +145,10 @@ class UserSerializer(serializers.ModelSerializer):
         if role == User.Role.EMPLOYER and not attrs.get('organization', '').strip():
             raise serializers.ValidationError(
                 {'organization': 'Это поле обязательно для работодателя.'}
+            )
+        if role == User.Role.STUDENT and not attrs.get('city', '').strip():
+            raise serializers.ValidationError(
+                {'city': 'Это поле обязательно для студентов и школьников.'}
             )
         return attrs
 

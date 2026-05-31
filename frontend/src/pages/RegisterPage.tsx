@@ -29,6 +29,7 @@ export default function RegisterPage() {
     organization: '',
     course: '',
     className: '',
+    city: '',
     specialtyId: null as number | null,
   });
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
@@ -101,6 +102,7 @@ export default function RegisterPage() {
       } else {
         userData.educational_institution = formData.educationalInstitution;
         userData.course = selectedRole === 'school' ? formData.className : formData.course;
+        userData.city = formData.city;
       }
 
       console.log('📤 Отправляем на регистрацию:', userData);
@@ -309,6 +311,21 @@ export default function RegisterPage() {
                       onChange={(e) => setFormData({ ...formData, educationalInstitution: e.target.value })}
                       className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 bg-[#0f1419] border border-gray-700 rounded-xl text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder={selectedRole === 'school' ? 'Школа №123' : 'МГТУ им. Баумана'}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">Город *</label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 bg-[#0f1419] border border-gray-700 rounded-xl text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Москва"
                       required
                     />
                   </div>
