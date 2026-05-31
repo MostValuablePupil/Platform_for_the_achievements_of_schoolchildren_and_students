@@ -20,6 +20,24 @@ services:
     expose:
       - "8000"
     restart: unless-stopped
+    labels:
+      ofelia.enabled: "true"
+      # Уведомления об олимпиадах: 1-е число каждого месяца в 09:00
+      ofelia.job-exec.parse-notify.schedule: "0 9 1 * *"
+      ofelia.job-exec.parse-notify.command: "python manage.py notify_olympiad_updates --run-parser"
+      # Ежегодное напоминание обновить курс: 1 сентября в 09:00
+      ofelia.job-exec.course-reminder.schedule: "0 9 1 9 *"
+      ofelia.job-exec.course-reminder.command: "python manage.py send_course_update_reminders"
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: mvp_scheduler
+    depends_on:
+      - backend
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
 
   frontend:
     build:

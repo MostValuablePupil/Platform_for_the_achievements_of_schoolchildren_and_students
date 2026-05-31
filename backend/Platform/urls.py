@@ -26,6 +26,7 @@ from apps.portfolio.views import AchievementViewSet, EventViewSet as PortfolioEv
 from apps.events.views import EventViewSet as ParsedEventViewSet
 from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
+from apps.telegram_bot.views import GenerateTelegramLinkView, TelegramLinkStatusView, TelegramUnlinkView
 from rest_framework.authtoken.views import obtain_auth_token
 
 # Создаем роутер (он сам сгенерирует все нужные ссылки)
@@ -54,6 +55,9 @@ urlpatterns = [
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
     path('api/users/', include('apps.users.urls')),
+    path('api/telegram/generate-link/', GenerateTelegramLinkView.as_view(), name='telegram-generate-link'),
+    path('api/telegram/link-status/', TelegramLinkStatusView.as_view(), name='telegram-link-status'),
+    path('api/telegram/unlink/', TelegramUnlinkView.as_view(), name='telegram-unlink'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

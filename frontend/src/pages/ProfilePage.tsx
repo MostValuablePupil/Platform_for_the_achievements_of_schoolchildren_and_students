@@ -1,8 +1,9 @@
 // frontend/src/pages/ProfilePage.tsx
 import { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { Trophy, Award, CheckCircle2, GraduationCap, Mail, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle, Settings, X, Loader2 } from 'lucide-react';
+import { Trophy, Award, CheckCircle2, GraduationCap, Mail, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle, Settings, X, Loader2, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { telegramAPI, TELEGRAM_BOT_USERNAME } from '../api/client';
 
 const ALL_BADGES = [
   { id: '1', name: 'Первая победа', icon: '🏆', description: 'За 1 место в олимпиаде' },
@@ -35,6 +36,10 @@ export default function ProfilePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const contactPopupRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [tgStatus, setTgStatus] = useState<{ is_linked: boolean; telegram_username: string | null } | null>(null);
+  const [tgCode, setTgCode] = useState<{ code: string } | null>(null);
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tgShowCode, setTgShowCode] = useState(false);
   const [editFormData, setEditFormData] = useState({
     first_name: '',
     last_name: '',
@@ -68,6 +73,50 @@ export default function ProfilePage() {
       future_profession: currentUser.future_profession || '',
     });
     setIsEditingProfile(true);
+  };
+
+  useEffect(() => {
+    telegramAPI.getStatus()
+      .then(r => setTgStatus(r.data))
+      .catch(() => setTgStatus({ is_linked: false, telegram_username: null }));
+  }, []);
+
+  useEffect(() => {
+    if (!tgCode) return;
+    const timer = setInterval(async () => {
+      try {
+        const r = await telegramAPI.getStatus();
+        if (r.data.is_linked) { setTgStatus(r.data); setTgCode(null); }
+      } catch {}
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [tgCode]);
+
+  const handleLinkTelegram = async () => {
+    setTgLoading(true);
+    try {
+      const r = await telegramAPI.generateLink();
+      setTgCode({ code: r.data.code });
+      window.open(`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${r.data.code}`, '_blank');
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Ошибка генерации ссылки');
+    } finally {
+      setTgLoading(false);
+    }
+  };
+
+  const handleUnlinkTelegram = async () => {
+    if (!confirm('Отвязать Telegram от аккаунта?')) return;
+    setTgLoading(true);
+    try {
+      await telegramAPI.unlink();
+      setTgStatus({ is_linked: false, telegram_username: null });
+      setTgCode(null);
+    } catch {
+      alert('Ошибка при отвязке');
+    } finally {
+      setTgLoading(false);
+    }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -452,7 +501,34 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm text-gray-400 mb-1">Имя</label><input type="text" autoComplete="off" value={editFormData.first_name} onChange={e => setEditFormData({...editFormData, first_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div><div><label className="block text-sm text-gray-400 mb-1">Фамилия</label><input type="text" autoComplete="off" value={editFormData.last_name} onChange={e => setEditFormData({...editFormData, last_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div></div>
               <div><label className="block text-sm text-gray-400 mb-1">Учебное заведение</label><input type="text" autoComplete="off" value={editFormData.educational_institution} onChange={e => setEditFormData({...editFormData, educational_institution: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="МГТУ им. Баумана" /></div>
               <div><label className="block text-sm text-gray-400 mb-1">Цель (Будущая профессия)</label><input type="text" autoComplete="off" value={editFormData.future_profession} onChange={e => setEditFormData({...editFormData, future_profession: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="Data Scientist" /></div>
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-800 mt-6"><button type="button" onClick={() => setIsEditingProfile(false)} className="px-5 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">Отмена</button><button type="submit" disabled={isSaving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center gap-2">{isSaving && <Loader2 className="w-4 h-4 animate-spin" />}Сохранить</button></div>
+              <div className="border-t border-gray-800 pt-4">
+                <label className="block text-sm text-gray-400 mb-3 flex items-center gap-2"><Send className="w-4 h-4 text-blue-400" />Telegram-уведомления</label>
+                {tgStatus === null ? (
+                  <div className="flex items-center gap-2 text-xs text-gray-500"><Loader2 className="w-3 h-3 animate-spin" />Загрузка...</div>
+                ) : tgStatus.is_linked ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-400" /><span className="text-sm text-gray-300">{tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Telegram привязан'}</span></div>
+                    <button type="button" onClick={handleUnlinkTelegram} disabled={tgLoading} className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors">{tgLoading ? 'Отвязка...' : 'Отвязать'}</button>
+                  </div>
+                ) : tgCode ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-400 flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin text-blue-400" />Ожидание привязки в Telegram...</p>
+                    <button type="button" onClick={() => setTgShowCode(v => !v)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors underline">
+                      {tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}
+                    </button>
+                    {tgShowCode && (
+                      <div className="bg-[#0f1419] rounded-xl p-3 space-y-1">
+                        <p className="text-[10px] text-gray-500">Скопируй и отправь боту вручную:</p>
+                        <p className="font-mono text-white font-bold tracking-widest text-base">/link {tgCode.code}</p>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => { setTgCode(null); setTgShowCode(false); }} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Отмена</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={handleLinkTelegram} disabled={tgLoading} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 disabled:opacity-50 text-blue-300 rounded-xl text-sm font-medium transition-colors">{tgLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}Привязать Telegram</button>
+                )}
+              </div>
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-800 mt-2"><button type="button" onClick={() => setIsEditingProfile(false)} className="px-5 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">Отмена</button><button type="submit" disabled={isSaving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center gap-2">{isSaving && <Loader2 className="w-4 h-4 animate-spin" />}Сохранить</button></div>
             </form>
           </div>
         </div>

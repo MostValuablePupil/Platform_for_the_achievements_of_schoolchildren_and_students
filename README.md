@@ -130,3 +130,67 @@ python manage.py parse_events --years 2024 2025
 2. Унаследуйтесь от `BaseSiteParser` и реализуйте метод `fetch_events()` → `list[dict]`
 3. Зарегистрируйте парсер в словаре `PARSERS` в файле `backend/apps/events/management/commands/parse_events.py`
 4. Добавьте новое значение в `Event.Source` в `backend/apps/events/models.py`
+
+### Telegram-бот
+
+Бот: `@most_valuable_pupil_bot`. Токен хранится в `.env` как `TELEGRAM_BOT_API_KEY`.
+
+#### Запуск бота
+
+```bash
+cd backend
+python manage.py run_telegram_bot
+```
+
+#### Привязка Telegram-аккаунта
+
+1. Запусти бэкенд и бота
+2. Войди на платформу как студент
+3. Открой настройки профиля (иконка шестерёнки) → раздел «Telegram-уведомления» → «Привязать Telegram»
+4. Нажми «Открыть Telegram бота» или скопируй код и отправь боту `/start КОД`
+5. Бот ответит «✅ Telegram успешно привязан!»
+
+Если нужно привязать вручную (например, для тестирования):
+```bash
+# Сначала напиши боту /start — он покажет твой chat_id
+python manage.py shell -c "
+from apps.telegram_bot.models import TelegramProfile
+from apps.users.models import User
+user = User.objects.get(username='email@example.com')
+TelegramProfile.objects.create(user=user, chat_id=ВАШ_CHAT_ID, username='')
+"
+```
+
+#### Тестирование уведомлений
+
+**Уведомления об олимпиадах:**
+```bash
+# Проверить без отправки (dry-run):
+python manage.py notify_olympiad_updates --dry-run --since-hours 99999
+
+# Запустить парсер и отправить уведомления:
+python manage.py notify_olympiad_updates --run-parser
+
+# Отправить по уже существующим событиям в БД (любой давности):
+python manage.py notify_olympiad_updates --since-hours 99999
+```
+
+**Напоминание обновить курс:**
+```bash
+# Проверить без отправки:
+python manage.py send_course_update_reminders --dry-run
+
+# Отправить:
+python manage.py send_course_update_reminders
+
+# С кастомным текстом:
+python manage.py send_course_update_reminders --message "Обнови курс в профиле!"
+```
+
+#### Автоматические уведомления (Docker)
+
+В `docker-compose.yml` настроен планировщик `ofelia`:
+- **1-е число каждого месяца 09:00** — парсинг олимпиад + уведомления
+- **1 сентября 09:00** — напоминание обновить курс/класс
+
+В разработке (без Docker) автозапуска нет — команды запускаются вручную.

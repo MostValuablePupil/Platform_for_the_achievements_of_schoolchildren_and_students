@@ -89,6 +89,69 @@ React 19 + TypeScript + Vite + TailwindCSS.
 - Работодатель: поиск студентов, просмотр профилей (`/employer/`)
 - Публичные: `/login`, `/register`, `/verify-email/:token`
 
+## Telegram Bot
+
+Бот: `@most_valuable_pupil_bot`. Токен хранится в `.env` как `TELEGRAM_BOT_API_KEY`.
+
+### Запуск бота
+```bash
+cd backend
+python manage.py run_telegram_bot
+```
+
+### Настройка привязки аккаунта
+
+1. Запусти бэкенд и бота
+2. Войди на платформу как студент
+3. Открой настройки профиля (иконка шестерёнки) → раздел «Telegram-уведомления» → «Привязать Telegram»
+4. Нажми кнопку «Открыть Telegram бота» или скопируй код и отправь боту `/start КОД`
+5. Бот ответит «✅ Telegram успешно привязан!»
+
+Если привязка не проходит через платформу, можно вручную через Django shell:
+```bash
+python manage.py shell -c "
+from apps.telegram_bot.models import TelegramProfile
+from apps.users.models import User
+user = User.objects.get(username='email@example.com')
+TelegramProfile.objects.create(user=user, chat_id=ВАШ_CHAT_ID, username='')
+"
+```
+Узнать свой `chat_id` — написать боту `/start`, он ответит числом.
+
+### Тестирование уведомлений
+
+**Уведомления об олимпиадах:**
+```bash
+# Проверить без отправки (dry-run):
+python manage.py notify_olympiad_updates --dry-run --since-hours 99999
+
+# Запустить парсер и отправить уведомления:
+python manage.py notify_olympiad_updates --run-parser
+
+# Отправить по уже существующим событиям в БД (любой давности):
+python manage.py notify_olympiad_updates --since-hours 99999
+```
+
+**Напоминание обновить курс:**
+```bash
+# Проверить без отправки:
+python manage.py send_course_update_reminders --dry-run
+
+# Отправить:
+python manage.py send_course_update_reminders
+
+# С кастомным текстом:
+python manage.py send_course_update_reminders --message "Обнови курс в профиле!"
+```
+
+### Автоматические уведомления (Docker)
+
+В `docker-compose.yml` настроен планировщик `ofelia`:
+- **1-е число каждого месяца 09:00** — парсинг олимпиад + уведомления
+- **1 сентября 09:00** — напоминание обновить курс/класс
+
+В разработке (без Docker) автозапуска нет — команды запускаются вручную.
+
 ## Environment
 
 `.env` находится в корне проекта (читается и backend-ом через `python-dotenv`). Пример — `backend/.env.example`.

@@ -88,4 +88,14 @@ export const parsedEventAPI = {
   getRecommended: () => apiClient.get<RecommendedEvent[]>('parsed-events/recommended/'),
 };
 
+export const TELEGRAM_BOT_USERNAME = 'most_valuable_pupil_bot';
+
+export const telegramAPI = {
+  getStatus: () =>
+    apiClient.get<{ is_linked: boolean; telegram_username: string | null }>('telegram/link-status/'),
+  generateLink: () =>
+    apiClient.post<{ code: string; expires_in: number }>('telegram/generate-link/'),
+  unlink: () => apiClient.delete('telegram/unlink/'),
+};
+
 export default apiClient;
