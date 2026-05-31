@@ -49,6 +49,38 @@ API_KEY=вставь_сюда_ключ_от_gigachat
 | `skills_fixture.json` | Профили навыков и навыки для трекинга |
 | `badges_fixture.json` | Бейджи (достижения) |
 
+#### Быстрый старт: фикстуры + тестовые аккаунты одной командой
+
+Вместо трёх отдельных `loaddata` можно использовать команду `seed`:
+
+```bash
+cd backend
+
+# Загрузить все фикстуры и создать тестовые аккаунты
+python manage.py seed
+
+# Только фикстуры (без создания пользователей)
+python manage.py seed --no-users
+
+# Только тестовые аккаунты (без фикстур)
+python manage.py seed --no-fixtures
+```
+
+Команда создаёт следующих пользователей (пароль — `Test1234!`, кроме admin):
+
+| Логин | Роль | Пароль |
+|-------|------|--------|
+| `student1` | Студент | `Test1234!` |
+| `student2` | Студент | `Test1234!` |
+| `curator1` | Куратор | `Test1234!` |
+| `employer1` | Работодатель | `Test1234!` |
+| `admin1` | Администратор | `Test1234!` |
+| `admin` | Суперпользователь | `admin` |
+
+> Команда **идемпотентна** — при повторном запуске уже существующие пользователи пропускаются.
+
+#### Ручная загрузка фикстур
+
 **Порядок загрузки важен** — сначала загружайте независимые данные:
 
 ```bash
@@ -96,6 +128,31 @@ chmod +x start.sh
 ✅ Фронтенд будет доступен по адресу: http://localhost:5173 
 
 Для остановки серверов просто нажмите `Ctrl+C`.
+
+### Тесты
+
+```bash
+cd backend
+
+# Все тесты
+python manage.py test apps
+
+# Конкретное приложение
+python manage.py test apps.users
+python manage.py test apps.portfolio
+python manage.py test apps.skills
+python manage.py test apps.events
+python manage.py test apps.telegram_bot
+
+# Конкретный тест-класс или метод
+python manage.py test apps.portfolio.tests.AchievementCalculateXpTest
+python manage.py test apps.users.tests.LoginAPITest.test_correct_credentials_return_token
+
+# С подробным выводом
+python manage.py test apps --verbosity=2
+```
+
+> **Примечание:** на Mac/Linux замените `python` на `../.venv/bin/python`, на Windows — на `..\.venv\Scripts\python`.
 
 ### Парсер мероприятий
 
