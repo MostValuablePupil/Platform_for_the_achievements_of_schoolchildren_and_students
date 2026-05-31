@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap, ShieldCheck } from 'lucide-react';
 import apiClient, { specialtyAPI } from '../api/client';
-import { useGameStore } from '../store/useGameStore';
 import type { Specialty } from '../types';
 import CustomSelect from '../components/CustomSelect';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -12,12 +11,12 @@ type UserRole = 'student' | 'school' | 'employer' | 'curator';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useGameStore();
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const [secretCode, setSecretCode] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
@@ -104,12 +103,7 @@ export default function RegisterPage() {
       console.log('📤 Отправляем на регистрацию:', userData);
 
       await apiClient.post('users/', userData);
-      console.log('✅ Регистрация успешна');
-
-      await login(formData.email, formData.password);
-      console.log('✅ Store обновлен');
-
-      navigate('/');
+      setRegistered(true);
 
     } catch (err: any) {
       console.error('❌ Ошибка:', err);
@@ -143,7 +137,26 @@ export default function RegisterPage() {
       <div className="w-full max-w-2xl relative z-10">
         {/* Карточка регистрации — делаем полупрозрачной для эффекта стекла */}
         <div className="bg-[#1a2332]/80 backdrop-blur-xl border border-gray-800/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
-          
+
+          {registered ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-green-400" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-100 mb-3">Подтвердите почту</h2>
+              <p className="text-gray-400 text-sm mb-6">
+                Письмо со ссылкой для активации аккаунта отправлено на <span className="text-white font-medium">{formData.email}</span>.
+                Перейдите по ссылке в письме, чтобы завершить регистрацию.
+              </p>
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-3 rounded-xl font-semibold text-sm transition-all"
+              >
+                Перейти ко входу
+              </button>
+            </div>
+          ) : (
+          <>
           {/* Логотип */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg shadow-blue-500/20">
@@ -433,6 +446,8 @@ export default function RegisterPage() {
               Войти
             </button>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

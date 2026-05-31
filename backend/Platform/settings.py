@@ -148,7 +148,55 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Platform API",
-    "DESCRIPTION": "API для платформы достижений студентов и школьников",
+    "DESCRIPTION": """
+API для платформы достижений студентов и школьников.
+
+## Как зарегистрироваться и войти
+
+### 1. Регистрация
+**`POST /api/users/`**
+
+Тело запроса:
+```json
+{
+  "username": "test@example.com",
+  "email": "test@example.com",
+  "password": "yourpassword123",
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "role": "STUDENT"
+}
+```
+Допустимые роли: `STUDENT`, `CURATOR`, `EMPLOYER`.
+После регистрации на почту придёт письмо со ссылкой подтверждения.
+
+### 2. Подтверждение email
+В терминале бэкенда (при `EMAIL_BACKEND=console`) найди ссылку вида:
+```
+http://localhost:5173/verify-email/<token>
+```
+Скопируй `<token>` и выполни:
+
+**`GET /api/users/verify-email/{token}/`**
+
+### 3. Получение токена
+**`POST /api/login/`**
+
+```json
+{
+  "username": "test@example.com",
+  "password": "yourpassword123"
+}
+```
+В ответе придёт `token`.
+
+### 4. Авторизация в Swagger
+Нажми кнопку **Authorize** (замок вверху справа) и введи:
+```
+Token <твой_токен>
+```
+После этого все запросы будут выполняться от имени авторизованного пользователя.
+""",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,

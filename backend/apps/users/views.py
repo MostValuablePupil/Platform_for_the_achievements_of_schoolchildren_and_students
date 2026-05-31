@@ -16,6 +16,12 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from django.core.signing import loads, BadSignature, SignatureExpired
 from .serializers import send_verification_email
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers as drf_serializers
+
+class LoginRequestSerializer(drf_serializers.Serializer):
+    username = drf_serializers.CharField()
+    password = drf_serializers.CharField()
 
 @login_required # Декоратор: пускает только тех, кто вошел в аккаунт
 def export_my_report(request):
@@ -142,6 +148,7 @@ def resend_verification_email(request):
     return Response({'detail': 'Если аккаунт с таким email существует и не подтверждён — письмо отправлено.'})
 
 
+@extend_schema(request=LoginRequestSerializer)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def custom_login(request):

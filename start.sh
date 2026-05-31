@@ -6,13 +6,19 @@ echo "🚀 Запуск серверов..."
 echo "🐍 Запуск Django backend..."
 cd backend
 
-# Определяем путь к python.exe в зависимости от ОС
+# Определяем путь к python — ищем venv в backend/ и в корне проекта (.venv или venv)
 if [ -f "venv/Scripts/python.exe" ]; then
-    # Windows
     PYTHON_CMD="venv/Scripts/python.exe"
 elif [ -f "venv/bin/python" ]; then
-    # Linux/Mac
     PYTHON_CMD="venv/bin/python"
+elif [ -f "../.venv/Scripts/python.exe" ]; then
+    PYTHON_CMD="../.venv/Scripts/python.exe"
+elif [ -f "../.venv/bin/python" ]; then
+    PYTHON_CMD="../.venv/bin/python"
+elif [ -f "../venv/Scripts/python.exe" ]; then
+    PYTHON_CMD="../venv/Scripts/python.exe"
+elif [ -f "../venv/bin/python" ]; then
+    PYTHON_CMD="../venv/bin/python"
 else
     echo "❌ Виртуальное окружение не найдено!"
     echo "Создай его: python -m venv venv"

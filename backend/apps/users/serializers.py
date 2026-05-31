@@ -147,6 +147,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('curator_registration_code', None)
         password = validated_data.pop('password')
+        validated_data['username'] = validated_data.get('email')
         user = User.objects.create_user(**validated_data, password=password, is_active=False)
 
         if not send_verification_email(user):

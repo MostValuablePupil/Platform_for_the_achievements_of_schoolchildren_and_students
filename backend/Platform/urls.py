@@ -53,7 +53,6 @@ urlpatterns = [
     
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
-    path('dashboard/', include('apps.users.urls')),
     path('api/users/', include('apps.users.urls')),
 ]
 if settings.DEBUG:
