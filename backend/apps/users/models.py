@@ -54,11 +54,18 @@ class User(AbstractUser):
     middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество (при наличии)")
     email = models.EmailField(unique=True, verbose_name="Электронная почта")
     educational_institution = models.CharField(
-        max_length=255, 
-        blank=True, 
-        null=True, 
+        max_length=255,
+        blank=True,
+        null=True,
         verbose_name="Учебное заведение",
         help_text="Например: МГТУ им. Баумана или Школа №123"
+    )
+    organization = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Организация",
+        help_text="Название компании работодателя"
     )
     future_profession = models.CharField(
         max_length=255,
@@ -114,6 +121,12 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(role='EMPLOYER') | models.Q(organization__gt=''),
+                name='employer_must_have_organization',
+            )
+        ]
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

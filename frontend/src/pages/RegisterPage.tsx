@@ -26,6 +26,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     educationalInstitution: '',
+    organization: '',
     course: '',
     className: '',
     specialtyId: null as number | null,
@@ -95,7 +96,9 @@ export default function RegisterPage() {
         userData.specialty = formData.specialtyId;
       }
 
-      if (selectedRole !== 'employer') {
+      if (selectedRole === 'employer') {
+        userData.organization = formData.organization;
+      } else {
         userData.educational_institution = formData.educationalInstitution;
         userData.course = selectedRole === 'school' ? formData.className : formData.course;
       }
@@ -272,6 +275,24 @@ export default function RegisterPage() {
                   />
                 </div>
                 <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Код выдается администратором платформы</p>
+              </div>
+            )}
+
+            {/* Организация (только для работодателя) */}
+            {selectedRole === 'employer' && (
+              <div className="animate-fade-in-up">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">Организация *</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                  <input
+                    type="text"
+                    value={formData.organization}
+                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 bg-[#0f1419] border border-gray-700 rounded-xl text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="ООО «Название компании»"
+                    required
+                  />
+                </div>
               </div>
             )}
 

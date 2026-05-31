@@ -31,6 +31,7 @@ export interface User {
   email: string;
   role: 'STUDENT' | 'CURATOR' | 'EMPLOYER' | 'ADMIN';
   educational_institution?: string;
+  organization?: string;
   course?: string;
   specialty?: number | null;
   specialty_details?: Specialty | null;
