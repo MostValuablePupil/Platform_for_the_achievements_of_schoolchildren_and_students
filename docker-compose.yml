@@ -28,6 +28,9 @@ services:
       # Ежегодное напоминание обновить курс: 1 сентября в 09:00
       ofelia.job-exec.course-reminder.schedule: "0 9 1 9 *"
       ofelia.job-exec.course-reminder.command: "python manage.py send_course_update_reminders"
+      # Ежедневные напоминания об отслеживаемых мероприятиях (за 3 дня и за 1 день)
+      ofelia.job-exec.event-reminders.schedule: "0 9 * * *"
+      ofelia.job-exec.event-reminders.command: "python manage.py send_event_reminders"
 
   scheduler:
     image: mcuadros/ofelia:latest

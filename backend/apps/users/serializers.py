@@ -106,7 +106,7 @@ class UserSerializer(serializers.ModelSerializer):
     earned_badges = UserBadgeSerializer(source='badges', many=True, read_only=True)
     competencies = UserSkillSerializer(many=True, read_only=True)
 
-    password = serializers.CharField(write_only=True, required=True, min_length=8)
+    password = serializers.CharField(write_only=True, required=False, min_length=8)
     achievements_count = serializers.IntegerField(read_only=True)
 
     # Поле только для регистрации куратора — не сохраняется в БД
@@ -130,6 +130,10 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        is_update = self.instance is not None
+        if is_update:
+            return attrs
+
         role = attrs.get('role', User.Role.STUDENT)
         if role == User.Role.CURATOR:
             provided_code = attrs.get('curator_registration_code', '').strip()
@@ -154,7 +158,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('curator_registration_code', None)
-        password = validated_data.pop('password')
+        password = validated_data.pop('password', None)
+        if not password:
+            raise serializers.ValidationError({'password': 'Пароль обязателен при регистрации.'})
         validated_data['username'] = validated_data.get('email')
         user = User.objects.create_user(**validated_data, password=password, is_active=False)
 

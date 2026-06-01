@@ -87,15 +87,32 @@ class Command(BaseCommand):
             action="store_true",
             help="Пропустить создание тестовых пользователей",
         )
+        parser.add_argument(
+            "--no-events",
+            action="store_true",
+            help="Пропустить парсинг мероприятий",
+        )
 
     def handle(self, *args, **options):
+        self._ensure_cache_table()
+
         if not options["no_fixtures"]:
             self._load_fixtures()
 
         if not options["no_users"]:
             self._create_users()
 
+        if not options["no_events"]:
+            self._parse_events()
+
         self.stdout.write(self.style.SUCCESS("Seed завершён успешно."))
+
+    def _ensure_cache_table(self):
+        try:
+            call_command("createcachetable", verbosity=0)
+            self.stdout.write(self.style.SUCCESS("  ✓ Таблица кэша готова"))
+        except Exception as exc:
+            self.stdout.write(self.style.WARNING(f"  ⚠ createcachetable: {exc}"))
 
     def _load_fixtures(self):
         fixtures = [
@@ -128,3 +145,11 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"    ✓ {username} ({data['role']})"))
 
         self.stdout.write(f"  Создано: {created}, пропущено: {skipped}")
+
+    def _parse_events(self):
+        self.stdout.write("  Парсинг мероприятий с внешних сайтов...")
+        try:
+            call_command("parse_events", verbosity=0)
+            self.stdout.write(self.style.SUCCESS("  ✓ Мероприятия загружены"))
+        except Exception as exc:
+            self.stdout.write(self.style.WARNING(f"  ⚠ Ошибка при парсинге: {exc}"))

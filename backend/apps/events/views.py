@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from .models import Event
+from .models import Event, EventTracking
 from .serializers import EventSerializer
 
 logger = logging.getLogger(__name__)
@@ -66,6 +66,18 @@ class EventViewSet(ReadOnlyModelViewSet):
             queryset = queryset.filter(q)
 
         return queryset
+
+    @action(detail=True, methods=['post'])
+    def track(self, request, pk=None):
+        event = self.get_object()
+        EventTracking.objects.get_or_create(user=request.user, event=event)
+        return Response({'is_tracked': True})
+
+    @action(detail=True, methods=['delete'], url_path='track')
+    def untrack(self, request, pk=None):
+        event = self.get_object()
+        EventTracking.objects.filter(user=request.user, event=event).delete()
+        return Response({'is_tracked': False})
 
     @action(detail=False, methods=['get'])
     def filters(self, request):

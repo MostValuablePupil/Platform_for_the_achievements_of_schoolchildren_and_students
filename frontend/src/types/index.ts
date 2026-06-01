@@ -136,8 +136,10 @@ export interface ParsedEvent {
   grade: string;
   year: string;
   organizer: string;
+  event_date?: string | null;
   is_active: boolean;
   parsed_at: string;
+  is_tracked?: boolean;
 }
 
 export interface RecommendedEvent {

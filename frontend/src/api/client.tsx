@@ -86,6 +86,10 @@ export const parsedEventAPI = {
   getAll: (params?: any) => apiClient.get<ParsedEvent[]>('parsed-events/', { params }),
   getFilters: () => apiClient.get<EventFilters>('parsed-events/filters/'),
   getRecommended: () => apiClient.get<RecommendedEvent[]>('parsed-events/recommended/'),
+  trackEvent: (id: number) =>
+    apiClient.post<{ is_tracked: boolean }>(`parsed-events/${id}/track/`),
+  untrackEvent: (id: number) =>
+    apiClient.delete<{ is_tracked: boolean }>(`parsed-events/${id}/track/`),
 };
 
 export const TELEGRAM_BOT_USERNAME = 'most_valuable_pupil_bot';

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   Search, Trophy, Sparkles, MapPin, GraduationCap, Calendar,
   ExternalLink, Filter, ChevronDown, Loader2, BookOpen,
-  Star, X
+  Star, X, Bell, BellOff
 } from 'lucide-react';
 import { parsedEventAPI } from '../api/client';
 import { useGameStore } from '../store/useGameStore';
@@ -75,6 +75,23 @@ export default function EventsPage() {
     setActiveTab(tab);
     if (tab === 'recommended' && recommended.length === 0 && !recLoading) {
       loadRecommended();
+    }
+  };
+
+  const handleTrack = async (e: React.MouseEvent, event: ParsedEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      if (event.is_tracked) {
+        await parsedEventAPI.untrackEvent(event.id);
+      } else {
+        await parsedEventAPI.trackEvent(event.id);
+      }
+      setEvents(prev =>
+        prev.map(ev => ev.id === event.id ? { ...ev, is_tracked: !ev.is_tracked } : ev)
+      );
+    } catch (err) {
+      console.error('Ошибка при изменении отслеживания:', err);
     }
   };
 
@@ -276,7 +293,23 @@ export default function EventsPage() {
                         <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 truncate">{event.source_display}</p>
                       </div>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={(e) => handleTrack(e, event)}
+                        title={event.is_tracked ? 'Перестать отслеживать' : 'Отслеживать'}
+                        className={`p-1.5 rounded-lg transition-all ${
+                          event.is_tracked
+                            ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
+                            : 'text-gray-600 hover:text-blue-400 hover:bg-blue-500/10'
+                        }`}
+                      >
+                        {event.is_tracked
+                          ? <BellOff className="w-3.5 h-3.5" />
+                          : <Bell className="w-3.5 h-3.5" />
+                        }
+                      </button>
+                      <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
+                    </div>
                   </div>
 
                   {/* Subject badge */}
@@ -293,10 +326,17 @@ export default function EventsPage() {
 
                   {/* Footer meta */}
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[10px] sm:text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {event.year}
-                    </span>
+                    {event.event_date ? (
+                      <span className="flex items-center gap-1 text-blue-400/80">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(event.event_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {event.year}
+                      </span>
+                    )}
                     <span className="w-1 h-1 bg-gray-700 rounded-full" />
                     <span className="flex items-center gap-1 truncate">
                       <MapPin className="w-3 h-3 flex-shrink-0" />

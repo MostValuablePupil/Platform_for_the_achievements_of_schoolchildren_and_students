@@ -27,6 +27,7 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py createcachetable
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -75,14 +76,17 @@ python manage.py loaddata fixtures/badges_fixture.json
 ```bash
 cd backend
 
-# Загрузить все фикстуры и создать тестовые аккаунты
+# Загрузить всё: фикстуры + тестовые аккаунты + мероприятия с внешних сайтов
 python manage.py seed
 
-# Только фикстуры (без создания пользователей)
-python manage.py seed --no-users
+# Только фикстуры и пользователи (без парсинга мероприятий)
+python manage.py seed --no-events
 
-# Только тестовые аккаунты (без фикстур)
-python manage.py seed --no-fixtures
+# Только фикстуры (без пользователей и мероприятий)
+python manage.py seed --no-users --no-events
+
+# Только тестовые аккаунты (без фикстур и мероприятий)
+python manage.py seed --no-fixtures --no-events
 ```
 
 Команда создаёт следующих пользователей (пароль — `Test1234!`, кроме admin):
@@ -107,6 +111,27 @@ npm install react-datepicker
 npm install -D @types/react-datepicker
 cd ..
 ```
+
+### Тесты
+
+```bash
+cd backend
+
+# Все тесты
+python manage.py test apps
+
+# Конкретное приложение
+python manage.py test apps.users
+python manage.py test apps.portfolio
+python manage.py test apps.skills
+python manage.py test apps.events
+python manage.py test apps.telegram_bot
+
+# С подробным выводом
+python manage.py test apps --verbosity=2
+```
+
+> **Примечание:** на Mac/Linux замените `python` на `../.venv/bin/python`, на Windows — на `..\.venv\Scripts\python`.
 
 ### 3. Запуск проекта (в один клик)
 
@@ -150,9 +175,13 @@ python manage.py parse_events --years 2024 2025
 
 #### Доступные парсеры
 
-| Ключ `--source` | Сайт | Описание |
-|-----------------|------|----------|
-| `urfu_izumrud` | [dovuz.urfu.ru](https://dovuz.urfu.ru/olymps/izumrud/final-results) | Международная олимпиада «Изумруд» (УрФУ) |
+| Ключ `--source` | Сайт | Тип | Описание |
+|-----------------|------|-----|----------|
+| `urfu_izumrud` | [dovuz.urfu.ru](https://dovuz.urfu.ru/olymps/izumrud/final-results) | Олимпиада | Международная олимпиада «Изумруд» (УрФУ) |
+| `olimpiada_ru` | [olimpiada.ru/activities](https://olimpiada.ru/activities) | Олимпиада | Каталог российских олимпиад (~36 событий) |
+| `hse_olymp` | [olymp.hse.ru](https://olymp.hse.ru/) | Олимпиада | Олимпиады НИУ ВШЭ («Высшая проба» и др.) |
+| `hacklist` | [hacklist.ru](https://hacklist.ru/) | Хакатон | Каталог хакатонов и IT-мероприятий (~180 событий) |
+| `postupi_online` | [postupi.online/olimp-list](https://postupi.online/olimp-list/) | Олимпиада | Агрегатор перечневых олимпиад (~400 событий) |
 
 #### Добавление нового парсера
 
