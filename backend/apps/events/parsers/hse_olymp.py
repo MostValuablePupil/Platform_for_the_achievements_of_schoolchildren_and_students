@@ -130,6 +130,8 @@ class HseOlympParser(BaseSiteParser):
         if not description:
             description = f"Олимпиада Вышки: «{title}»."
 
+        year_start = self.years[0]
+        year_label = f"{year_start}/{str(year_start + 1)[2:]}"
         return {
             "title": title,
             "description": description,
@@ -139,7 +141,7 @@ class HseOlympParser(BaseSiteParser):
             "subject_area": subject,
             "region": "Москва",
             "grade": grades,
-            "year": "",
+            "year": year_label,
             "organizer": self.ORGANIZER,
         }
 

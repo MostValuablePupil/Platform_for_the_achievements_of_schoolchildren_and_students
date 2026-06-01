@@ -149,9 +149,7 @@ export interface RecommendedEvent {
 }
 
 export interface EventFilters {
-  sources: string[];
-  subject_areas: string[];
-  regions: string[];
+  event_types: Array<{ value: string; label: string }>;
+  sources: Array<{ value: string; label: string }>;
   years: string[];
-  grades: string[];
 }

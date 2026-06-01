@@ -23,11 +23,11 @@ class Event(models.Model):
         MANUAL = 'MANUAL', 'Добавлено вручную'
 
     class EventType(models.TextChoices):
-        OLYMPIAD = 'OLYMPIAD', 'Олимпиада'
-        HACKATHON = 'HACKATHON', 'Хакатон'
-        COMPETITION = 'COMPETITION', 'Конкурс'
-        CONFERENCE = 'CONFERENCE', 'Конференция'
-        GRANT = 'GRANT', 'Грант'
+        OLYMPIAD = 'OLYMPIAD', '🧠 Олимпиада'
+        HACKATHON = 'HACKATHON', '💻 Хакатон'
+        COMPETITION = 'COMPETITION', '🏆 Конкурс'
+        CONFERENCE = 'CONFERENCE', '🎓 Конференция'
+        GRANT = 'GRANT', '💰 Грант'
 
     # === Основная информация ===
     title = models.CharField(
