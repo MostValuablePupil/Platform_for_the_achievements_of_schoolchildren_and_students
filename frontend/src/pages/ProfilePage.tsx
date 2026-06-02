@@ -70,6 +70,14 @@ export default function ProfilePage() {
   const loadLeaderboard = async () => {
     try {
       const params: any = { sort_by: sortBy };
+      
+      // ✅ ДОБАВЛЯЕМ ПАРАМЕТР user_type для разделения студентов и школьников
+      if (currentUser?.specialty) {
+        params.user_type = 'university';
+      } else {
+        params.user_type = 'school';
+      }
+
       if (filterSpecialty) params.specialty = filterSpecialty;
       if (filterCourse) params.course = filterCourse;
       if (filterCity) params.city = filterCity;
@@ -86,7 +94,7 @@ export default function ProfilePage() {
     if (currentUser) {
       loadLeaderboard();
     }
-  }, [sortBy, filterSpecialty, filterCourse, filterCity, filterInstitution]);
+  }, [sortBy, filterSpecialty, filterCourse, filterCity, filterInstitution, currentUser?.specialty]);
 
   const isUniversityStudent = !!currentUser?.specialty; 
 
@@ -251,6 +259,11 @@ export default function ProfilePage() {
     return opts;
   }, []);
 
+  // ✅ Динамические метки для шапки
+  const roleLabel = currentUser.specialty ? 'Студент' : 'Школьник';
+  const courseLabel = currentUser.specialty ? 'курс' : 'класс';
+  const institutionPlaceholder = currentUser.specialty ? 'Факультет ИТ' : 'Школа';
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-10 animate-fade-in px-4 md:px-0">
       
@@ -264,7 +277,10 @@ export default function ProfilePage() {
                </div>
                <div className="flex-1 min-w-0">
                   <h1 className="text-lg font-bold text-white truncate">{currentUser.first_name} {currentUser.last_name}</h1>
-                  <p className="text-xs text-blue-200 truncate">{currentUser.educational_institution || 'Факультет ИТ'}</p>
+                  {/* ✅ Исправлено для мобильных */}
+                  <p className="text-xs text-blue-200 truncate">
+                    {roleLabel} • {currentUser.course || '1'} {courseLabel} • {currentUser.educational_institution || institutionPlaceholder}
+                  </p>
                </div>
             </div>
          </div>
@@ -272,7 +288,7 @@ export default function ProfilePage() {
 
       {/* === ДЕСКТОПНАЯ ВЕРСИЯ === */}
       <div className="hidden lg:block">
-        {/* ... ХЕДЕР ПРОФИЛЯ БЕЗ ИЗМЕНЕНИЙ ... */}
+        {/* ... ХЕДЕР ПРОФИЛЯ ... */}
         <div className="relative z-50 bg-gradient-to-r from-blue-600/20 via-blue-500/10 to-cyan-500/20 border border-blue-500/30 rounded-3xl p-8 text-white animate-fade-in-up shadow-lg shadow-blue-900/20 backdrop-blur-sm overflow-visible">
            {/* ... код хедера ... */}
            <div className="flex items-center justify-between relative z-10">
@@ -283,9 +299,21 @@ export default function ProfilePage() {
                  <div>
                     <h1 className="text-3xl font-bold mb-2 animate-fade-in-up delay-100">{currentUser.first_name} {currentUser.last_name}</h1>
                     <div className="flex items-center gap-3 text-blue-200 text-sm flex-wrap animate-fade-in-up delay-200">
-                       <span className="flex items-center gap-1"><GraduationCap className="w-4 h-4" />Студент • {currentUser.course || '1'} курс</span>
+                       {/* ✅ Исправлено: Динамическая роль и курс/класс */}
+                       <span className="flex items-center gap-1">
+                         <GraduationCap className="w-4 h-4" />
+                         {roleLabel} • {currentUser.course || '1'} {courseLabel}
+                       </span>
                        <span className="text-blue-400/50">•</span>
-                       <span>{currentUser.educational_institution || 'Факультет ИТ'}</span>
+                       <span>{currentUser.educational_institution || institutionPlaceholder}</span>
+                    </div>
+                    {currentUser.future_profession && (
+                       <div className="text-sm text-cyan-400 mt-1 animate-fade-in-up delay-200">Цель: {currentUser.future_profession}</div>
+                    )}
+                    <div className="flex items-center gap-4 mt-3 text-xs text-blue-300/60 animate-fade-in-up delay-300">
+                       <span className="flex items-center gap-1"><Trophy className="w-3 h-3 text-blue-400" />Уровень {currentLevel}</span>
+                       <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-400" />{recentAchievements.filter(a => a.status === 'VERIFIED').length} достижений</span>
+                       <span className="flex items-center gap-1"><Award className="w-3 h-3 text-yellow-400" />{achievements.length} всего</span>
                     </div>
                  </div>
               </div>
