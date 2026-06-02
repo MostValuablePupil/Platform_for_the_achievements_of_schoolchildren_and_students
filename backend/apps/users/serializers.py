@@ -1,12 +1,13 @@
-# apps/users/serializers.py
+# backend/apps/users/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.signing import dumps
-from .models import Avatar, Specialty
+from .models import Avatar, Specialty, StudentFollow
 from apps.portfolio.serializers import UserBadgeSerializer
 from apps.skills.models import UserSkill
+from apps.portfolio.models import Achievement
 
 User = get_user_model()
 
@@ -92,12 +93,53 @@ class UserSkillSerializer(serializers.ModelSerializer):
         model = UserSkill
         fields = ['id', 'name', 'category', 'experience', 'level']
 
-
 class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Avatar
         fields = ['id', 'name', 'image']
 
+class LastAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievement
+        fields = ['title', 'verified_at', 'points']
+
+class SubscribedStudentSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для списка подписок работодателя.
+    Включает последнее достижение и флаг новых событий.
+    """
+    last_achievement = serializers.SerializerMethodField()
+    has_new_achievements = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'id', 'first_name', 'last_name', 'username', 
+            'educational_institution', 'course', 'level', 
+            'total_xp', 'avatar', 'last_achievement', 'has_new_achievements'
+        ]
+
+    def get_last_achievement(self, obj):
+        last_ach = obj.achievements.filter(status='VERIFIED').order_by('-verified_at').first()
+        if last_ach:
+            return LastAchievementSerializer(last_ach).data
+        return None
+
+    def get_has_new_achievements(self, obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request, 'user'):
+            return False
+            
+        follow = StudentFollow.objects.filter(employer=request.user, student=obj).first()
+        if not follow:
+            return False
+        
+        new_count = obj.achievements.filter(
+            status='VERIFIED', 
+            verified_at__gt=follow.created_at
+        ).count()
+        
+        return new_count > 0        
 
 class UserSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='user-detail', read_only=True)

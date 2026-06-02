@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# backend/Platform/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
@@ -24,7 +26,8 @@ from django.conf.urls.static import static
 # Импортируем наши новые API-вьюшки
 from apps.portfolio.views import AchievementViewSet, EventViewSet as PortfolioEventViewSet
 from apps.events.views import EventViewSet as ParsedEventViewSet
-from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login
+# ✅ УБРАЛИ SubscriptionViewSet отсюда
+from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login 
 from apps.skills.views import SkillViewSet, SkillCategoryViewSet, SkillProfileViewSet
 from apps.telegram_bot.views import GenerateTelegramLinkView, TelegramLinkStatusView, TelegramUnlinkView
 from rest_framework.authtoken.views import obtain_auth_token
@@ -34,30 +37,30 @@ router = DefaultRouter()
 router.register(r'achievements', AchievementViewSet)
 router.register(r'events', PortfolioEventViewSet)
 router.register(r'parsed-events', ParsedEventViewSet, basename='parsed-event')
-router.register(r'users', UserViewSet)
+router.register(r'users', UserViewSet) # Все действия follow/unfollow здесь
 router.register(r'specialties', SpecialtyViewSet)
 router.register(r'skill-categories', SkillCategoryViewSet)
 router.register(r'skills', SkillViewSet)
 router.register(r'profiles', SkillProfileViewSet)
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/login/', custom_login, name='api_token_auth'),
+    
     # --- МАРШРУТЫ ДЛЯ ДОКУМЕНТАЦИИ ---
-    # --- SWAGGER
-    # 1. Сам файл со схемой API (в формате YAML/JSON, нужен для программ)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    # 2. Красивый интерфейс Swagger UI (для людей)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    # --- SWAGGER
     
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
     path('api/users/', include('apps.users.urls')),
+    
     path('api/telegram/generate-link/', GenerateTelegramLinkView.as_view(), name='telegram-generate-link'),
     path('api/telegram/link-status/', TelegramLinkStatusView.as_view(), name='telegram-link-status'),
     path('api/telegram/unlink/', TelegramUnlinkView.as_view(), name='telegram-unlink'),
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
+
 // Студенческие компоненты
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
@@ -19,6 +20,8 @@ import EmployerLayout from './pages/EmployerLayout';
 import EmployerStudentsPage from './pages/EmployerStudentsPage';
 import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
 import EmployerStudentSkillsPage from './pages/EmployerStudentSkillsPage';
+import EmployerSubscriptionsPage from './pages/EmployerSubscriptionsPage'; // ✅ Импортируем новую страницу
+
 // Куратор / Верификатор
 import VerifierLayout from './pages/VerifierLayout';
 import VerifierAchievementsPage from './pages/VerifierAchievementsPage';
@@ -31,8 +34,7 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-  // Пока идет ПЕРВИЧНАЯ загрузка данных пользователя, показываем заглушку,
-  // чтобы роутер не сделал поспешный редирект.
+  // Пока идет ПЕРВИЧНАЯ загрузка данных пользователя, показываем заглушку
   if (isLoading && !currentUser && localStorage.getItem('token')) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0f1419]">
@@ -68,6 +70,10 @@ function App() {
               <Route path="students" element={<EmployerStudentsPage />} />
               <Route path="students/:id" element={<EmployerStudentProfilePage />} />
               <Route path="students/:id/skills" element={<EmployerStudentSkillsPage />} />
+              
+              {/* ✅ Новый маршрут для подписок */}
+              <Route path="subscriptions" element={<EmployerSubscriptionsPage />} />
+              
               <Route index element={<Navigate to="students" replace />} />
             </Route>
             <Route path="/" element={<Navigate to="/employer/students" replace />} />

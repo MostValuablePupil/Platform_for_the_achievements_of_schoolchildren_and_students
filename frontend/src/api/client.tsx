@@ -1,14 +1,16 @@
+// frontend/src/api/client.tsx
 import axios from 'axios';
-import type { 
-  User, 
-  Achievement, 
-  Skill, 
-  SkillProfile, 
-  SkillCategory, 
+import type {
+  User,
+  Achievement,
+  Skill,
+  SkillProfile,
+  SkillCategory,
   Specialty,
   AchievementStats,
   ParsedEvent,
   EventFilters,
+  RecommendedEvent,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api/';
@@ -23,49 +25,42 @@ const apiClient = axios.create({
 // Добавляем токен авторизации
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
-  }
-  return config;
-});
-
-// Добавляем токен авторизации
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  
   if (token && token !== 'undefined') {
     config.headers['Authorization'] = `Token ${token}`;
   } else {
     console.warn("ВНИМАНИЕ: Запрос отправлен БЕЗ токена!");
   }
-  
   return config;
 });
 
-// --- API Функции с типами ---
+// --- API Функции ---
+
 export const authAPI = {
-  login: (username: string, password: string) => 
+  login: (username: string, password: string) =>
     apiClient.post<{ token: string }>('login/', { username, password }),
-  
-  register: (userData: any) =>  // ← Добавь тип :any или создай интерфейс
-    apiClient.post<User>('users/', userData),  // ← Измени data на userData
+  register: (userData: any) =>
+    apiClient.post<User>('users/', userData),
 };
+
 
 export const userAPI = {
   getAll: () => apiClient.get<User[]>('users/'),
   getById: (id: number) => apiClient.get<User>(`users/${id}/`),
   getStats: (id: number) => apiClient.get<AchievementStats>(`users/${id}/stats/`),
   update: (id: number, data: Partial<User>) => apiClient.patch<User>(`users/${id}/`, data),
+  
+  // Проверка подписки
+  isFollowed: (studentId: number) => apiClient.get<{ is_followed: boolean }>(`users/${studentId}/is_followed/`),
 };
 
 export const achievementAPI = {
   getAll: (params?: any) => apiClient.get<Achievement[]>('achievements/', { params }),
   getById: (id: number) => apiClient.get<Achievement>(`achievements/${id}/`),
-  create: (data: FormData) => 
+  create: (data: FormData) =>
     apiClient.post<Achievement>('achievements/', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  update: (id: number, data: Partial<Achievement>) => 
+  update: (id: number, data: Partial<Achievement>) =>
     apiClient.patch<Achievement>(`achievements/${id}/`, data),
 };
 
@@ -100,6 +95,20 @@ export const telegramAPI = {
   generateLink: () =>
     apiClient.post<{ code: string; expires_in: number }>('telegram/generate-link/'),
   unlink: () => apiClient.delete('telegram/unlink/'),
+};
+
+export const subscriptionAPI = {
+  // Получить список моих подписок (использует action followed_students из UserViewSet)
+  // Путь: GET /api/users/followed_students/
+  getSubscriptions: () => apiClient.get('/users/followed_students/'),
+  
+  // Подписаться на студента (использует action follow из UserViewSet)
+  // Путь: POST /api/users/{id}/follow/
+  subscribe: (studentId: number) => apiClient.post(`/users/${studentId}/follow/`),
+  
+  // Отписаться от студента (использует action unfollow из UserViewSet)
+  // Путь: DELETE /api/users/{id}/follow/
+  unsubscribe: (studentId: number) => apiClient.delete(`/users/${studentId}/unfollow/`),
 };
 
 export default apiClient;

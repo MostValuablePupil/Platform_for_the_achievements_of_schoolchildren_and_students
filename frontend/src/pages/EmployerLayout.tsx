@@ -1,6 +1,6 @@
 // frontend/src/pages/EmployerLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Users, LogOut, Menu, X } from 'lucide-react';
+import { Building2, Users, LogOut, Menu, X, Heart } from 'lucide-react'; // Добавили Heart
 import { useGameStore } from '../store/useGameStore';
 import { useState } from 'react';
 
@@ -16,6 +16,12 @@ export default function EmployerLayout() {
       icon: Users,
       label: 'Студенты',
       active: location.pathname === '/employer/students'
+    },
+    {
+      path: '/employer/subscriptions',
+      icon: Heart,
+      label: 'Мои подписки',
+      active: location.pathname === '/employer/subscriptions'
     },
   ];
 

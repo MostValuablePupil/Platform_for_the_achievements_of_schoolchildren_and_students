@@ -153,3 +153,14 @@ export interface EventFilters {
   sources: Array<{ value: string; label: string }>;
   years: string[];
 }
+
+export interface LastAchievement {
+  title: string;
+  verified_at: string;
+  points: number;
+}
+
+export interface SubscribedStudent extends User {
+  last_achievement?: LastAchievement | null;
+  has_new_achievements: boolean;
+}

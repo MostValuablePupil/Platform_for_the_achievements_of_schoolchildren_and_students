@@ -1,7 +1,7 @@
 // frontend/src/pages/EmployerStudentsPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Award, TrendingUp, CheckCircle, ExternalLink, GraduationCap, Loader2 } from 'lucide-react';
+import { Search, Award, TrendingUp, ExternalLink, GraduationCap, Loader2 } from 'lucide-react';
 import { userAPI } from '../api/client';
 import type { User } from '../types';
 
