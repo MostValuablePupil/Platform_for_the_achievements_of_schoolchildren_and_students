@@ -10,7 +10,7 @@ from .serializers import UserSerializer, SpecialtySerializer, SubscribedStudentS
 from .models import Specialty, StudentFollow
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Count
+from django.db.models import Count, Q
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
@@ -137,6 +137,72 @@ class UserViewSet(viewsets.ModelViewSet):
         followed = StudentFollow.objects.filter(employer=request.user, student=student).exists()
         return Response({'is_followed': followed})
 
+    @action(detail=False, methods=['get'], url_path='leaderboard')
+    def leaderboard(self, request):
+        """
+        Возвращает список пользователей для лидерборда с фильтрацией и сортировкой.
+        Параметры:
+        - sort_by: 'xp' или 'achievements'
+        - specialty: ID специальности (для студентов)
+        - course: номер курса/класса
+        - city: город (для школьников)
+        - educational_institution: название школы/вуза
+        - user_type: 'university' или 'school' (НОВЫЙ ПАРАМЕТР)
+        """
+        # Базовый queryset: только активные пользователи с ролью STUDENT
+        # Мы считаем, что и студенты вузов, и школьники имеют роль STUDENT
+        queryset = User.objects.filter(
+            role=User.Role.STUDENT, 
+            is_active=True, 
+            is_deleted=False
+        ).annotate(achievements_count=Count('achievements', filter=Q(achievements__status='VERIFIED')))
+
+        # --- НОВАЯ ЛОГИКА: Фильтрация по типу учащегося ---
+        user_type = request.query_params.get('user_type')
+        
+        if user_type == 'university':
+            # Студенты вуза: у них ЕСТЬ specialty
+            queryset = queryset.filter(specialty__isnull=False)
+        elif user_type == 'school':
+            # Школьники: у них НЕТ specialty, но есть course (1-11)
+            # Исключаем тех, у кого есть specialty, и тех, у кого курс вне диапазона 1-11
+            queryset = queryset.filter(
+                specialty__isnull=True,
+                course__in=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+            )
+        # Если user_type не передан, показываем всех (или можно скрыть по умолчанию)
+
+        # --- ОСТАЛЬНАЯ ФИЛЬТРАЦИЯ ---
+        
+        specialty_id = request.query_params.get('specialty')
+        if specialty_id:
+            queryset = queryset.filter(specialty_id=specialty_id)
+
+        course = request.query_params.get('course')
+        if course:
+            queryset = queryset.filter(course=course)
+
+        city = request.query_params.get('city')
+        if city:
+            queryset = queryset.filter(city__icontains=city)
+
+        institution = request.query_params.get('educational_institution')
+        if institution:
+            queryset = queryset.filter(educational_institution__icontains=institution)
+
+        # --- СОРТИРОВКА ---
+        sort_by = request.query_params.get('sort_by', 'xp')
+        
+        if sort_by == 'achievements':
+            queryset = queryset.order_by('-achievements_count', '-total_xp')
+        else:
+            queryset = queryset.order_by('-total_xp', '-achievements_count')
+
+        queryset = queryset[:50]
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def verify_email(request, token):

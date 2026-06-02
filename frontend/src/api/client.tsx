@@ -42,7 +42,6 @@ export const authAPI = {
     apiClient.post<User>('users/', userData),
 };
 
-
 export const userAPI = {
   getAll: () => apiClient.get<User[]>('users/'),
   getById: (id: number) => apiClient.get<User>(`users/${id}/`),
@@ -51,6 +50,16 @@ export const userAPI = {
   
   // Проверка подписки
   isFollowed: (studentId: number) => apiClient.get<{ is_followed: boolean }>(`users/${studentId}/is_followed/`),
+  
+  getLeaderboard: (params?: {
+    sort_by?: 'xp' | 'achievements';
+    user_type?: 'university' | 'school';
+    specialty?: string;
+    course?: string;
+    city?: string;
+    educational_institution?: string;
+  }) => apiClient.get<User[]>('users/leaderboard/', { params }),
+  
 };
 
 export const achievementAPI = {
@@ -99,15 +108,13 @@ export const telegramAPI = {
 
 export const subscriptionAPI = {
   // Получить список моих подписок (использует action followed_students из UserViewSet)
-  // Путь: GET /api/users/followed_students/
   getSubscriptions: () => apiClient.get('/users/followed_students/'),
   
   // Подписаться на студента (использует action follow из UserViewSet)
-  // Путь: POST /api/users/{id}/follow/
   subscribe: (studentId: number) => apiClient.post(`/users/${studentId}/follow/`),
   
   // Отписаться от студента (использует action unfollow из UserViewSet)
-  // Путь: DELETE /api/users/{id}/follow/
+  // ВАЖНО: Убедитесь, что на бэкенде url_path='unfollow' для метода DELETE
   unsubscribe: (studentId: number) => apiClient.delete(`/users/${studentId}/unfollow/`),
 };
 
