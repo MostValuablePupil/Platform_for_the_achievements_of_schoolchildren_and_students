@@ -62,13 +62,25 @@ class SpecialtyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SpecialtySerializer
     permission_classes = [permissions.AllowAny]
 
+class IsUserOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj == request.user
+
+
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.annotate(achievements_count=Count('achievements'))
     serializer_class = UserSerializer
+
+    def get_queryset(self):
+        qs = User.objects.annotate(achievements_count=Count('achievements'))
+        if self.action == 'list' and not self.request.user.is_staff:
+            return qs.filter(pk=self.request.user.pk)
+        return qs
 
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.AllowAny()]
+        if self.action in ('update', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated(), IsUserOwner()]
         return [permissions.IsAuthenticated()]
 
     @action(detail=True, methods=['get'])

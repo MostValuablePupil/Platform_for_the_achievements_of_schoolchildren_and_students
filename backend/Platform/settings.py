@@ -31,6 +31,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 CURATOR_REGISTRATION_CODE = os.getenv("CURATOR_REGISTRATION_CODE", "CURATOR-2024-SECRET")
 DEBUG = _get_bool_env("DEBUG", True)
 
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 ALLOWED_HOSTS = _get_list_env(
     "DJANGO_ALLOWED_HOSTS",
     ["127.0.0.1", "localhost", "192.168.0.81", "backend"],
@@ -156,6 +164,14 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/minute",
+        "user": "300/minute",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -227,7 +243,7 @@ CORS_ALLOWED_ORIGINS = _get_list_env(
     ],
 )
 
-CORS_ALLOW_ALL_ORIGINS = _get_bool_env("CORS_ALLOW_ALL_ORIGINS", DEBUG)
+CORS_ALLOW_ALL_ORIGINS = _get_bool_env("CORS_ALLOW_ALL_ORIGINS", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

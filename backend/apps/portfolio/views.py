@@ -14,13 +14,32 @@ from .serializers import (
 from django.utils import timezone
 
 
+class IsCurator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and getattr(request.user, 'role', None) == 'CURATOR'
+
+
+class IsAchievementOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.student == request.user
+
+
 class AchievementViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.all()
     serializer_class = AchievementSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ('verify', 'reject', 'set_pending'):
+            return [permissions.IsAuthenticated(), IsCurator()]
+        if self.action in ('update', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated(), IsAchievementOwner()]
+        return [permissions.IsAuthenticated()]
+
     def get_queryset(self):
         qs = Achievement.objects.all()
+        if getattr(self.request.user, 'role', None) == 'STUDENT':
+            qs = qs.filter(student=self.request.user)
         student = self.request.query_params.get('student')
         if student:
             qs = qs.filter(student_id=student)
@@ -28,7 +47,7 @@ class AchievementViewSet(viewsets.ModelViewSet):
         if status_filter:
             qs = qs.filter(status=status_filter)
         return qs
-    
+
     def perform_create(self, serializer):
         # Сохраняем достижение, привязывая его к текущему юзеру
         # Статус по умолчанию и так PENDING в модели

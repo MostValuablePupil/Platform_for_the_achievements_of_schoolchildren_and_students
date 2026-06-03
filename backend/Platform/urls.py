@@ -19,6 +19,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -37,7 +38,7 @@ router = DefaultRouter()
 router.register(r'achievements', AchievementViewSet)
 router.register(r'events', PortfolioEventViewSet)
 router.register(r'parsed-events', ParsedEventViewSet, basename='parsed-event')
-router.register(r'users', UserViewSet) # Все действия follow/unfollow здесь
+router.register(r'users', UserViewSet, basename='user')
 router.register(r'specialties', SpecialtyViewSet)
 router.register(r'skill-categories', SkillCategoryViewSet)
 router.register(r'skills', SkillViewSet)
@@ -50,8 +51,8 @@ urlpatterns = [
     path('api/login/', custom_login, name='api_token_auth'),
     
     # --- МАРШРУТЫ ДЛЯ ДОКУМЕНТАЦИИ ---
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/', SpectacularAPIView.as_view(permission_classes=[IsAuthenticated]), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema', permission_classes=[IsAuthenticated]), name='swagger-ui'),
     
     # Все запросы, которые начинаются с /dashboard/, 
     # мы отправляем разбираться в приложение users!
