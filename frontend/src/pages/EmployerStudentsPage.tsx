@@ -5,6 +5,7 @@ import { Search, Award, TrendingUp, ExternalLink, GraduationCap, Loader2 } from 
 import { userAPI } from '../api/client';
 import type { User } from '../types';
 
+// ✅ 1. ДОБАВЛЯЕМ ПОЛЕ specialty В ИНТЕРФЕЙС
 interface StudentData {
   id: number;
   first_name: string;
@@ -18,6 +19,7 @@ interface StudentData {
   avatar_initials: string;
   avatar_url?: string;
   skills: string[];
+  specialty?: any; // Поле может быть объектом или ID, нам важно его наличие
 }
 
 export default function EmployerStudentsPage() {
@@ -33,11 +35,13 @@ export default function EmployerStudentsPage() {
       try {
         setLoading(true);
         const response = await userAPI.getAll();
+        // Фильтруем только студентов/школьников (роль STUDENT)
         const studentsList = response.data.filter((u: User) => u.role === 'STUDENT');
         
         const formattedStudents: StudentData[] = studentsList.map((u: User) => {
           const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase() || 'СТ';
-          const skillsList = u.competencies ? u.competencies.map(c => c.name) : [];
+          // Предполагаем, что навыки приходят в поле competencies или skills, адаптируйте под ваш API
+          const skillsList = (u as any).competencies ? (u as any).competencies.map((c: any) => c.name) : [];
           
           return {
             id: u.id,
@@ -50,8 +54,9 @@ export default function EmployerStudentsPage() {
             level: u.level || 1,
             achievements_count: u.achievements_count || 0,
             avatar_initials: initials,
-            avatar_url: u.avatar_details?.image,
-            skills: skillsList
+            avatar_url: (u as any).avatar_details?.image,
+            skills: skillsList,
+            specialty: u.specialty // ✅ 2. ЗАПОЛНЯЕМ ПОЛЕ specialty ИЗ ОТВЕТА API
           };
         });
 
@@ -75,7 +80,7 @@ export default function EmployerStudentsPage() {
       s.skills.some(skill => skill.toLowerCase().includes(search.toLowerCase()));
       
     const matchesFaculty = filters.faculty === '' || 
-      s.educational_institution.includes(filters.faculty);
+      s.educational_institution.toLowerCase().includes(filters.faculty.toLowerCase());
 
     const matchesLevel = filters.min_level === '' || 
       s.level >= parseInt(filters.min_level);
@@ -91,29 +96,27 @@ export default function EmployerStudentsPage() {
   };
 
   return (
-    // pt-4 на мобильных, чтобы контент не прилипал к краям
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       {/* Header */}
       <div className="animate-fade-in-up">
         <h1 className="text-xl md:text-3xl font-bold text-white mb-1 md:mb-2">
-          Поиск студентов
+          Поиск учащихся
         </h1>
         <p className="text-xs md:text-base text-gray-500">
-          Найдите талантливых студентов с подтвержденными навыками
+          Найдите талантливых школьников и студентов с подтвержденными навыками
         </p>
       </div>
 
-      {/* Stats - 1 колонка на телефоне, 2 на планшете, 4 на десктопе */}
+      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 animate-fade-in-up delay-100">
         <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-5">
           <p className="text-lg md:text-2xl font-bold text-blue-400 mb-1">{stats.total}</p>
-          <p className="text-xs md:text-sm text-gray-500">Студентов в базе</p>
+          <p className="text-xs md:text-sm text-gray-500">Учащихся в базе</p>
         </div>
         <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-5">
           <p className="text-lg md:text-2xl font-bold text-purple-400 mb-1">{stats.avgLevel}</p>
           <p className="text-xs md:text-sm text-gray-500">Средний уровень</p>
         </div>
-        {/* Дополнительно можно добавить статистику, чтобы заполнить сетку на десктопе */}
         <div className="hidden md:block bg-[#1a2332] border border-gray-800 rounded-xl p-5">
           <p className="text-2xl font-bold text-green-400 mb-1">
             {students.filter(s => s.achievements_count > 0).length}
@@ -128,7 +131,7 @@ export default function EmployerStudentsPage() {
         </div>
       </div>
 
-      {/* Filters - Вертикально на телефоне, горизонтально на десктопе */}
+      {/* Filters */}
       <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-4 animate-fade-in-up delay-200">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
@@ -142,19 +145,16 @@ export default function EmployerStudentsPage() {
             />
           </div>
           
-          {/* На телефоне селекты друг под другом, на десктопе в ряд */}
           <div className="flex flex-col sm:flex-row md:flex-row gap-3">
             <select
               value={filters.faculty}
               onChange={(e) => setFilters({...filters, faculty: e.target.value})}
               className="w-full sm:w-48 px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
             >
-              <option value="">Все вузы</option>
+              <option value="">Все учреждения</option>
               <option value="МГТУ">МГТУ им. Баумана</option>
               <option value="МГУ">МГУ им. Ломоносова</option>
-              <option value="СПбГУ">СПбГУ</option>
-              <option value="ИТМО">ИТМО</option>
-              <option value="ВШЭ">ВШЭ</option>
+              <option value="Школа">Школы</option>
             </select>
             <select
               value={filters.min_level}
@@ -182,7 +182,7 @@ export default function EmployerStudentsPage() {
       ) : (
         <div className="space-y-3 md:space-y-4">
           <p className="text-xs md:text-sm text-gray-500 animate-fade-in">
-            Найдено: {filteredStudents.length} студентов
+            Найдено: {filteredStudents.length} учащихся
           </p>
           
           {filteredStudents.length > 0 ? (
@@ -194,7 +194,6 @@ export default function EmployerStudentsPage() {
                 onClick={() => navigate(`/employer/students/${student.id}`)}
               >
                 <div className="flex items-start gap-3 md:gap-4">
-                  {/* Аватар: поменьше на телефоне */}
                   {student.avatar_url ? (
                     <img 
                       src={student.avatar_url} 
@@ -212,18 +211,28 @@ export default function EmployerStudentsPage() {
                       <h3 className="text-sm md:text-lg font-semibold text-white group-hover:text-blue-400 transition-colors truncate">
                         {student.first_name} {student.last_name}
                       </h3>
-                      {/* Кнопка "Профиль" - иконка на телефоне, текст на десктопе */}
                       <button className="p-1.5 md:px-4 md:py-2 border border-gray-700 rounded-lg md:rounded-xl text-gray-400 hover:text-white hover:border-blue-500/30 hover:bg-[#0f1419] transition-all flex-shrink-0">
                         <ExternalLink className="w-4 h-4" />
                         <span className="hidden md:inline ml-2">Профиль</span>
                       </button>
                     </div>
                     
+                    {/* ✅ 3. ИСПРАВЛЕННАЯ ЛОГИКА ОТОБРАЖЕНИЯ КУРСА/КЛАССА */}
                     <p className="text-xs md:text-sm text-gray-400 mb-2 flex items-center gap-1 truncate">
                       <GraduationCap className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                      
+                      {student.course && student.course !== '-' && (
+                        <span>
+                          {/* Если есть specialty - значит ВУЗ (курс), иначе Школа (класс) */}
+                          {student.course} {student.specialty ? 'курс' : 'класс'}
+                        </span>
+                      )}
+                      
+                      {(student.course && student.course !== '-') && student.educational_institution && (
+                        <span className="text-gray-600 hidden md:inline">•</span>
+                      )}
+                      
                       <span className="truncate">{student.educational_institution}</span>
-                      <span className="text-gray-600 hidden md:inline">•</span>
-                      <span className="hidden md:inline">{student.course} курс</span>
                     </p>
                     
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm mb-2">
@@ -260,7 +269,7 @@ export default function EmployerStudentsPage() {
           ) : (
             <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-8 md:p-12 text-center animate-fade-in">
               <Search className="w-10 h-10 md:w-12 md:h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-sm md:text-base text-gray-500">Студенты не найдены</p>
+              <p className="text-sm md:text-base text-gray-500">Учащиеся не найдены</p>
               <p className="text-xs md:text-sm text-gray-600 mt-1">Попробуйте изменить фильтры</p>
             </div>
           )}
