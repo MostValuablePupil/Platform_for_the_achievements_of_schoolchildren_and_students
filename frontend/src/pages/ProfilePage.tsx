@@ -1,11 +1,11 @@
 // frontend/src/pages/ProfilePage.tsx
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { Trophy, Award, CheckCircle2, GraduationCap, Mail, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle, Settings, X, Loader2, Send, Medal, MapPin, Building2 } from 'lucide-react'; // Добавлены иконки MapPin, Building2
+import { Trophy, Award, CheckCircle2, GraduationCap, Mail, ArrowUpRight, ArrowRight, BarChart3, Activity, MessageCircle, Settings, X, Loader2, Medal, MapPin, Building2 } from 'lucide-react'; // Убрали Send, так как он больше не используется здесь
 import { useNavigate } from 'react-router-dom';
-import { telegramAPI, TELEGRAM_BOT_USERNAME, userAPI, specialtyAPI } from '../api/client';
+import { userAPI, specialtyAPI } from '../api/client'; 
 import type { User, Specialty } from '../types';
-import CustomSelect from '../components/CustomSelect'; // Импортируем кастомный селект
+import CustomSelect from '../components/CustomSelect';
 
 const ALL_BADGES = [
   { id: '1', name: 'Первая победа', icon: '🏆', description: 'За 1 место в олимпиаде' },
@@ -71,7 +71,7 @@ export default function ProfilePage() {
     try {
       const params: any = { sort_by: sortBy };
       
-      // ✅ ДОБАВЛЯЕМ ПАРАМЕТР user_type для разделения студентов и школьников
+      // ДОБАВЛЯЕМ ПАРАМЕТР user_type для разделения студентов и школьников
       if (currentUser?.specialty) {
         params.user_type = 'university';
       } else {
@@ -98,15 +98,12 @@ export default function ProfilePage() {
 
   const isUniversityStudent = !!currentUser?.specialty; 
 
-  // --- Остальная логика (попапы, телеграм, статистика) без изменений ---
+  // --- Остальная логика (попапы, статистика) без изменений ---
   const [showContactPopup, setShowContactPopup] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const contactPopupRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [tgStatus, setTgStatus] = useState<{ is_linked: boolean; telegram_username: string | null } | null>(null);
-  const [tgCode, setTgCode] = useState<{ code: string } | null>(null);
-  const [tgLoading, setTgLoading] = useState(false);
-  const [tgShowCode, setTgShowCode] = useState(false);
+  
   const [editFormData, setEditFormData] = useState({
     first_name: '',
     last_name: '',
@@ -136,48 +133,6 @@ export default function ProfilePage() {
       future_profession: currentUser.future_profession || '',
     });
     setIsEditingProfile(true);
-  };
-
-  useEffect(() => {
-    telegramAPI.getStatus().then(r => setTgStatus(r.data)).catch(() => setTgStatus({ is_linked: false, telegram_username: null }));
-  }, []);
-
-  useEffect(() => {
-    if (!tgCode) return;
-    const timer = setInterval(async () => {
-      try {
-        const r = await telegramAPI.getStatus();
-        if (r.data.is_linked) { setTgStatus(r.data); setTgCode(null); }
-      } catch {}
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [tgCode]);
-
-  const handleLinkTelegram = async () => {
-    setTgLoading(true);
-    try {
-      const r = await telegramAPI.generateLink();
-      setTgCode({ code: r.data.code });
-      window.open(`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${r.data.code}`, '_blank');
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Ошибка генерации ссылки');
-    } finally {
-      setTgLoading(false);
-    }
-  };
-
-  const handleUnlinkTelegram = async () => {
-    if (!confirm('Отвязать Telegram от аккаунта?')) return;
-    setTgLoading(true);
-    try {
-      await telegramAPI.unlink();
-      setTgStatus({ is_linked: false, telegram_username: null });
-      setTgCode(null);
-    } catch {
-      alert('Ошибка при отвязке');
-    } finally {
-      setTgLoading(false);
-    }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -259,7 +214,6 @@ export default function ProfilePage() {
     return opts;
   }, []);
 
-  // ✅ Динамические метки для шапки
   const roleLabel = currentUser.specialty ? 'Студент' : 'Школьник';
   const courseLabel = currentUser.specialty ? 'курс' : 'класс';
   const institutionPlaceholder = currentUser.specialty ? 'Факультет ИТ' : 'Школа';
@@ -267,7 +221,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-10 animate-fade-in px-4 md:px-0">
       
-      {/* ... МОБИЛЬНАЯ ВЕРСИЯ БЕЗ ИЗМЕНЕНИЙ ... */}
+      {/* ... МОБИЛЬНАЯ ВЕРСИЯ ... */}
       <div className="lg:hidden bg-gradient-to-r from-blue-600/20 via-blue-500/10 to-cyan-500/20 border border-blue-500/30 rounded-2xl p-4 animate-fade-in-up">
          {/* ... код мобильной шапки ... */}
          <div className="flex items-center justify-between mb-3">
@@ -277,7 +231,6 @@ export default function ProfilePage() {
                </div>
                <div className="flex-1 min-w-0">
                   <h1 className="text-lg font-bold text-white truncate">{currentUser.first_name} {currentUser.last_name}</h1>
-                  {/* ✅ Исправлено для мобильных */}
                   <p className="text-xs text-blue-200 truncate">
                     {roleLabel} • {currentUser.course || '1'} {courseLabel} • {currentUser.educational_institution || institutionPlaceholder}
                   </p>
@@ -299,7 +252,7 @@ export default function ProfilePage() {
                  <div>
                     <h1 className="text-3xl font-bold mb-2 animate-fade-in-up delay-100">{currentUser.first_name} {currentUser.last_name}</h1>
                     <div className="flex items-center gap-3 text-blue-200 text-sm flex-wrap animate-fade-in-up delay-200">
-                       {/* ✅ Исправлено: Динамическая роль и курс/класс */}
+                       {/* Динамическая роль и курс/класс */}
                        <span className="flex items-center gap-1">
                          <GraduationCap className="w-4 h-4" />
                          {roleLabel} • {currentUser.course || '1'} {courseLabel}
@@ -535,7 +488,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ... МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ БЕЗ ИЗМЕНЕНИЙ ... */}
+      {/* === МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ (очищено от Telegram) === */}
       {isEditingProfile && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="bg-[#1a2332] border border-gray-800 rounded-2xl w-full max-w-lg overflow-hidden animate-scale-in">
@@ -544,35 +497,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm text-gray-400 mb-1">Имя</label><input type="text" autoComplete="off" value={editFormData.first_name} onChange={e => setEditFormData({...editFormData, first_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div><div><label className="block text-sm text-gray-400 mb-1">Фамилия</label><input type="text" autoComplete="off" value={editFormData.last_name} onChange={e => setEditFormData({...editFormData, last_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div></div>
               <div><label className="block text-sm text-gray-400 mb-1">Учебное заведение</label><input type="text" autoComplete="off" value={editFormData.educational_institution} onChange={e => setEditFormData({...editFormData, educational_institution: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="МГТУ им. Баумана" /></div>
               <div><label className="block text-sm text-gray-400 mb-1">Цель (Будущая профессия)</label><input type="text" autoComplete="off" value={editFormData.future_profession} onChange={e => setEditFormData({...editFormData, future_profession: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="Data Scientist" /></div>
-              
-              {/* Telegram Block inside Modal */}
-              <div className="border-t border-gray-800 pt-4">
-                <label className="block text-sm text-gray-400 mb-3 flex items-center gap-2"><Send className="w-4 h-4 text-blue-400" />Telegram-уведомления</label>
-                {tgStatus === null ? (
-                  <div className="flex items-center gap-2 text-xs text-gray-500"><Loader2 className="w-3 h-3 animate-spin" />Загрузка...</div>
-                ) : tgStatus.is_linked ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-400" /><span className="text-sm text-gray-300">{tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Telegram привязан'}</span></div>
-                    <button type="button" onClick={handleUnlinkTelegram} disabled={tgLoading} className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors">{tgLoading ? 'Отвязка...' : 'Отвязать'}</button>
-                  </div>
-                ) : tgCode ? (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-400 flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin text-blue-400" />Ожидание привязки в Telegram...</p>
-                    <button type="button" onClick={() => setTgShowCode(v => !v)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors underline">{tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}</button>
-                    {tgShowCode && (
-                      <div className="bg-[#0f1419] rounded-xl p-3 space-y-1">
-                        <p className="text-[10px] text-gray-500">Скопируй и отправь боту вручную:</p>
-                        <p className="font-mono text-white font-bold tracking-widest text-base">/link {tgCode.code}</p>
-                      </div>
-                    )}
-                    <button type="button" onClick={() => { setTgCode(null); setTgShowCode(false); }} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Отмена</button>
-                  </div>
-                ) : (
-                  <button type="button" onClick={handleLinkTelegram} disabled={tgLoading} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 disabled:opacity-50 text-blue-300 rounded-xl text-sm font-medium transition-colors">{tgLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}Привязать Telegram</button>
-                )}
-              </div>
-
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-800 mt-6"><button type="button" onClick={() => setIsEditingProfile(false)} className="px-5 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">Отмена</button><button type="submit" disabled={isSaving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center gap-2">{isSaving && <Loader2 className="w-4 h-4 animate-spin" />}Сохранить</button></div>
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-800 mt-2"><button type="button" onClick={() => setIsEditingProfile(false)} className="px-5 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">Отмена</button><button type="submit" disabled={isSaving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center gap-2">{isSaving && <Loader2 className="w-4 h-4 animate-spin" />}Сохранить</button></div>
             </form>
           </div>
         </div>
