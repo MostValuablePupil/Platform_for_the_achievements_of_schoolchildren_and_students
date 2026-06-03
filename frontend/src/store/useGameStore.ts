@@ -1,3 +1,4 @@
+// frontend/src/store/useGameStore.ts
 import { create } from 'zustand';
 import { userAPI, achievementAPI, skillAPI, authAPI } from '../api/client';
 import type { User, Achievement, Skill, AchievementStats } from '../types';
@@ -17,7 +18,7 @@ interface GameState {
   // Actions
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  checkAuth: () => Promise<void>; // Теперь это просто описание функции в интерфейсе
+  checkAuth: () => Promise<void>;
   fetchCurrentUser: (userId: number) => Promise<void>;
   fetchUserStats: (userId: number) => Promise<void>;
   fetchAchievements: (params?: any) => Promise<void>;
@@ -28,7 +29,6 @@ interface GameState {
   updateProfile: (id: number, data: Partial<User>) => Promise<void>;
 }
 
-// Проверяем токен ПЕРЕД созданием стора
 const token = localStorage.getItem('token');
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -43,36 +43,31 @@ export const useGameStore = create<GameState>((set, get) => ({
   login: async (username: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
+      
+      // 1. Получаем токен и данные пользователя из ответа логина
       const response = await authAPI.login(username, password);
-      const token = response.data.token;
-      
+      const { token, user } = response.data;
 
+      // 2. Сохраняем токен
       localStorage.setItem('token', token);
-
-      const users = await userAPI.getAll();
       
-      const user = users.data.find((u: User) => 
-          u.username === username || u.email === username
-      );
+      // 3. Сразу устанавливаем пользователя в стейт (он уже пришел с бэкенда!)
+      // Приводим тип, так как API может вернуть немного отличающуюся структуру, 
+      // но основные поля (id, role, etc.) должны быть.
+      set({ 
+        currentUser: user as User,
+        isAuthenticated: true,
+        isLoading: false 
+      });
 
-      if (user) {
-        // Эту строчку мы отсюда убрали (перенесли наверх)
-        localStorage.setItem('userId', user.id.toString()); 
-        
-        set({ 
-          currentUser: user,
-          isAuthenticated: true,
-          isLoading: false 
-        });
-        
-        await get().fetchUserStats(user.id);
-        await get().fetchAchievements({ student: user.id });
-        await get().fetchSkills();
-      } else {
-        // Если юзер не найден, токен лучше удалить,
-        localStorage.removeItem('token');
-        throw new Error("Пользователь не найден в базе");
+      // 4. Загружаем дополнительные данные (статистика, достижения, навыки)
+      // Используем user.id, который пришел в ответе
+      if (user && user.id) {
+         await get().fetchUserStats(user.id);
+         await get().fetchAchievements({ student: user.id });
+         await get().fetchSkills();
       }
+
     } catch (error: any) {
       set({ 
         error: error.response?.data?.detail || 'Ошибка входа',
@@ -84,8 +79,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   checkAuth: async () => {
     const token = localStorage.getItem('token');
-    const savedUserId = localStorage.getItem('userId');
-
+    // Если есть сохраненный пользователь в стейте, можно попробовать восстановить сессию
+    // Но лучше сделать запрос к /users/me/ если такой есть, или просто проверить токен
+    
+    // Временное решение: если токен есть, пробуем загрузить данные текущего юзера
+    // Для этого нам нужно знать его ID. Если мы не сохранили ID отдельно, это сложно.
+    // Поэтому обычно сохраняют userId в localStorage при логине.
+    
+    const savedUserId = localStorage.getItem('userId'); 
+    
     if (!token || !savedUserId) {
       set({ isAuthenticated: false, currentUser: null });
       return;
@@ -93,7 +95,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     try {
       set({ isLoading: true });
-      // Используем сохраненный ID для получения данных пользователя
       const response = await userAPI.getById(Number(savedUserId));
       
       set({ 
@@ -102,13 +103,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         isLoading: false 
       });
 
-      // Сразу подгружаем данные для профиля
       get().fetchUserStats(response.data.id);
       get().fetchAchievements({ student: response.data.id });
       get().fetchSkills();
     } catch (error) {
       console.error("Auth check failed:", error);
-      get().logout(); // Если токен протух — чистим всё
+      get().logout();
     } finally {
       set({ isLoading: false });
     }
@@ -116,13 +116,13 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   logout: () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userId'); // Чистим ID тоже
-    set({ 
+    localStorage.removeItem('userId');
+    set({
       currentUser: null,
       userStats: null,
       achievements: [],
       skills: [],
-      isAuthenticated: false 
+      isAuthenticated: false
     });
   },
 

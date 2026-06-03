@@ -123,10 +123,26 @@ export default function EmployerStudentProfilePage() {
               <h1 className="text-3xl font-bold mb-2 animate-fade-in-up delay-100">
                 {student.first_name || student.username} {student.last_name}
               </h1>
+              
+              {/* ✅ ИСПРАВЛЕННАЯ ЛОГИКА ОТОБРАЖЕНИЯ РОЛИ */}
               <p className="text-blue-200 mb-3 flex items-center gap-2 animate-fade-in-up delay-200">
                 <GraduationCap className="w-4 h-4" />
-                Студент {student.course ? `${student.course} курса` : ''} {student.educational_institution ? `• ${student.educational_institution}` : ''}
+                {/* Если есть specialty - значит ВУЗ, иначе Школа */}
+                {student.specialty ? 'Студент' : 'Школьник'} 
+                
+                {/* Отображаем курс или класс */}
+                {student.course && (
+                  <span>
+                    {' '}{student.course} {student.specialty ? 'курс' : 'класс'}
+                  </span>
+                )}
+                
+                {/* Учебное заведение */}
+                {student.educational_institution && (
+                  <span> • {student.educational_institution}</span>
+                )}
               </p>
+
               <div className="flex items-center gap-4 text-sm text-blue-300/60 animate-fade-in-up delay-300">
                 <span className="flex items-center gap-1">
                   <Award className="w-4 h-4" />

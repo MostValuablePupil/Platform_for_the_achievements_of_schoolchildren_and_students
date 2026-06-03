@@ -71,16 +71,42 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        qs = User.objects.annotate(achievements_count=Count('achievements'))
-        if self.action == 'list' and not self.request.user.is_staff:
+        # Базовый запрос: все активные пользователи, которые не удалены
+        qs = User.objects.filter(is_active=True, is_deleted=False).annotate(achievements_count=Count('achievements'))
+        
+        # Если это действие 'list' (получение списка всех пользователей через GET /api/users/)
+        if self.action == 'list':
+            # 1. Админ видит всех
+            if self.request.user.is_staff:
+                return qs
+            
+            # 2. Работодатель видит ВСЕХ студентов (для поиска талантов)
+            # Проверяем роль через hasattr, чтобы избежать ошибок если объект user еще не полностью загружен
+            if hasattr(self.request.user, 'role') and self.request.user.role == 'EMPLOYER':
+                return qs.filter(role=User.Role.STUDENT)
+            
+            # 3. Обычные пользователи (студенты/школьники) видят ТОЛЬКО СЕБЯ в списке.
+            # Это важно для безопасности. 
             return qs.filter(pk=self.request.user.pk)
+        
+        # Для действия 'retrieve' (GET /api/users/{id}/) мы разрешаем смотреть профили другим,
+        # но ограничим это в permissions или оставим открытым для публичных профилей.
         return qs
 
     def get_permissions(self):
+        # Регистрация открыта для всех
         if self.action == 'create':
             return [permissions.AllowAny()]
+        
+        # Обновлять и удалять можно только свой аккаунт
         if self.action in ('update', 'partial_update', 'destroy'):
             return [permissions.IsAuthenticated(), IsUserOwner()]
+        
+        # Просмотр списка (list) и деталей (retrieve) требует авторизации
+        if self.action in ('list', 'retrieve'):
+            return [permissions.IsAuthenticated()]
+            
+        # Для кастомных действий (follow, leaderboard и т.д.) используем стандартную проверку IsAuthenticated
         return [permissions.IsAuthenticated()]
 
     @action(detail=True, methods=['get'])
@@ -284,5 +310,6 @@ def custom_login(request):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
+            'role': user.role,
         }
     })

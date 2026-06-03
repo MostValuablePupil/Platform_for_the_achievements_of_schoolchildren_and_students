@@ -35,9 +35,16 @@ apiClient.interceptors.request.use((config) => {
 
 // --- API Функции ---
 
+interface LoginResponse {
+  token: string;
+  user: User; // Используем ваш существующий тип User
+}
+
 export const authAPI = {
+  // ✅ Изменили тип возврата на LoginResponse
   login: (username: string, password: string) =>
-    apiClient.post<{ token: string }>('login/', { username, password }),
+    apiClient.post<LoginResponse>('login/', { username, password }),
+  
   register: (userData: any) =>
     apiClient.post<User>('users/', userData),
 };
