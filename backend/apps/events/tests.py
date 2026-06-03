@@ -51,7 +51,7 @@ class ParsedEventListAPITest(TestCase):
     def test_list_returns_all_events(self):
         r = self.client.get('/api/parsed-events/')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(len(r.data), 3)
+        self.assertEqual(len(r.data['results']), 3)
 
     def test_anonymous_requires_auth(self):
         r = APIClient().get('/api/parsed-events/')
@@ -59,28 +59,28 @@ class ParsedEventListAPITest(TestCase):
 
     def test_filter_by_source(self):
         r = self.client.get(f'/api/parsed-events/?source={Event.Source.MIPT}')
-        self.assertEqual(len(r.data), 1)
-        self.assertEqual(r.data[0]['title'], 'Хакатон МФТИ')
+        self.assertEqual(len(r.data['results']), 1)
+        self.assertEqual(r.data['results'][0]['title'], 'Хакатон МФТИ')
 
     def test_filter_by_event_type(self):
         r = self.client.get(f'/api/parsed-events/?event_type={Event.EventType.OLYMPIAD}')
-        titles = [e['title'] for e in r.data]
+        titles = [e['title'] for e in r.data['results']]
         self.assertIn('Олимпиада по математике', titles)
         self.assertNotIn('Хакатон МФТИ', titles)
 
     def test_filter_by_subject_area(self):
         r = self.client.get('/api/parsed-events/?subject_area=Математика')
-        self.assertEqual(len(r.data), 1)
-        self.assertEqual(r.data[0]['subject_area'], 'Математика')
+        self.assertEqual(len(r.data['results']), 1)
+        self.assertEqual(r.data['results'][0]['subject_area'], 'Математика')
 
     def test_filter_by_year(self):
         r = self.client.get('/api/parsed-events/?year=2025/26')
-        years = [e['year'] for e in r.data]
+        years = [e['year'] for e in r.data['results']]
         self.assertTrue(all(y == '2025/26' for y in years))
 
     def test_search_by_title(self):
         r = self.client.get('/api/parsed-events/?search=математик')
-        titles = [e['title'] for e in r.data]
+        titles = [e['title'] for e in r.data['results']]
         self.assertIn('Олимпиада по математике', titles)
 
 
@@ -127,8 +127,8 @@ class ParsedEventSerializerTest(TestCase):
 
     def test_response_includes_source_display(self):
         r = self.client.get('/api/parsed-events/')
-        self.assertIn('source_display', r.data[0])
+        self.assertIn('source_display', r.data['results'][0])
 
     def test_response_includes_event_type_display(self):
         r = self.client.get('/api/parsed-events/')
-        self.assertIn('event_type_display', r.data[0])
+        self.assertIn('event_type_display', r.data['results'][0])

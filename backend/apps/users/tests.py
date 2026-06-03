@@ -108,6 +108,7 @@ class RegistrationAPITest(TestCase):
             'first_name': 'Иван',
             'last_name': 'Иванов',
             'role': 'STUDENT',
+            'city': 'Екатеринбург',
         }
 
     def test_creates_inactive_user(self):

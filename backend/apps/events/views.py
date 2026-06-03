@@ -40,6 +40,7 @@ class EventViewSet(ReadOnlyModelViewSet):
         source = self.request.query_params.get('source')
         event_type = self.request.query_params.get('event_type')
         year = self.request.query_params.get('year')
+        subject_area = self.request.query_params.get('subject_area')
         has_date = self.request.query_params.get('has_date')
         search = self.request.query_params.get('search')
 
@@ -49,6 +50,8 @@ class EventViewSet(ReadOnlyModelViewSet):
             queryset = queryset.filter(event_type=event_type)
         if year:
             queryset = queryset.filter(year=year)
+        if subject_area:
+            queryset = queryset.filter(subject_area=subject_area)
         if has_date == 'true':
             queryset = queryset.filter(event_date__isnull=False)
         if search:
@@ -96,6 +99,12 @@ class EventViewSet(ReadOnlyModelViewSet):
             ],
             'years': list(
                 qs.exclude(year='').values_list('year', flat=True).distinct().order_by('-year')
+            ),
+            'subject_areas': list(
+                qs.exclude(subject_area='').values_list('subject_area', flat=True).distinct().order_by('subject_area')
+            ),
+            'regions': list(
+                qs.exclude(region='').values_list('region', flat=True).distinct().order_by('region')
             ),
         })
 
