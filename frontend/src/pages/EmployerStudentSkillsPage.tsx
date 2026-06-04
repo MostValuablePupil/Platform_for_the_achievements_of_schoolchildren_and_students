@@ -9,13 +9,11 @@ import type { SkillProfile, SkillCategory, Skill, Achievement, User } from '../t
 export default function EmployerStudentSkillsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
   const [student, setStudent] = useState<User | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [profiles, setProfiles] = useState<SkillProfile[]>([]);
   const [categories, setCategories] = useState<SkillCategory[]>([]);
-  
   const [activeProfileId, setActiveProfileId] = useState<number | null>(null);
   const [activeCategoryName, setActiveCategoryName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +72,7 @@ export default function EmployerStudentSkillsPage() {
 
   // Подсчитываем проекты для всех навыков
   const skillsWithCounts = allSkills.map(skill => {
-    const count = verifiedAchievements.filter(ach => 
+    const count = verifiedAchievements.filter(ach =>
       ach.skill_names?.includes(skill.name) || ach.skills?.some((s: any) => typeof s === 'object' && s.name === skill.name)
     ).length;
     return { ...skill, count };
@@ -83,7 +81,7 @@ export default function EmployerStudentSkillsPage() {
   // Фильтруем категории по активному профилю
   const activeProfileCategories = categories.filter(c => c.profile === activeProfileId);
   const activeProfileCategoryNames = activeProfileCategories.map(c => c.name);
-  
+
   // Навыки, относящиеся к активному профилю
   const activeProfileSkills = skillsWithCounts.filter(s => activeProfileCategoryNames.includes(s.category_name));
   const displaySkills = activeProfileSkills
@@ -93,8 +91,7 @@ export default function EmployerStudentSkillsPage() {
   // Подготавливаем данные для Радар-графика
   const radarData = activeProfileCategories.map(category => {
     const userSkillsInCategory = activeProfileSkills.filter(comp => comp.category_name === category.name && comp.count > 0);
-    const categoryScore = Math.min(userSkillsInCategory.length * 20, 100); 
-
+    const categoryScore = Math.min(userSkillsInCategory.length * 20, 100);
     return {
       subject: category.name,
       A: categoryScore,
@@ -105,13 +102,13 @@ export default function EmployerStudentSkillsPage() {
   const CustomTick = ({ payload, x, y, textAnchor, stroke, radius }: any) => {
     const isSelected = payload.value === activeCategoryName;
     return (
-      <text 
-        radius={radius} 
-        stroke={stroke} 
-        x={x} 
-        y={y} 
-        className={`cursor-pointer transition-colors ${isSelected ? 'fill-blue-500 font-bold' : 'fill-gray-400 font-medium hover:fill-cyan-400'}`}
-        textAnchor={textAnchor} 
+      <text
+        radius={radius}
+        stroke={stroke}
+        x={x}
+        y={y}
+        className={`cursor-pointer transition-colors text-[10px] sm:text-xs ${isSelected ? 'fill-blue-500 font-bold' : 'fill-gray-400 font-medium hover:fill-cyan-400'}`}
+        textAnchor={textAnchor}
         onClick={() => {
           if (activeCategoryName === payload.value) {
             setActiveCategoryName(null);
@@ -128,22 +125,22 @@ export default function EmployerStudentSkillsPage() {
   const studentName = `${student.first_name || student.username} ${student.last_name || ''}`.trim();
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in px-4 sm:px-6 lg:px-0">
       {/* Header */}
       <div className="animate-fade-in-up">
         <button
           onClick={() => navigate(`/employer/students/${id}`)}
-          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-6 transition-colors"
+          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-3 sm:mb-6 transition-colors text-sm sm:text-base"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           Вернуться в профиль
         </button>
-        <h1 className="text-3xl font-bold text-white mb-2">Трекинг навыков: {studentName}</h1>
-        <p className="text-gray-500">Детальная аналитика по компетенциям и проектам кандидата</p>
+        <h1 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Трекинг навыков: {studentName}</h1>
+        <p className="text-gray-500 text-sm sm:text-base">Детальная аналитика по компетенциям и проектам кандидата</p>
       </div>
 
-      {/* Переключение профилей */}
-      <div className="flex gap-4 border-b border-gray-800 pb-2">
+      {/* Переключение профилей (скролл на мобильных) */}
+      <div className="flex gap-2 sm:gap-4 border-b border-gray-800 pb-2 overflow-x-auto scrollbar-hide">
         {profiles.map(profile => (
           <button
             key={profile.id}
@@ -151,7 +148,7 @@ export default function EmployerStudentSkillsPage() {
               setActiveProfileId(profile.id);
               setActiveCategoryName(null);
             }}
-            className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
+            className={`px-3 py-2 sm:px-4 sm:py-2 font-medium rounded-t-lg transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeProfileId === profile.id
                 ? 'bg-[#1a2332] text-blue-400 border-b-2 border-blue-500'
                 : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50'
@@ -163,41 +160,41 @@ export default function EmployerStudentSkillsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
               <Code className="w-5 h-5 text-blue-400" />
             </div>
-            <span className="text-gray-400">Навыков в профиле</span>
+            <span className="text-gray-400 text-sm sm:text-base">Навыков в профиле</span>
           </div>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-2xl sm:text-3xl font-bold text-white">
             {activeProfileSkills.length}
           </p>
         </div>
 
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-200">
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-200">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
               <Briefcase className="w-5 h-5 text-purple-400" />
             </div>
-            <span className="text-gray-400">Одобрено проектов (Всего)</span>
+            <span className="text-gray-400 text-sm sm:text-base">Одобрено проектов</span>
           </div>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-2xl sm:text-3xl font-bold text-white">
             {verifiedProjectsCount}
           </p>
         </div>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Skills Progress */}
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-400">
-          <h2 className="text-lg font-semibold text-white mb-6">
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-400">
+          <h2 className="text-lg font-semibold text-white mb-4 sm:mb-6">
             Уровень владения навыками {activeCategoryName && <span className="text-cyan-400 text-sm ml-2">({activeCategoryName})</span>}
           </h2>
           
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             {activeProfileSkills.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 В этом профиле пока нет навыков.
@@ -215,10 +212,10 @@ export default function EmployerStudentSkillsPage() {
                   style={{ animationDelay: `${0.2 + (index * 0.1)}s` }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-200 font-medium">{skill.name}</span>
+                    <div className="flex items-center gap-2 min-w-0 flex-1 mr-4">
+                      <span className="text-gray-200 font-medium truncate text-sm sm:text-base">{skill.name}</span>
                     </div>
-                    <span className="text-sm font-medium text-cyan-400">
+                    <span className="text-xs sm:text-sm font-medium text-cyan-400 flex-shrink-0">
                       {skillProjectsCount} проектов
                     </span>
                   </div>
@@ -239,20 +236,20 @@ export default function EmployerStudentSkillsPage() {
         </div>
 
         {/* Radar Chart */}
-        <div className="bg-[#1a2332] border border-gray-800 rounded-2xl p-6 animate-fade-in-up delay-500 relative">
-          <h2 className="text-lg font-semibold text-white mb-6">
+        <div className="bg-[#1a2332] border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-500 relative min-h-[400px] flex flex-col">
+          <h2 className="text-lg font-semibold text-white mb-4 sm:mb-6">
             Карта компетенций
           </h2>
           {activeProfileCategories.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">
+            <div className="h-64 sm:h-80 flex items-center justify-center text-gray-500">
               Нет категорий в этом профиле
             </div>
           ) : (
             <>
-              <p className="text-xs text-gray-500 absolute top-6 right-6">
+              <p className="text-[10px] sm:text-xs text-gray-500 absolute top-6 right-6">
                 * Кликните на категорию для фильтрации
               </p>
-              <div className="h-80 animate-scale-in delay-600">
+              <div className="flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
                     <PolarGrid stroke="#374151" />

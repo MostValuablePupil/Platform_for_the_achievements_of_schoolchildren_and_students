@@ -5,51 +5,55 @@ import os
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from .models import Event
+from .models import Event, EventTracking
 from .serializers import EventSerializer
 
 logger = logging.getLogger(__name__)
+
+
+class EventPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class EventViewSet(ReadOnlyModelViewSet):
     """
     API для мероприятий/олимпиад.
 
-    GET /api/parsed-events/                — Все мероприятия (с фильтрацией)
+    GET /api/parsed-events/                — Все мероприятия (с фильтрацией, пагинация 20/стр)
     GET /api/parsed-events/recommended/    — ИИ-рекомендации по future_profession
     GET /api/parsed-events/filters/        — Доступные значения фильтров
     """
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = EventPagination
 
     def get_queryset(self):
         queryset = Event.objects.filter(is_active=True)
 
-        # Фильтрация по параметрам запроса
         source = self.request.query_params.get('source')
         event_type = self.request.query_params.get('event_type')
-        subject_area = self.request.query_params.get('subject_area')
-        region = self.request.query_params.get('region')
         year = self.request.query_params.get('year')
-        grade = self.request.query_params.get('grade')
+        subject_area = self.request.query_params.get('subject_area')
+        has_date = self.request.query_params.get('has_date')
         search = self.request.query_params.get('search')
 
         if source:
             queryset = queryset.filter(source=source)
         if event_type:
             queryset = queryset.filter(event_type=event_type)
-        if subject_area:
-            queryset = queryset.filter(subject_area__contains=subject_area)
-        if region:
-            queryset = queryset.filter(region__contains=region)
         if year:
             queryset = queryset.filter(year=year)
-        if grade:
-            queryset = queryset.filter(grade=grade)
+        if subject_area:
+            queryset = queryset.filter(subject_area=subject_area)
+        if has_date == 'true':
+            queryset = queryset.filter(event_date__isnull=False)
         if search:
             # SQLite не поддерживает icontains для кириллицы,
             # используем __contains с разными регистрами
@@ -67,16 +71,41 @@ class EventViewSet(ReadOnlyModelViewSet):
 
         return queryset
 
+    @action(detail=True, methods=['post'])
+    def track(self, request, pk=None):
+        event = self.get_object()
+        EventTracking.objects.get_or_create(user=request.user, event=event)
+        return Response({'is_tracked': True})
+
+    @action(detail=True, methods=['delete'], url_path='track')
+    def untrack(self, request, pk=None):
+        event = self.get_object()
+        EventTracking.objects.filter(user=request.user, event=event).delete()
+        return Response({'is_tracked': False})
+
     @action(detail=False, methods=['get'])
     def filters(self, request):
-        """Возвращает уникальные значения фильтров для фронтенда."""
+        """Возвращает чистые категориальные фильтры для фронтенда."""
         qs = Event.objects.filter(is_active=True)
+        active_sources = set(qs.values_list('source', flat=True).distinct())
         return Response({
-            'sources': list(qs.values_list('source', flat=True).distinct()),
-            'subject_areas': list(qs.values_list('subject_area', flat=True).distinct().order_by('subject_area')),
-            'regions': list(qs.values_list('region', flat=True).distinct().order_by('region')),
-            'years': list(qs.values_list('year', flat=True).distinct().order_by('-year')),
-            'grades': list(qs.values_list('grade', flat=True).distinct().order_by('grade')),
+            'event_types': [
+                {'value': v, 'label': l} for v, l in Event.EventType.choices
+            ],
+            'sources': [
+                {'value': v, 'label': l}
+                for v, l in Event.Source.choices
+                if v in active_sources
+            ],
+            'years': list(
+                qs.exclude(year='').values_list('year', flat=True).distinct().order_by('-year')
+            ),
+            'subject_areas': list(
+                qs.exclude(subject_area='').values_list('subject_area', flat=True).distinct().order_by('subject_area')
+            ),
+            'regions': list(
+                qs.exclude(region='').values_list('region', flat=True).distinct().order_by('region')
+            ),
         })
 
     @action(detail=False, methods=['get'])

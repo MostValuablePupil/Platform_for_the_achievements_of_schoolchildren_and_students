@@ -180,12 +180,13 @@ class PaddleOCREngine:
             return self._ocr_engine
 
         kwargs = {
-            "device": "cpu",
+            "device": "gpu:0",
             "enable_mkldnn": False,
             "cpu_threads": DEFAULT_CPU_THREADS,
             "use_doc_orientation_classify": False,
             "use_doc_unwarping": False,
             "use_textline_orientation": False,
+            "use_tensorrt": True,
         }
         if requested_lang:
             kwargs["lang"] = requested_lang

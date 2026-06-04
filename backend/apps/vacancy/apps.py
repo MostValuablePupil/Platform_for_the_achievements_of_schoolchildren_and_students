@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class VacancyConfig(AppConfig):
-    name = 'apps.vacancy'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.vacancy"

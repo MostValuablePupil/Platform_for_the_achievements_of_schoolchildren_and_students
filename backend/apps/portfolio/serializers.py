@@ -72,6 +72,7 @@ class AchievementSerializer(serializers.ModelSerializer):
             "verified_at",
             "points",
             "ai_analysis_result",
+            "status",
         ]
 
     def get_skill_names(self, obj):

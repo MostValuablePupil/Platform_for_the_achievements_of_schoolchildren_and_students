@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: ["**"]
     branches: [main, "front+back"]
   pull_request:
     branches: [main]

@@ -31,6 +31,8 @@ export interface User {
   email: string;
   role: 'STUDENT' | 'CURATOR' | 'EMPLOYER' | 'ADMIN';
   educational_institution?: string;
+  organization?: string;
+  city?: string;
   course?: string;
   specialty?: number | null;
   specialty_details?: Specialty | null;
@@ -134,8 +136,10 @@ export interface ParsedEvent {
   grade: string;
   year: string;
   organizer: string;
+  event_date?: string | null;
   is_active: boolean;
   parsed_at: string;
+  is_tracked?: boolean;
 }
 
 export interface RecommendedEvent {
@@ -145,9 +149,18 @@ export interface RecommendedEvent {
 }
 
 export interface EventFilters {
-  sources: string[];
-  subject_areas: string[];
-  regions: string[];
+  event_types: Array<{ value: string; label: string }>;
+  sources: Array<{ value: string; label: string }>;
   years: string[];
-  grades: string[];
+}
+
+export interface LastAchievement {
+  title: string;
+  verified_at: string;
+  points: number;
+}
+
+export interface SubscribedStudent extends User {
+  last_achievement?: LastAchievement | null;
+  has_new_achievements: boolean;
 }

@@ -54,11 +54,18 @@ class User(AbstractUser):
     middle_name = models.CharField(max_length=150, blank=True, verbose_name="Отчество (при наличии)")
     email = models.EmailField(unique=True, verbose_name="Электронная почта")
     educational_institution = models.CharField(
-        max_length=255, 
-        blank=True, 
-        null=True, 
+        max_length=255,
+        blank=True,
+        null=True,
         verbose_name="Учебное заведение",
         help_text="Например: МГТУ им. Баумана или Школа №123"
+    )
+    organization = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Организация",
+        help_text="Название компании работодателя"
     )
     future_profession = models.CharField(
         max_length=255,
@@ -99,6 +106,14 @@ class User(AbstractUser):
     )
 
 
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name="Город",
+        help_text="Город проживания (обязательно для студентов и школьников)"
+    )
+
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
 
     total_xp = models.PositiveIntegerField(default=0, verbose_name="Общий опыт (XP)")
@@ -114,6 +129,38 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(role='EMPLOYER') | models.Q(organization__gt=''),
+                name='employer_must_have_organization',
+            )
+        ]
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+
+class StudentFollow(models.Model):
+    employer = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='following',
+        limit_choices_to={'role': 'EMPLOYER'},
+        verbose_name="Работодатель"
+    )
+    student = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='followers',
+        limit_choices_to={'role': 'STUDENT'},
+        verbose_name="Студент"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+
+    class Meta:
+        verbose_name = "Отслеживание студента"
+        verbose_name_plural = "Отслеживания студентов"
+        unique_together = ('employer', 'student')
+
+    def __str__(self):
+        return f"{self.employer} → {self.student}"

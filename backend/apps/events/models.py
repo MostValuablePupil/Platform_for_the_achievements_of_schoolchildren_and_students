@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -15,14 +16,18 @@ class Event(models.Model):
         BMSTU = 'BMSTU', 'МГТУ им. Баумана'
         ITMO = 'ITMO', 'ИТМО'
         VSOSH = 'VSOSH', 'ВСОШ'
+        OLIMPIADA_RU = 'OLIMPIADA_RU', 'Олимпиада.ру'
+        HSE_OLYMP = 'HSE_OLYMP', 'ВШЭ Олимпиады'
+        HACKLIST = 'HACKLIST', 'Hacklist (хакатоны)'
+        POSTUPI_ONLINE = 'POSTUPI_ONLINE', 'Поступи Онлайн'
         MANUAL = 'MANUAL', 'Добавлено вручную'
 
     class EventType(models.TextChoices):
-        OLYMPIAD = 'OLYMPIAD', 'Олимпиада'
-        HACKATHON = 'HACKATHON', 'Хакатон'
-        COMPETITION = 'COMPETITION', 'Конкурс'
-        CONFERENCE = 'CONFERENCE', 'Конференция'
-        GRANT = 'GRANT', 'Грант'
+        OLYMPIAD = 'OLYMPIAD', '🧠 Олимпиада'
+        HACKATHON = 'HACKATHON', '💻 Хакатон'
+        COMPETITION = 'COMPETITION', '🏆 Конкурс'
+        CONFERENCE = 'CONFERENCE', '🎓 Конференция'
+        GRANT = 'GRANT', '💰 Грант'
 
     # === Основная информация ===
     title = models.CharField(
@@ -86,6 +91,12 @@ class Event(models.Model):
         verbose_name="Организатор",
     )
 
+    event_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Дата проведения",
+    )
+
     is_active = models.BooleanField(
         default=True,
         verbose_name="Активно",
@@ -107,3 +118,27 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.subject_area} ({self.year})"
+
+
+class EventTracking(models.Model):
+    """Подписка пользователя на отслеживание мероприятия."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tracked_events',
+    )
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='trackers',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'event')
+        verbose_name = "Отслеживание мероприятия"
+        verbose_name_plural = "Отслеживания мероприятий"
+
+    def __str__(self):
+        return f"{self.user} → {self.event}"

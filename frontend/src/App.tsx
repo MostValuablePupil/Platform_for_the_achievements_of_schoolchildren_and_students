@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
+
 // Студенческие компоненты
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
@@ -10,6 +11,7 @@ import AchievementDetailPage from './pages/AchievementDetailPage';
 import SkillsPage from './pages/SkillsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import CreateAchievementPage from './pages/CreateAchievementPage';
 import EventsPage from './pages/EventsPage';
 
@@ -18,7 +20,7 @@ import EmployerLayout from './pages/EmployerLayout';
 import EmployerStudentsPage from './pages/EmployerStudentsPage';
 import EmployerStudentProfilePage from './pages/EmployerStudentProfilePage';
 import EmployerStudentSkillsPage from './pages/EmployerStudentSkillsPage';
-import EmployerVacanciesPage from './pages/EmployerVacanciesPage';
+import EmployerSubscriptionsPage from './pages/EmployerSubscriptionsPage'; // ✅ Импортируем новую страницу
 
 // Куратор / Верификатор
 import VerifierLayout from './pages/VerifierLayout';
@@ -32,8 +34,7 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-  // Пока идет ПЕРВИЧНАЯ загрузка данных пользователя, показываем заглушку,
-  // чтобы роутер не сделал поспешный редирект.
+  // Пока идет ПЕРВИЧНАЯ загрузка данных пользователя, показываем заглушку
   if (isLoading && !currentUser && localStorage.getItem('token')) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0f1419]">
@@ -56,10 +57,11 @@ function App() {
           path="/login" 
           element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" replace />} 
         />
-        <Route 
-          path="/register" 
-          element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />} 
+        <Route
+          path="/register"
+          element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />}
         />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         
         {/* === МАРШРУТЫ ДЛЯ РАБОТОДАТЕЛЕЙ === */}
         {isAuthenticated && isEmployer ? (
@@ -68,7 +70,10 @@ function App() {
               <Route path="students" element={<EmployerStudentsPage />} />
               <Route path="students/:id" element={<EmployerStudentProfilePage />} />
               <Route path="students/:id/skills" element={<EmployerStudentSkillsPage />} />
-              <Route path="vacancies" element={<EmployerVacanciesPage />} />
+              
+              {/* ✅ Новый маршрут для подписок */}
+              <Route path="subscriptions" element={<EmployerSubscriptionsPage />} />
+              
               <Route index element={<Navigate to="students" replace />} />
             </Route>
             <Route path="/" element={<Navigate to="/employer/students" replace />} />

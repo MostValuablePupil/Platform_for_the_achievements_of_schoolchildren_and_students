@@ -31,6 +31,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 CURATOR_REGISTRATION_CODE = os.getenv("CURATOR_REGISTRATION_CODE", "CURATOR-2024-SECRET")
 DEBUG = _get_bool_env("DEBUG", True)
 
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 ALLOWED_HOSTS = _get_list_env(
     "DJANGO_ALLOWED_HOSTS",
     ["127.0.0.1", "localhost", "192.168.0.81", "backend"],
@@ -63,6 +71,7 @@ INSTALLED_APPS = [
     "apps.neural_network",
     "apps.vacancy",
     "apps.events",
+    "apps.telegram_bot"
 ]
 
 MIDDLEWARE = [
@@ -96,12 +105,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "Platform.wsgi.application"
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.getenv("SQLITE_PATH", str(BASE_DIR / "db.sqlite3")),
+if os.getenv("DB_NAME"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "db"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.getenv("SQLITE_PATH", str(BASE_DIR / "db.sqlite3")),
+        }
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -143,11 +164,67 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/minute",
+        "user": "300/minute",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Platform API",
-    "DESCRIPTION": "API для платформы достижений студентов и школьников",
+    "DESCRIPTION": """
+API для платформы достижений студентов и школьников.
+
+## Как зарегистрироваться и войти
+
+### 1. Регистрация
+**`POST /api/users/`**
+
+Тело запроса:
+```json
+{
+  "username": "test@example.com",
+  "email": "test@example.com",
+  "password": "yourpassword123",
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "role": "STUDENT"
+}
+```
+Допустимые роли: `STUDENT`, `CURATOR`, `EMPLOYER`.
+После регистрации на почту придёт письмо со ссылкой подтверждения.
+
+### 2. Подтверждение email
+В терминале бэкенда (при `EMAIL_BACKEND=console`) найди ссылку вида:
+```
+http://localhost:5173/verify-email/<token>
+```
+Скопируй `<token>` и выполни:
+
+**`GET /api/users/verify-email/{token}/`**
+
+### 3. Получение токена
+**`POST /api/login/`**
+
+```json
+{
+  "username": "test@example.com",
+  "password": "yourpassword123"
+}
+```
+В ответе придёт `token`.
+
+### 4. Авторизация в Swagger
+Нажми кнопку **Authorize** (замок вверху справа) и введи:
+```
+Token <твой_токен>
+```
+После этого все запросы будут выполняться от имени авторизованного пользователя.
+""",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
@@ -166,6 +243,24 @@ CORS_ALLOWED_ORIGINS = _get_list_env(
     ],
 )
 
-CORS_ALLOW_ALL_ORIGINS = _get_bool_env("CORS_ALLOW_ALL_ORIGINS", DEBUG)
+CORS_ALLOW_ALL_ORIGINS = _get_bool_env("CORS_ALLOW_ALL_ORIGINS", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    }
+}
+
+# Email
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = _get_bool_env("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = _get_bool_env("EMAIL_USE_SSL", False)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@platform.ru")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")

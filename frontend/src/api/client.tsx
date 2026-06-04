@@ -1,14 +1,16 @@
+// frontend/src/api/client.tsx
 import axios from 'axios';
-import type { 
-  User, 
-  Achievement, 
-  Skill, 
-  SkillProfile, 
-  SkillCategory, 
+import type {
+  User,
+  Achievement,
+  Skill,
+  SkillProfile,
+  SkillCategory,
   Specialty,
   AchievementStats,
   ParsedEvent,
   EventFilters,
+  RecommendedEvent,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api/';
@@ -23,32 +25,28 @@ const apiClient = axios.create({
 // Добавляем токен авторизации
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
-  }
-  return config;
-});
-
-// Добавляем токен авторизации
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  
   if (token && token !== 'undefined') {
     config.headers['Authorization'] = `Token ${token}`;
   } else {
     console.warn("ВНИМАНИЕ: Запрос отправлен БЕЗ токена!");
   }
-  
   return config;
 });
 
-// --- API Функции с типами ---
+// --- API Функции ---
+
+interface LoginResponse {
+  token: string;
+  user: User; // Используем ваш существующий тип User
+}
+
 export const authAPI = {
-  login: (username: string, password: string) => 
-    apiClient.post<{ token: string }>('login/', { username, password }),
+  // ✅ Изменили тип возврата на LoginResponse
+  login: (username: string, password: string) =>
+    apiClient.post<LoginResponse>('login/', { username, password }),
   
-  register: (userData: any) =>  // ← Добавь тип :any или создай интерфейс
-    apiClient.post<User>('users/', userData),  // ← Измени data на userData
+  register: (userData: any) =>
+    apiClient.post<User>('users/', userData),
 };
 
 export const userAPI = {
@@ -56,16 +54,29 @@ export const userAPI = {
   getById: (id: number) => apiClient.get<User>(`users/${id}/`),
   getStats: (id: number) => apiClient.get<AchievementStats>(`users/${id}/stats/`),
   update: (id: number, data: Partial<User>) => apiClient.patch<User>(`users/${id}/`, data),
+  
+  // Проверка подписки
+  isFollowed: (studentId: number) => apiClient.get<{ is_followed: boolean }>(`users/${studentId}/is_followed/`),
+  
+  getLeaderboard: (params?: {
+    sort_by?: 'xp' | 'achievements';
+    user_type?: 'university' | 'school';
+    specialty?: string;
+    course?: string;
+    city?: string;
+    educational_institution?: string;
+  }) => apiClient.get<User[]>('users/leaderboard/', { params }),
+  
 };
 
 export const achievementAPI = {
   getAll: (params?: any) => apiClient.get<Achievement[]>('achievements/', { params }),
   getById: (id: number) => apiClient.get<Achievement>(`achievements/${id}/`),
-  create: (data: FormData) => 
+  create: (data: FormData) =>
     apiClient.post<Achievement>('achievements/', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  update: (id: number, data: Partial<Achievement>) => 
+  update: (id: number, data: Partial<Achievement>) =>
     apiClient.patch<Achievement>(`achievements/${id}/`, data),
 };
 
@@ -86,6 +97,32 @@ export const parsedEventAPI = {
   getAll: (params?: any) => apiClient.get<ParsedEvent[]>('parsed-events/', { params }),
   getFilters: () => apiClient.get<EventFilters>('parsed-events/filters/'),
   getRecommended: () => apiClient.get<RecommendedEvent[]>('parsed-events/recommended/'),
+  trackEvent: (id: number) =>
+    apiClient.post<{ is_tracked: boolean }>(`parsed-events/${id}/track/`),
+  untrackEvent: (id: number) =>
+    apiClient.delete<{ is_tracked: boolean }>(`parsed-events/${id}/track/`),
+};
+
+export const TELEGRAM_BOT_USERNAME = 'most_valuable_pupil_bot';
+
+export const telegramAPI = {
+  getStatus: () =>
+    apiClient.get<{ is_linked: boolean; telegram_username: string | null }>('telegram/link-status/'),
+  generateLink: () =>
+    apiClient.post<{ code: string; expires_in: number }>('telegram/generate-link/'),
+  unlink: () => apiClient.delete('telegram/unlink/'),
+};
+
+export const subscriptionAPI = {
+  // Получить список моих подписок (использует action followed_students из UserViewSet)
+  getSubscriptions: () => apiClient.get('/users/followed_students/'),
+  
+  // Подписаться на студента (использует action follow из UserViewSet)
+  subscribe: (studentId: number) => apiClient.post(`/users/${studentId}/follow/`),
+  
+  // Отписаться от студента (использует action unfollow из UserViewSet)
+  // ВАЖНО: Убедитесь, что на бэкенде url_path='unfollow' для метода DELETE
+  unsubscribe: (studentId: number) => apiClient.delete(`/users/${studentId}/unfollow/`),
 };
 
 export default apiClient;

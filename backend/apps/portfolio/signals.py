@@ -1,7 +1,22 @@
-from django.db.models.signals import post_save
+import logging
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from .models import Achievement, Badge, UserBadge
 from apps.skills.models import UserSkill
+
+logger = logging.getLogger(__name__)
+
+
+@receiver(pre_save, sender=Achievement)
+def capture_old_status(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            instance._old_status = Achievement.objects.filter(pk=instance.pk).values_list('status', flat=True).first()
+        except Achievement.DoesNotExist:
+            instance._old_status = None
+    else:
+        instance._old_status = None
+
 
 @receiver(post_save, sender=Achievement)
 def update_student_stats(sender, instance, created, **kwargs):
@@ -69,3 +84,36 @@ def check_and_award_badges(sender, instance, **kwargs):
     if sport_art.filter(achievement_level='PRIZE').exists(): award_badge(student, "Талант")
     if sport_art.filter(achievement_level='WINNER').exists(): award_badge(student, "Чемпион")
     if sport_art.count() >= 5: award_badge(student, "Разносторонний")
+
+
+@receiver(post_save, sender=Achievement)
+def notify_employers_on_verified(sender, instance, **kwargs):
+    old_status = getattr(instance, '_old_status', None)
+    if instance.status != 'VERIFIED' or old_status == 'VERIFIED':
+        return
+
+    try:
+        from apps.users.models import StudentFollow
+        from apps.telegram_bot.services import send_custom_message_to_user
+    except ImportError:
+        return
+
+    follows = StudentFollow.objects.filter(student=instance.student).select_related('employer')
+    if not follows.exists():
+        return
+
+    student = instance.student
+    text = (
+        f"🏆 Новое подтверждённое достижение!\n\n"
+        f"👤 Студент: {student.first_name} {student.last_name}\n"
+        f"📌 {instance.title}\n"
+        f"🎯 Тип: {instance.get_event_type_display()}\n"
+        f"⭐ Результат: {instance.get_achievement_level_display()}\n"
+        f"💎 XP: {instance.points}"
+    )
+
+    for follow in follows:
+        try:
+            send_custom_message_to_user(follow.employer, text)
+        except Exception as exc:
+            logger.warning("Не удалось отправить уведомление работодателю %s: %s", follow.employer_id, exc)

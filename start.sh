@@ -6,11 +6,23 @@ echo "🚀 Запуск серверов..."
 echo "🐍 Запуск Django backend..."
 cd backend
 
-# Проверяем наличие папки Scripts (Windows) или bin (Mac/Linux)
-if [ -d "../.venv/Scripts" ]; then
-    PYTHON_CMD="../.venv/Scripts/python"
-else
+# Определяем путь к python — ищем venv в backend/ и в корне проекта (.venv или venv)
+if [ -f "venv/Scripts/python.exe" ]; then
+    PYTHON_CMD="venv/Scripts/python.exe"
+elif [ -f "venv/bin/python" ]; then
+    PYTHON_CMD="venv/bin/python"
+elif [ -f "../.venv/Scripts/python.exe" ]; then
+    PYTHON_CMD="../.venv/Scripts/python.exe"
+elif [ -f "../.venv/bin/python" ]; then
     PYTHON_CMD="../.venv/bin/python"
+elif [ -f "../venv/Scripts/python.exe" ]; then
+    PYTHON_CMD="../venv/Scripts/python.exe"
+elif [ -f "../venv/bin/python" ]; then
+    PYTHON_CMD="../venv/bin/python"
+else
+    echo "❌ Виртуальное окружение не найдено!"
+    echo "Создай его: python -m venv venv"
+    exit 1
 fi
 
 $PYTHON_CMD manage.py runserver &

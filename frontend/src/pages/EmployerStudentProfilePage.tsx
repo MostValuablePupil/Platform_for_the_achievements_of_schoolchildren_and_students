@@ -1,32 +1,39 @@
 // frontend/src/pages/EmployerStudentProfilePage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Download, Share2, Calendar, Building2, GraduationCap, Loader2 } from 'lucide-react';
-import { userAPI, achievementAPI } from '../api/client';
+import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Download, Share2, Calendar, Building2, GraduationCap, Loader2, Heart, Bell } from 'lucide-react';
+import { userAPI, achievementAPI, subscriptionAPI } from '../api/client';
 import type { User, Achievement } from '../types';
 
 export default function EmployerStudentProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
   const [student, setStudent] = useState<User | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Состояние для кнопки подписки
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subLoading, setSubLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!id) return;
       try {
         setLoading(true);
-        // Загружаем данные студента и его достижения (верифицированные)
-        const [userRes, achievementsRes] = await Promise.all([
-          userAPI.getById(Number(id)),
-          achievementAPI.getAll({ student: Number(id), status: 'VERIFIED' })
+        const studentId = Number(id);
+        
+        // Загружаем данные параллельно
+        const [userRes, achievementsRes, subStatusRes] = await Promise.all([
+          userAPI.getById(studentId),
+          achievementAPI.getAll({ student: studentId, status: 'VERIFIED' }),
+          userAPI.isFollowed(studentId) // Проверяем статус подписки
         ]);
         
         setStudent(userRes.data);
         setAchievements(achievementsRes.data);
+        setIsSubscribed(subStatusRes.data.is_followed);
       } catch (err) {
         console.error('Error fetching student profile:', err);
         setError('Не удалось загрузить профиль студента');
@@ -34,9 +41,29 @@ export default function EmployerStudentProfilePage() {
         setLoading(false);
       }
     };
-
     fetchProfile();
   }, [id]);
+
+  // Функция переключения подписки
+  const toggleSubscription = async () => {
+    if (!id) return;
+    setSubLoading(true);
+    try {
+      const studentId = Number(id);
+      if (isSubscribed) {
+        await subscriptionAPI.unsubscribe(studentId);
+        setIsSubscribed(false);
+      } else {
+        await subscriptionAPI.subscribe(studentId);
+        setIsSubscribed(true);
+      }
+    } catch (err) {
+      console.error('Error toggling subscription:', err);
+      alert('Ошибка при изменении подписки');
+    } finally {
+      setSubLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -50,7 +77,7 @@ export default function EmployerStudentProfilePage() {
     return (
       <div className="bg-[#1a2332] border border-red-500/30 rounded-2xl p-6 text-center text-red-400">
         {error || 'Студент не найден'}
-        <button 
+        <button
           onClick={() => navigate('/employer/students')}
           className="block mx-auto mt-4 text-blue-400 hover:underline"
         >
@@ -62,7 +89,6 @@ export default function EmployerStudentProfilePage() {
 
   const progress = ((student.total_xp % 350) / 350) * 100;
   const initials = `${student.first_name?.[0] || ''}${student.last_name?.[0] || ''}`.toUpperCase() || student.username?.[0]?.toUpperCase() || 'СТ';
-
   const achievementsCount = student.achievements_count || achievements.length;
 
   return (
@@ -97,10 +123,26 @@ export default function EmployerStudentProfilePage() {
               <h1 className="text-3xl font-bold mb-2 animate-fade-in-up delay-100">
                 {student.first_name || student.username} {student.last_name}
               </h1>
+              
+              {/* ✅ ИСПРАВЛЕННАЯ ЛОГИКА ОТОБРАЖЕНИЯ РОЛИ */}
               <p className="text-blue-200 mb-3 flex items-center gap-2 animate-fade-in-up delay-200">
                 <GraduationCap className="w-4 h-4" />
-                Студент {student.course ? `${student.course} курса` : ''} {student.educational_institution ? `• ${student.educational_institution}` : ''}
+                {/* Если есть specialty - значит ВУЗ, иначе Школа */}
+                {student.specialty ? 'Студент' : 'Школьник'} 
+                
+                {/* Отображаем курс или класс */}
+                {student.course && (
+                  <span>
+                    {' '}{student.course} {student.specialty ? 'курс' : 'класс'}
+                  </span>
+                )}
+                
+                {/* Учебное заведение */}
+                {student.educational_institution && (
+                  <span> • {student.educational_institution}</span>
+                )}
               </p>
+
               <div className="flex items-center gap-4 text-sm text-blue-300/60 animate-fade-in-up delay-300">
                 <span className="flex items-center gap-1">
                   <Award className="w-4 h-4" />
@@ -113,13 +155,27 @@ export default function EmployerStudentProfilePage() {
               </div>
               {student.future_profession && (
                 <p className="text-sm text-blue-200/80 mt-2 animate-fade-in-up delay-400">
-                  <span className="text-blue-300/60">Цель:</span> {student.future_profession}
+                  <span className="text-blue-300/60">Цель: </span> {student.future_profession}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 animate-fade-in-up delay-500">
+          <div className="flex flex-wrap items-center gap-3 animate-fade-in-up delay-500">
+            {/* === КНОПКА ПОДПИСКИ === */}
+            <button 
+              onClick={toggleSubscription}
+              disabled={subLoading}
+              className={`px-4 py-2 border rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                isSubscribed 
+                  ? 'bg-pink-500/20 text-pink-400 border-pink-500/50 hover:bg-pink-500/30' 
+                  : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              {isSubscribed ? <Bell className="w-4 h-4 fill-current" /> : <Heart className="w-4 h-4" />}
+              {subLoading ? '...' : (isSubscribed ? 'Вы подписаны' : 'Подписаться')}
+            </button>
+
             <button className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm rounded-xl text-sm font-medium transition-all flex items-center gap-2">
               <Share2 className="w-4 h-4" />
               Поделиться
@@ -139,7 +195,7 @@ export default function EmployerStudentProfilePage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-12 gap-6">
         {/* Left Column */}
         <div className="col-span-12 lg:col-span-4 space-y-6">

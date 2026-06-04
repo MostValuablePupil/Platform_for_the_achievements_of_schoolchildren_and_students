@@ -5,9 +5,7 @@ from . import views
 app_name = 'users' 
 
 urlpatterns = [
-    # Ссылка будет выглядеть так: /dashboard/export/
     path('export/', views.export_my_report, name='export_my_report'),
-    
-    # В будущем тут появится путь к самой HTML-странице кабинета:
-    # path('', views.dashboard_home, name='dashboard_home'),
+    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    path('resend-verification/', views.resend_verification_email, name='resend_verification_email'),
 ]

@@ -1,24 +1,67 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: mvp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mvp}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     container_name: mvp_backend
     env_file:
-      - .env
+      - backend/.env
     environment:
       DEBUG: ${DEBUG:-0}
-      SQLITE_PATH: /data/db.sqlite3
+      DB_NAME: ${DB_NAME:-mvp}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,192.168.0.81,backend}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://127.0.0.1,http://localhost,http://192.168.0.81}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://127.0.0.1,http://localhost,http://192.168.0.81}
       CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-0}
     volumes:
-      - sqlite_data:/data
       - media_data:/app/media
       - static_data:/app/staticfiles
     expose:
       - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      ofelia.enabled: "true"
+      # Уведомления об олимпиадах: 1-е число каждого месяца в 09:00
+      ofelia.job-exec.parse-notify.schedule: "0 9 1 * *"
+      ofelia.job-exec.parse-notify.command: "python manage.py notify_olympiad_updates --run-parser"
+      # Ежегодное напоминание обновить курс: 1 сентября в 09:00
+      ofelia.job-exec.course-reminder.schedule: "0 9 1 9 *"
+      ofelia.job-exec.course-reminder.command: "python manage.py send_course_update_reminders"
+      # Ежедневные напоминания об отслеживаемых мероприятиях (за 3 дня и за 1 день)
+      ofelia.job-exec.event-reminders.schedule: "0 9 * * *"
+      ofelia.job-exec.event-reminders.command: "python manage.py send_event_reminders"
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: mvp_scheduler
+    depends_on:
+      - backend
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
 
   frontend:
@@ -38,6 +81,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  sqlite_data:
+  postgres_data:
   media_data:
   static_data:
