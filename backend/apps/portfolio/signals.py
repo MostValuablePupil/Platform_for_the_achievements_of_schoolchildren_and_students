@@ -1,10 +1,22 @@
 import logging
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from .models import Achievement, Badge, UserBadge
 from apps.skills.models import UserSkill
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(pre_save, sender=Achievement)
+def capture_old_status(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            instance._old_status = Achievement.objects.filter(pk=instance.pk).values_list('status', flat=True).first()
+        except Achievement.DoesNotExist:
+            instance._old_status = None
+    else:
+        instance._old_status = None
+
 
 @receiver(post_save, sender=Achievement)
 def update_student_stats(sender, instance, created, **kwargs):
@@ -76,7 +88,8 @@ def check_and_award_badges(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Achievement)
 def notify_employers_on_verified(sender, instance, **kwargs):
-    if instance.status != 'VERIFIED' or instance.is_rewarded:
+    old_status = getattr(instance, '_old_status', None)
+    if instance.status != 'VERIFIED' or old_status == 'VERIFIED':
         return
 
     try:

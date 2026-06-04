@@ -1,8 +1,9 @@
 // frontend/src/pages/EmployerLayout.tsx
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Users, LogOut, Menu, X, Heart, Trophy } from 'lucide-react'; // Добавили Trophy для логотипа
+import { Building2, Users, LogOut, Menu, X, Heart, Trophy, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 import { useState, useRef, useEffect } from 'react';
+import { telegramAPI, TELEGRAM_BOT_USERNAME } from '../api/client';
 
 export default function EmployerLayout() {
   const navigate = useNavigate();
@@ -10,6 +11,58 @@ export default function EmployerLayout() {
   const { currentUser, logout } = useGameStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [tgStatus, setTgStatus] = useState<{ is_linked: boolean; telegram_username: string | null } | null>(null);
+  const [tgCode, setTgCode] = useState<{ code: string } | null>(null);
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tgShowCode, setTgShowCode] = useState(false);
+
+  useEffect(() => {
+    telegramAPI.getStatus()
+      .then(r => setTgStatus(r.data))
+      .catch(() => setTgStatus({ is_linked: false, telegram_username: null }));
+  }, []);
+
+  useEffect(() => {
+    if (!tgCode) return;
+    const timer = setInterval(async () => {
+      try {
+        const r = await telegramAPI.getStatus();
+        if (r.data.is_linked) {
+          setTgStatus(r.data);
+          setTgCode(null);
+        }
+      } catch {}
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [tgCode]);
+
+  const handleLinkTelegram = async () => {
+    setTgLoading(true);
+    try {
+      const r = await telegramAPI.generateLink();
+      setTgCode({ code: r.data.code });
+      window.open(`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${r.data.code}`, '_blank');
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Ошибка генерации ссылки');
+    } finally {
+      setTgLoading(false);
+    }
+  };
+
+  const handleUnlinkTelegram = async () => {
+    if (!confirm('Отвязать Telegram от аккаунта?')) return;
+    setTgLoading(true);
+    try {
+      await telegramAPI.unlink();
+      setTgStatus({ is_linked: false, telegram_username: null });
+      setTgCode(null);
+    } catch {
+      alert('Ошибка при отвязке');
+    } finally {
+      setTgLoading(false);
+    }
+  };
 
   const menuItems = [
     {
@@ -154,7 +207,62 @@ export default function EmployerLayout() {
                 <p className="text-xs text-gray-500">Работодатель</p>
               </div>
             </div>
-            <button 
+            {/* БЛОК TELEGRAM */}
+            <div className="border-t border-gray-700/50 pt-3 mb-3">
+              <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
+                <Send className="w-3 h-3" /> Telegram-уведомления
+              </label>
+
+              {tgStatus === null ? (
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Загрузка...
+                </div>
+              ) : tgStatus.is_linked ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className="text-xs text-gray-300 truncate">
+                      {tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Подключено'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleUnlinkTelegram}
+                    disabled={tgLoading}
+                    className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors ml-2"
+                  >
+                    {tgLoading ? '...' : 'Отвязать'}
+                  </button>
+                </div>
+              ) : tgCode ? (
+                <div className="space-y-2">
+                  <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin text-blue-400" /> Ожидание...
+                  </p>
+                  <button
+                    onClick={() => setTgShowCode(v => !v)}
+                    className="text-[10px] text-gray-500 hover:text-gray-300 underline block"
+                  >
+                    {tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}
+                  </button>
+                  {tgShowCode && (
+                    <div className="bg-[#0f1419] rounded p-2 text-center">
+                      <p className="font-mono text-white text-xs font-bold tracking-widest">/link {tgCode.code}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={handleLinkTelegram}
+                  disabled={tgLoading}
+                  className="w-full flex items-center justify-center gap-2 px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-medium transition-colors"
+                >
+                  {tgLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                  Привязать Telegram
+                </button>
+              )}
+            </div>
+
+            <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2 text-gray-400 hover:text-gray-100 transition-colors text-sm"
             >
