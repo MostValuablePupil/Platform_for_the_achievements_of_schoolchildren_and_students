@@ -25,7 +25,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Импортируем наши новые API-вьюшки
-from apps.portfolio.views import AchievementViewSet, EventViewSet as PortfolioEventViewSet
+from apps.portfolio.views import AchievementViewSet, EventViewSet as PortfolioEventViewSet, search_rsr_diplomas
 from apps.events.views import EventViewSet as ParsedEventViewSet
 # ✅ УБРАЛИ SubscriptionViewSet отсюда
 from apps.users.views import UserViewSet, SpecialtyViewSet, custom_login 
@@ -58,6 +58,8 @@ urlpatterns = [
     # мы отправляем разбираться в приложение users!
     path('api/users/', include('apps.users.urls')),
     
+    path('api/rsr-diplomas/', search_rsr_diplomas, name='rsr-diplomas'),
+
     path('api/telegram/generate-link/', GenerateTelegramLinkView.as_view(), name='telegram-generate-link'),
     path('api/telegram/link-status/', TelegramLinkStatusView.as_view(), name='telegram-link-status'),
     path('api/telegram/unlink/', TelegramUnlinkView.as_view(), name='telegram-unlink'),

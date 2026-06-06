@@ -125,4 +125,18 @@ export const subscriptionAPI = {
   unsubscribe: (studentId: number) => apiClient.delete(`/users/${studentId}/unfollow/`),
 };
 
+export const rsrDiplomaAPI = {
+  search: (params: {
+    last_name: string;
+    first_name: string;
+    middle_name?: string;
+    birth_date: string;
+    year?: number;
+  }) =>
+    apiClient.get<{ diplomas: import('../types').RsrDiploma[]; count: number; year: number }>(
+      'rsr-diplomas/',
+      { params },
+    ),
+};
+
 export default apiClient;

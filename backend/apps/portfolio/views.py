@@ -1,17 +1,18 @@
 # backend_branch/apps/portfolio/views.py
 
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from .models import Achievement, Event, Badge, UserBadge
 from .serializers import (
-    AchievementSerializer, 
-    EventSerializer, 
-    BadgeSerializer, 
+    AchievementSerializer,
+    EventSerializer,
+    BadgeSerializer,
     UserBadgeSerializer,
     AchievementLevelOptionsSerializer
 )
 from django.utils import timezone
+from .rsr_olymp_service import fetch_rsr_diplomas
 
 
 class IsCurator(permissions.BasePermission):
@@ -154,6 +155,42 @@ class UserBadgeViewSet(viewsets.ModelViewSet):
     queryset = UserBadge.objects.all()
     serializer_class = UserBadgeSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_queryset(self):
         return UserBadge.objects.filter(user=self.request.user)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def search_rsr_diplomas(request):
+    """Поиск дипломов РСОШ по ФИО и дате рождения."""
+    last_name   = request.query_params.get('last_name', '').strip()
+    first_name  = request.query_params.get('first_name', '').strip()
+    middle_name = request.query_params.get('middle_name', '').strip()
+    birth_date  = request.query_params.get('birth_date', '').strip()  # ДД.ММ.ГГГГ
+
+    try:
+        year = int(request.query_params.get('year', 2025))
+    except ValueError:
+        return Response({'error': 'year должен быть числом'}, status=400)
+
+    if not (last_name and first_name and birth_date):
+        return Response(
+            {'error': 'Укажите last_name, first_name и birth_date (ДД.ММ.ГГГГ)'},
+            status=400,
+        )
+
+    try:
+        day, month, birth_year = map(int, birth_date.split('.'))
+    except ValueError:
+        return Response({'error': 'birth_date должна быть в формате ДД.ММ.ГГГГ'}, status=400)
+
+    try:
+        diplomas = fetch_rsr_diplomas(
+            last_name, first_name, middle_name,
+            birth_year, month, day, year,
+        )
+    except Exception as e:
+        return Response({'error': str(e)}, status=502)
+
+    return Response({'diplomas': diplomas, 'year': year, 'count': len(diplomas)})

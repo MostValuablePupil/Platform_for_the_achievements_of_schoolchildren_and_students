@@ -164,3 +164,12 @@ export interface SubscribedStudent extends User {
   last_achievement?: LastAchievement | null;
   has_new_achievements: boolean;
 }
+
+export interface RsrDiploma {
+  code: string;
+  olympiad: string;
+  name: string;
+  form: string;
+  pdf_url: string;
+  year: number;
+}

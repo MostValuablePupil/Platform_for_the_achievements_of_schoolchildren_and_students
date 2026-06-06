@@ -1,8 +1,9 @@
 // frontend/src/pages/AchievementsPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Filter, Trophy, Award, Calendar, Medal } from 'lucide-react';
+import { Plus, Filter, Trophy, Award, Calendar, Medal, GraduationCap } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
+import RsrDiplomaSearch from '../components/RsrDiplomaSearch';
 
 const ALL_BADGES = [
   { id: '1', name: 'Первая победа', icon: '🏆', category: 'Олимпиады', description: 'За 1 место в олимпиаде' },
@@ -33,8 +34,8 @@ export default function AchievementsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { achievements, fetchAchievements, currentUser, fetchUserStats } = useGameStore();
   const [filter, setFilter] = useState<'all' | 'VERIFIED' | 'PENDING'>('all');
-  const [activeTab, setActiveTab] = useState<'achievements' | 'badges'>(
-    (searchParams.get('tab') as 'achievements' | 'badges') || 'achievements'
+  const [activeTab, setActiveTab] = useState<'achievements' | 'badges' | 'rsosh'>(
+    (searchParams.get('tab') as 'achievements' | 'badges' | 'rsosh') || 'achievements'
   );
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function AchievementsPage() {
   const earnedBadges = allBadges.filter(badge => badge.earned);
   const notEarnedBadges = allBadges.filter(badge => !badge.earned);
 
-  const handleTabChange = (tab: 'achievements' | 'badges') => {
+  const handleTabChange = (tab: 'achievements' | 'badges' | 'rsosh') => {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
@@ -139,6 +140,17 @@ export default function AchievementsPage() {
           <span className="px-1.5 sm:px-2 py-0.5 bg-gray-800 rounded-full text-[10px] sm:text-xs">
             {badges.length}
           </span>
+        </button>
+        <button
+          onClick={() => handleTabChange('rsosh')}
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+            activeTab === 'rsosh'
+              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+              : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+          }`}
+        >
+          <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Дипломы РСОШ</span>
         </button>
       </div>
 
@@ -254,7 +266,7 @@ export default function AchievementsPage() {
             )}
           </div>
         </>
-      ) : (
+      ) : activeTab === 'badges' ? (
         /* Badges Tab */
         <div className="space-y-4 sm:space-y-6">
           
@@ -343,7 +355,9 @@ export default function AchievementsPage() {
             </div>
           )}
         </div>
-      )}
+      ) : activeTab === 'rsosh' ? (
+        <RsrDiplomaSearch />
+      ) : null}
     </div>
   );
 }

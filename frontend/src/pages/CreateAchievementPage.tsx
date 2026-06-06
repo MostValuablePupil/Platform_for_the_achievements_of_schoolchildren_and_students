@@ -1,6 +1,6 @@
 // frontend/src/pages/CreateAchievementPage.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, Award, Building2, Link2, X, ArrowLeft, Calendar, Brain, Laptop, BookOpen, Heart, Microscope, Medal } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { ru } from 'date-fns/locale';
@@ -54,20 +54,25 @@ const LEVEL_OPTIONS: Record<EventType, { value: string; label: string }[]> = {
 
 export default function CreateAchievementPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { fetchCurrentUser, fetchAchievements, currentUser } = useGameStore();
-  
-  const [eventType, setEventType] = useState<EventType | ''>('');
+
+  const prefill = (location.state as { prefill?: Record<string, string> } | null)?.prefill ?? {};
+
+  const [eventType, setEventType] = useState<EventType | ''>((prefill.event_type as EventType) || '');
   const [levelCategory, setLevelCategory] = useState('');
-  const [achievementLevel, setAchievementLevel] = useState<AchievementLevel>('PARTICIPANT');
+  const [achievementLevel, setAchievementLevel] = useState<AchievementLevel>(
+    (prefill.achievement_level as AchievementLevel) || 'PARTICIPANT'
+  );
   const [hoursCount, setHoursCount] = useState('');
   const [hasCertificate, setHasCertificate] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  
+
   const [formData, setFormData] = useState({
-    title: '',
+    title: prefill.title || '',
     description: '',
-    organization: '',
-    link: '',
+    organization: prefill.organization || '',
+    link: prefill.link || '',
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [calculatedXP, setCalculatedXP] = useState(0);
