@@ -53,6 +53,9 @@ services:
       # Ежедневные напоминания об отслеживаемых мероприятиях (за 3 дня и за 1 день)
       ofelia.job-exec.event-reminders.schedule: "0 9 * * *"
       ofelia.job-exec.event-reminders.command: "python manage.py send_event_reminders"
+      # Уведомления студентам о новых мероприятиях: каждый понедельник в 10:00
+      ofelia.job-exec.student-events-notify.schedule: "0 10 * * 1"
+      ofelia.job-exec.student-events-notify.command: "python manage.py notify_students_about_events --since-hours 168"
 
   scheduler:
     image: mcuadros/ofelia:latest
