@@ -48,8 +48,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       const response = await authAPI.login(username, password);
       const { token, user } = response.data;
 
-      // 2. Сохраняем токен
+      // 2. Сохраняем токен и userId
       localStorage.setItem('token', token);
+      if (user?.id) localStorage.setItem('userId', String(user.id));
       
       // 3. Сразу устанавливаем пользователя в стейт (он уже пришел с бэкенда!)
       // Приводим тип, так как API может вернуть немного отличающуюся структуру, 
