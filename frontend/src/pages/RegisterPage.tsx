@@ -31,6 +31,7 @@ export default function RegisterPage() {
     className: '',
     city: '',
     specialtyId: null as number | null,
+    birthDate: '',
   });
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [specialtySearch, setSpecialtySearch] = useState('');
@@ -103,6 +104,9 @@ export default function RegisterPage() {
         userData.educational_institution = formData.educationalInstitution;
         userData.course = selectedRole === 'school' ? formData.className : formData.course;
         userData.city = formData.city;
+        if (formData.birthDate) {
+          userData.birth_date = formData.birthDate;
+        }
       }
 
       console.log('📤 Отправляем на регистрацию:', userData);
@@ -329,6 +333,19 @@ export default function RegisterPage() {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">
+                    Дата рождения <span className="text-gray-500">(необязательно)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.birthDate}
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-2.5 sm:py-3 bg-[#0f1419] border border-gray-700 rounded-xl text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

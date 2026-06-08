@@ -114,6 +114,13 @@ class User(AbstractUser):
         help_text="Город проживания (обязательно для студентов и школьников)"
     )
 
+    birth_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Дата рождения",
+        help_text="Дата рождения (только для студентов и школьников)"
+    )
+
     is_deleted = models.BooleanField(default=False, verbose_name="Удален")
 
     total_xp = models.PositiveIntegerField(default=0, verbose_name="Общий опыт (XP)")

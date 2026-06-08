@@ -44,6 +44,7 @@ export interface User {
   competencies?: UserSkill[];
   future_profession?: string | null;
   achievements_count?: number;
+  birth_date?: string | null;
 }
 
 export interface AchievementStats {
