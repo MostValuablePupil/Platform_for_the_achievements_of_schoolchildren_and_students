@@ -2,8 +2,8 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Building2, Users, LogOut, Menu, X, Heart, Trophy, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
-import { useState, useRef, useEffect } from 'react';
 import { telegramAPI, TELEGRAM_BOT_USERNAME } from '../api/client';
+import { useState, useRef, useEffect } from 'react';
 
 export default function EmployerLayout() {
   const navigate = useNavigate();
@@ -12,25 +12,28 @@ export default function EmployerLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // --- ЛОГИКА TELEGRAM ДЛЯ САЙДБАРА РАБОТОДАТЕЛЯ ---
   const [tgStatus, setTgStatus] = useState<{ is_linked: boolean; telegram_username: string | null } | null>(null);
   const [tgCode, setTgCode] = useState<{ code: string } | null>(null);
   const [tgLoading, setTgLoading] = useState(false);
   const [tgShowCode, setTgShowCode] = useState(false);
 
+  // Загрузка статуса при монтировании
   useEffect(() => {
     telegramAPI.getStatus()
       .then(r => setTgStatus(r.data))
       .catch(() => setTgStatus({ is_linked: false, telegram_username: null }));
   }, []);
 
+  // Проверка привязки по таймеру, если есть код
   useEffect(() => {
     if (!tgCode) return;
     const timer = setInterval(async () => {
       try {
         const r = await telegramAPI.getStatus();
-        if (r.data.is_linked) {
-          setTgStatus(r.data);
-          setTgCode(null);
+        if (r.data.is_linked) { 
+          setTgStatus(r.data); 
+          setTgCode(null); 
         }
       } catch {}
     }, 4000);
@@ -63,6 +66,7 @@ export default function EmployerLayout() {
       setTgLoading(false);
     }
   };
+  // --- КОНЕЦ ЛОГИКИ TELEGRAM ---
 
   const menuItems = [
     {
@@ -127,12 +131,69 @@ export default function EmployerLayout() {
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             
-            {/* Выпадающее меню выхода для мобильных */}
+            {/* ✅ ВЫПАДАЮЩЕЕ МЕНЮ ДЛЯ МОБИЛЬНЫХ С TELEGRAM И ВЫХОДОМ */}
             {isSidebarOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a2332] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-[#1a2332] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up p-4">
+                
+                {/* --- БЛОК TELEGRAM ДЛЯ МОБИЛЬНЫХ --- */}
+                <div className="mb-4 pb-4 border-b border-gray-700/50">
+                  <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
+                    <Send className="w-3 h-3" /> Telegram-уведомления
+                  </label>
+                  
+                  {tgStatus === null ? (
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Загрузка...
+                    </div>
+                  ) : tgStatus.is_linked ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-300 truncate">
+                          {tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Подключено'}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={handleUnlinkTelegram} 
+                        disabled={tgLoading}
+                        className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors ml-2"
+                      >
+                        {tgLoading ? '...' : 'Отвязать'}
+                      </button>
+                    </div>
+                  ) : tgCode ? (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin text-blue-400" /> Ожидание...
+                      </p>
+                      <button 
+                        onClick={() => setTgShowCode(v => !v)} 
+                        className="text-[10px] text-gray-500 hover:text-gray-300 underline block"
+                      >
+                        {tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}
+                      </button>
+                      {tgShowCode && (
+                        <div className="bg-[#0f1419] rounded p-2 text-center">
+                          <p className="font-mono text-white text-xs font-bold tracking-widest">/link {tgCode.code}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleLinkTelegram} 
+                      disabled={tgLoading}
+                      className="w-full flex items-center justify-center gap-2 px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      {tgLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      Привязать Telegram
+                    </button>
+                  )}
+                </div>
+
+                {/* --- КНОПКА ВЫХОДА --- */}
                 <button 
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-3 transition-colors"
+                  className="w-full text-left px-2 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-3 transition-colors rounded-lg"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Выйти</span>
@@ -195,10 +256,12 @@ export default function EmployerLayout() {
           ))}
         </nav>
 
-        {/* Инфо о пользователе внизу (как в Layout.tsx) */}
+        {/* Инфо о пользователе внизу + Telegram Block */}
         <div className="absolute bottom-6 left-6 right-6">
           <div className="bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-4">
-            <div className="flex items-center gap-3 mb-3">
+            
+            {/* Инфо о работодателе */}
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-sm font-bold text-white">
                 {employerInitials}
               </div>
@@ -207,12 +270,13 @@ export default function EmployerLayout() {
                 <p className="text-xs text-gray-500">Работодатель</p>
               </div>
             </div>
-            {/* БЛОК TELEGRAM */}
+
+            {/* ✅ БЛОК TELEGRAM В САЙДБАРЕ РАБОТОДАТЕЛЯ */}
             <div className="border-t border-gray-700/50 pt-3 mb-3">
               <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
-                <Send className="w-3 h-3" /> Telegram-уведомления
+                <Send className="w-3 h-3" /> Подпишись на Telegram
               </label>
-
+              
               {tgStatus === null ? (
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <Loader2 className="w-3 h-3 animate-spin" /> Загрузка...
@@ -225,8 +289,8 @@ export default function EmployerLayout() {
                       {tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Подключено'}
                     </span>
                   </div>
-                  <button
-                    onClick={handleUnlinkTelegram}
+                  <button 
+                    onClick={handleUnlinkTelegram} 
                     disabled={tgLoading}
                     className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors ml-2"
                   >
@@ -238,8 +302,8 @@ export default function EmployerLayout() {
                   <p className="text-[10px] text-gray-400 flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin text-blue-400" /> Ожидание...
                   </p>
-                  <button
-                    onClick={() => setTgShowCode(v => !v)}
+                  <button 
+                    onClick={() => setTgShowCode(v => !v)} 
                     className="text-[10px] text-gray-500 hover:text-gray-300 underline block"
                   >
                     {tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}
@@ -251,8 +315,8 @@ export default function EmployerLayout() {
                   )}
                 </div>
               ) : (
-                <button
-                  onClick={handleLinkTelegram}
+                <button 
+                  onClick={handleLinkTelegram} 
                   disabled={tgLoading}
                   className="w-full flex items-center justify-center gap-2 px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-medium transition-colors"
                 >
@@ -262,7 +326,8 @@ export default function EmployerLayout() {
               )}
             </div>
 
-            <button
+            {/* Кнопка выхода */}
+            <button 
               onClick={handleLogout}
               className="w-full flex items-center gap-2 text-gray-400 hover:text-gray-100 transition-colors text-sm"
             >
@@ -274,7 +339,6 @@ export default function EmployerLayout() {
       </aside>
 
       {/* === ОСНОВНОЙ КОНТЕНТ === */}
-      {/* pt-[120px] для мобильных (чтобы не перекрывалось верхним баром), md:pt-8 для десктопа */}
       <main className="flex-1 md:ml-64 p-4 md:p-8 pt-[120px] md:pt-8 min-h-screen">
         <Outlet />
       </main>

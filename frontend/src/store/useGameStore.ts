@@ -183,12 +183,46 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
+  // frontend/src/store/useGameStore.ts
+
   verifyAchievement: async (id: number) => {
     try {
-      await achievementAPI.update(id, { status: 'VERIFIED' });
-      await get().fetchAchievements();
+      // Используем специальный метод verify, если он есть в API, иначе update
+      // Лучше добавить метод verify в achievementAPI (см. шаг 2)
+      await achievementAPI.verify(id);
+      
+      // ВАЖНО: Мы должны знать, чьи достижения мы обновляем.
+      // Если куратор смотрит список достижений конкретного студента, 
+      // нам нужно передать studentId. 
+      // Временное решение: берем student_id из первого достижения в текущем списке,
+      // предполагая, что фильтр по студенту уже применен.
+      const currentAchievements = get().achievements;
+      let studentId = null;
+      
+      if (currentAchievements.length > 0) {
+         // Ищем достижение с этим ID, чтобы узнать его student_id
+         const achieved = currentAchievements.find(a => a.id === id);
+         if (achieved) {
+             studentId = achieved.student;
+         }
+      }
+
+      // Обновляем список достижений
+      if (studentId) {
+          await get().fetchAchievements({ student: studentId });
+          // Обновляем статистику и профиль этого студента, чтобы увидеть новый XP/Level
+          await get().fetchUserStats(studentId);
+          // Если вы хотите обновить currentUser в сторе, это может быть сложно, 
+          // так как currentUser — это тот, кто вошел (куратор).
+          // Поэтому лучше просто обновить список достижений и статистику.
+      } else {
+          // Фоллбек: просто перезагружаем все достижения (если бэкенд разрешает куратору видеть все)
+          await get().fetchAchievements();
+      }
+      
     } catch (error) {
-      console.error('Error verifying achievement:', error);
+      console.error("Error verifying achievement:", error);
+      alert("Ошибка при подтверждении достижения.");
       throw error;
     }
   },
