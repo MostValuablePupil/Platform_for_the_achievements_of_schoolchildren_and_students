@@ -166,10 +166,10 @@ export interface SubscribedStudent extends User {
 }
 
 export interface RsrDiploma {
-  code: string;
+  code: string | number;
   olympiad: string;
   name: string;
-  form: string;
+  form: string | number;
   pdf_url: string;
   year: number;
 }

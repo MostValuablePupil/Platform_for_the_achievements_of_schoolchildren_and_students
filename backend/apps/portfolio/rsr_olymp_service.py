@@ -69,7 +69,14 @@ def fetch_rsr_diplomas(
     if not match:
         return []
 
-    raw = json.loads(match.group(1))
+    raw_js = match.group(1)
+    # Quote unquoted JS keys: code: → "code":
+    raw_json = re.sub(r"(?<=[{,\[])\s*([a-zA-Z_]\w*)\s*:", r'"\1":', raw_js)
+    # Replace single-quoted strings with double-quoted, escaping inner double quotes
+    raw_json = re.sub(r"'([^']*)'", lambda m: '"' + m.group(1).replace('"', '\\"') + '"', raw_json)
+    # Remove trailing commas before ] or }
+    raw_json = re.sub(r',\s*([}\]])', r'\1', raw_json)
+    raw = json.loads(raw_json)
     code_base = f"{BASE}/compiled-storage-{year}/by-code"
 
     return [

@@ -190,7 +190,7 @@ export default function RsrDiplomaSearch() {
                     <div className="flex flex-wrap gap-2 text-xs text-gray-400">
                       <span>Класс: {diploma.form}</span>
                       <span className="text-gray-600">·</span>
-                      <span>Код: {diploma.code.replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2-$3')}</span>
+                      <span>Код: {String(diploma.code).replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2-$3')}</span>
                       <span className="text-gray-600">·</span>
                       <span>{diploma.year - 1}/{String(diploma.year).slice(-2)} уч. год</span>
                     </div>
