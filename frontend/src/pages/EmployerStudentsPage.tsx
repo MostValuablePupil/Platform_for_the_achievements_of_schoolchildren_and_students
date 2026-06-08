@@ -1,11 +1,11 @@
 // frontend/src/pages/EmployerStudentsPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react'; // Добавили useMemo
 import { useNavigate } from 'react-router-dom';
 import { Search, Award, TrendingUp, ExternalLink, GraduationCap, Loader2 } from 'lucide-react';
 import { userAPI } from '../api/client';
 import type { User } from '../types';
+import CustomSelect from '../components/CustomSelect'; // Импортируем кастомный селект
 
-// ✅ 1. ДОБАВЛЯЕМ ПОЛЕ specialty В ИНТЕРФЕЙС
 interface StudentData {
   id: number;
   first_name: string;
@@ -19,13 +19,19 @@ interface StudentData {
   avatar_initials: string;
   avatar_url?: string;
   skills: string[];
-  specialty?: any; // Поле может быть объектом или ID, нам важно его наличие
+  specialty?: any;
 }
 
 export default function EmployerStudentsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ faculty: '', min_level: '' });
+  
+  // Изменяем тип фильтров, чтобы они соответствовали значениям CustomSelect (строки)
+  const [filters, setFilters] = useState({ 
+    institution: '', // Было faculty, переименовали для ясности
+    min_level: '' 
+  });
+
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,12 +41,10 @@ export default function EmployerStudentsPage() {
       try {
         setLoading(true);
         const response = await userAPI.getAll();
-        // Фильтруем только студентов/школьников (роль STUDENT)
         const studentsList = response.data.filter((u: User) => u.role === 'STUDENT');
         
         const formattedStudents: StudentData[] = studentsList.map((u: User) => {
           const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`.toUpperCase() || 'СТ';
-          // Предполагаем, что навыки приходят в поле competencies или skills, адаптируйте под ваш API
           const skillsList = (u as any).competencies ? (u as any).competencies.map((c: any) => c.name) : [];
           
           return {
@@ -56,7 +60,7 @@ export default function EmployerStudentsPage() {
             avatar_initials: initials,
             avatar_url: (u as any).avatar_details?.image,
             skills: skillsList,
-            specialty: u.specialty // ✅ 2. ЗАПОЛНЯЕМ ПОЛЕ specialty ИЗ ОТВЕТА API
+            specialty: u.specialty
           };
         });
 
@@ -72,6 +76,31 @@ export default function EmployerStudentsPage() {
     fetchStudents();
   }, []);
 
+  // ✅ ГЕНЕРАЦИЯ ОПЦИЙ ДЛЯ КАСТОМНЫХ СЕЛЕКТОВ
+  
+  // 1. Опции учреждений: берем уникальные названия из загруженных студентов
+  const institutionOptions = useMemo(() => {
+    const uniqueInstitutions = Array.from(
+      new Set(students.map(s => s.educational_institution).filter(name => name && name !== 'Не указано'))
+    ).sort();
+
+    return [
+      { value: '', label: 'Все учреждения' },
+      ...uniqueInstitutions.map(inst => ({ value: inst, label: inst }))
+    ];
+  }, [students]);
+
+  // 2. Опции уровней: генерируем от 1 до 10+
+  const levelOptions = useMemo(() => {
+    const opts = [{ value: '', label: 'Все уровни' }];
+    for (let i = 1; i <= 10; i++) {
+      opts.push({ value: String(i), label: `${i} уровень${i === 1 ? '' : 'и выше'}` });
+    }
+    // Можно добавить отдельную опцию для высоких уровней, если нужно
+    // opts.push({ value: '11+', label: '11+ уровень' });
+    return opts;
+  }, []);
+
   const filteredStudents = students.filter(s => {
     const matchesSearch = search === '' ||
       s.first_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -79,13 +108,15 @@ export default function EmployerStudentsPage() {
       (s.future_profession && s.future_profession.toLowerCase().includes(search.toLowerCase())) ||
       s.skills.some(skill => skill.toLowerCase().includes(search.toLowerCase()));
       
-    const matchesFaculty = filters.faculty === '' || 
-      s.educational_institution.toLowerCase().includes(filters.faculty.toLowerCase());
+    // Фильтрация по учреждению (точное совпадение или частичное, если нужно)
+    const matchesInstitution = filters.institution === '' || 
+      s.educational_institution === filters.institution;
 
+    // Фильтрация по уровню (>= выбранного)
     const matchesLevel = filters.min_level === '' || 
       s.level >= parseInt(filters.min_level);
 
-    return matchesSearch && matchesFaculty && matchesLevel;
+    return matchesSearch && matchesInstitution && matchesLevel;
   });
 
   const stats = {
@@ -131,7 +162,7 @@ export default function EmployerStudentsPage() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Используем CustomSelect */}
       <div className="bg-[#1a2332] border border-gray-800 rounded-xl p-3 md:p-4 animate-fade-in-up delay-200">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
@@ -143,29 +174,6 @@ export default function EmployerStudentsPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-          </div>
-          
-          <div className="flex flex-col sm:flex-row md:flex-row gap-3">
-            <select
-              value={filters.faculty}
-              onChange={(e) => setFilters({...filters, faculty: e.target.value})}
-              className="w-full sm:w-48 px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
-            >
-              <option value="">Все учреждения</option>
-              <option value="МГТУ">МГТУ им. Баумана</option>
-              <option value="МГУ">МГУ им. Ломоносова</option>
-              <option value="Школа">Школы</option>
-            </select>
-            <select
-              value={filters.min_level}
-              onChange={(e) => setFilters({...filters, min_level: e.target.value})}
-              className="w-full sm:w-40 px-4 py-2.5 bg-[#0f1419] border border-gray-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
-            >
-              <option value="">Все уровни</option>
-              <option value="5">5+ уровень</option>
-              <option value="7">7+ уровень</option>
-              <option value="10">10+ уровень</option>
-            </select>
           </div>
         </div>
       </div>
@@ -217,13 +225,11 @@ export default function EmployerStudentsPage() {
                       </button>
                     </div>
                     
-                    {/* ✅ 3. ИСПРАВЛЕННАЯ ЛОГИКА ОТОБРАЖЕНИЯ КУРСА/КЛАССА */}
                     <p className="text-xs md:text-sm text-gray-400 mb-2 flex items-center gap-1 truncate">
                       <GraduationCap className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                       
                       {student.course && student.course !== '-' && (
                         <span>
-                          {/* Если есть specialty - значит ВУЗ (курс), иначе Школа (класс) */}
                           {student.course} {student.specialty ? 'курс' : 'класс'}
                         </span>
                       )}

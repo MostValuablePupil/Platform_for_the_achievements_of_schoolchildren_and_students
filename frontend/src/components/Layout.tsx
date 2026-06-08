@@ -1,10 +1,10 @@
 // frontend/src/components/Layout.tsx
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Trophy, TrendingUp, LogOut, Calendar, Menu, X, Send, CheckCircle2, Loader2 } from 'lucide-react'; // Добавили иконки для Telegram
+import { Home, Trophy, TrendingUp, LogOut, Calendar, Menu, X, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { telegramAPI, TELEGRAM_BOT_USERNAME } from '../api/client'; // Импортируем API телеграма
+import { telegramAPI, TELEGRAM_BOT_USERNAME } from '../api/client';
 
 interface LayoutProps {
   children: ReactNode;
@@ -98,7 +98,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-dark-950">
-      {/* === МОБИЛЬНЫЙ ВЕРХНИЙ БАР (без изменений) === */}
+      {/* === МОБИЛЬНЫЙ ВЕРХНИЙ БАР === */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-dark-900/90 backdrop-blur-md border-b border-dark-700/50">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
@@ -116,11 +116,70 @@ export default function Layout({ children }: LayoutProps) {
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+            
+            {/* ✅ ВЫПАДАЮЩЕЕ МЕНЮ ДЛЯ МОБИЛЬНЫХ С TELEGRAM И ВЫХОДОМ */}
             {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up p-4">
+                
+                {/* --- БЛОК TELEGRAM ДЛЯ МОБИЛЬНЫХ --- */}
+                <div className="mb-4 pb-4 border-b border-dark-700/50">
+                  <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
+                    <Send className="w-3 h-3" /> Telegram-уведомления
+                  </label>
+                  
+                  {tgStatus === null ? (
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Загрузка...
+                    </div>
+                  ) : tgStatus.is_linked ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-300 truncate">
+                          {tgStatus.telegram_username ? `@${tgStatus.telegram_username}` : 'Подключено'}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={handleUnlinkTelegram} 
+                        disabled={tgLoading}
+                        className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors ml-2"
+                      >
+                        {tgLoading ? '...' : 'Отвязать'}
+                      </button>
+                    </div>
+                  ) : tgCode ? (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin text-blue-400" /> Ожидание...
+                      </p>
+                      <button 
+                        onClick={() => setTgShowCode(v => !v)} 
+                        className="text-[10px] text-gray-500 hover:text-gray-300 underline block"
+                      >
+                        {tgShowCode ? 'Скрыть код' : 'Не открылся бот?'}
+                      </button>
+                      {tgShowCode && (
+                        <div className="bg-dark-900 rounded p-2 text-center">
+                          <p className="font-mono text-white text-xs font-bold tracking-widest">/link {tgCode.code}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleLinkTelegram} 
+                      disabled={tgLoading}
+                      className="w-full flex items-center justify-center gap-2 px-2 py-1.5 bg-yandex-blue/10 hover:bg-yandex-blue/20 border border-yandex-blue/30 disabled:opacity-50 text-yandex-blue rounded-lg text-xs font-medium transition-colors"
+                    >
+                      {tgLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      Привязать Telegram
+                    </button>
+                  )}
+                </div>
+
+                {/* --- КНОПКА ВЫХОДА --- */}
                 <button 
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-dark-700 hover:text-white flex items-center gap-3 transition-colors"
+                  className="w-full text-left px-2 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white flex items-center gap-3 transition-colors rounded-lg"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Выйти</span>

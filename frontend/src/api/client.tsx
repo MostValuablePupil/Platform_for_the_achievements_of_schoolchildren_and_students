@@ -78,6 +78,9 @@ export const achievementAPI = {
     }),
   update: (id: number, data: Partial<Achievement>) =>
     apiClient.patch<Achievement>(`achievements/${id}/`, data),
+    // ✅ ДОБАВЬТЕ ЭТОТ МЕТОД
+  verify: (id: number) => 
+    apiClient.patch<{ detail: string; xp_added: number; new_total_xp: number; new_level: number }>(`achievements/${id}/verify/`),
 };
 
 export const skillAPI = {

@@ -71,17 +71,25 @@ class EventViewSet(ReadOnlyModelViewSet):
 
         return queryset
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post', 'delete'])
     def track(self, request, pk=None):
+        """
+        Подписаться (POST) или отписаться (DELETE) от мероприятия.
+        """
         event = self.get_object()
-        EventTracking.objects.get_or_create(user=request.user, event=event)
-        return Response({'is_tracked': True})
-
-    @action(detail=True, methods=['delete'], url_path='track')
-    def untrack(self, request, pk=None):
-        event = self.get_object()
-        EventTracking.objects.filter(user=request.user, event=event).delete()
-        return Response({'is_tracked': False})
+        
+        if request.method == 'POST':
+            # Логика подписки
+            EventTracking.objects.get_or_create(user=request.user, event=event)
+            return Response({'is_tracked': True})
+        
+        elif request.method == 'DELETE':
+            # Логика отписки
+            deleted_count, _ = EventTracking.objects.filter(user=request.user, event=event).delete()
+            # Возвращаем False независимо от того, удалилось что-то или нет (идемпотентность)
+            return Response({'is_tracked': False})
+            
+        return Response({'detail': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(detail=False, methods=['get'])
     def filters(self, request):
