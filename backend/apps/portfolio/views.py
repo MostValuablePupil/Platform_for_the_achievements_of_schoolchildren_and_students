@@ -12,6 +12,7 @@ from .serializers import (
     AchievementLevelOptionsSerializer
 )
 from django.utils import timezone
+import requests
 from .rsr_olymp_service import fetch_rsr_diplomas
 
 
@@ -190,6 +191,12 @@ def search_rsr_diplomas(request):
             last_name, first_name, middle_name,
             birth_year, month, day, year,
         )
+    except requests.Timeout:
+        return Response({'error': 'Сервис diploma.rsr-olymp.ru не ответил вовремя. Попробуйте позже.'}, status=502)
+    except requests.ConnectionError:
+        return Response({'error': 'Не удалось подключиться к diploma.rsr-olymp.ru.'}, status=502)
+    except requests.HTTPError as e:
+        return Response({'error': str(e)}, status=502)
     except Exception as e:
         return Response({'error': str(e)}, status=502)
 
