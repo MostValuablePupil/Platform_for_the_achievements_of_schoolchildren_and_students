@@ -1,7 +1,7 @@
 // frontend/src/pages/EmployerStudentProfilePage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Calendar, Building2, GraduationCap, Loader2, Heart, Bell, FileText, ChevronDown, ChevronUp, Link2, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Award, TrendingUp, CheckCircle, Calendar, Building2, GraduationCap, Loader2, Heart, Bell, FileText, ChevronDown, ChevronUp, Link2, Clock } from 'lucide-react';
 import { userAPI, achievementAPI, subscriptionAPI } from '../api/client';
 import type { User, Achievement } from '../types';
 
@@ -364,13 +364,20 @@ export default function EmployerStudentProfilePage() {
                           {/* Тип и уровень */}
                           <div className="mb-3 md:mb-4">
                             <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-gray-400 mb-2">
+                              {/* Используем ?. и || для безопасного доступа */}
                               <span>{TYPE_LABELS[achievement.event_type] || achievement.event_type}</span>
-                              <span className="w-1 h-1 bg-gray-600 rounded-full hidden sm:inline"></span>
-                              <span>{LEVEL_LABELS[achievement.level_category] || achievement.level_category}</span>
+                              
+                              {achievement.level_category && (
+                                <>
+                                  <span className="w-1 h-1 bg-gray-600 rounded-full hidden sm:inline"></span>
+                                  <span>{LEVEL_LABELS[achievement.level_category] || achievement.level_category}</span>
+                                </>
+                              )}
+                              
                               {achievement.achievement_level && achievement.achievement_level !== 'PARTICIPANT' && (
                                 <>
                                   <span className="w-1 h-1 bg-gray-600 rounded-full hidden sm:inline"></span>
-                                  <span>{RESULT_LABELS[achievement.achievement_level]}</span>
+                                  <span>{RESULT_LABELS[achievement.achievement_level] || achievement.achievement_level}</span>
                                 </>
                               )}
                             </div>
