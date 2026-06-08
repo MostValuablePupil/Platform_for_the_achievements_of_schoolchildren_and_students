@@ -107,6 +107,7 @@ export default function ProfilePage() {
   const [editFormData, setEditFormData] = useState({
     first_name: '',
     last_name: '',
+    middle_name: '',
     educational_institution: '',
     future_profession: '',
     birth_date: '',
@@ -130,6 +131,7 @@ export default function ProfilePage() {
     setEditFormData({
       first_name: currentUser.first_name || '',
       last_name: currentUser.last_name || '',
+      middle_name: currentUser.middle_name || '',
       educational_institution: currentUser.educational_institution || '',
       future_profession: currentUser.future_profession || '',
       birth_date: currentUser.birth_date || '',
@@ -497,6 +499,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between p-6 border-b border-gray-800"><h2 className="text-xl font-bold text-white">Редактирование профиля</h2><button onClick={() => setIsEditingProfile(false)} className="text-gray-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button></div>
             <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4"><div><label className="block text-sm text-gray-400 mb-1">Имя</label><input type="text" autoComplete="off" value={editFormData.first_name} onChange={e => setEditFormData({...editFormData, first_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div><div><label className="block text-sm text-gray-400 mb-1">Фамилия</label><input type="text" autoComplete="off" value={editFormData.last_name} onChange={e => setEditFormData({...editFormData, last_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" /></div></div>
+              <div><label className="block text-sm text-gray-400 mb-1">Отчество</label><input type="text" autoComplete="off" value={editFormData.middle_name} onChange={e => setEditFormData({...editFormData, middle_name: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="Иванович" /></div>
               <div><label className="block text-sm text-gray-400 mb-1">Учебное заведение</label><input type="text" autoComplete="off" value={editFormData.educational_institution} onChange={e => setEditFormData({...editFormData, educational_institution: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="МГТУ им. Баумана" /></div>
               <div><label className="block text-sm text-gray-400 mb-1">Цель (Будущая профессия)</label><input type="text" autoComplete="off" value={editFormData.future_profession} onChange={e => setEditFormData({...editFormData, future_profession: e.target.value})} className="w-full bg-[#0f1419] border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="Data Scientist" /></div>
               {currentUser.role === 'STUDENT' && (

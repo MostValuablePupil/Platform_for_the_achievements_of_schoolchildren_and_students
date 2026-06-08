@@ -1,42 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Download, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Download, Plus, Loader2, AlertCircle, User, Calendar } from 'lucide-react';
 import { rsrDiplomaAPI } from '../api/client';
+import { useGameStore } from '../store/useGameStore';
 import type { RsrDiploma } from '../types';
 
 const YEARS = Array.from({ length: 2025 - 2014 + 1 }, (_, i) => 2025 - i);
 
+function isoToDisplay(iso: string) {
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+function isoToApi(iso: string) {
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
 export default function RsrDiplomaSearch() {
   const navigate = useNavigate();
+  const { currentUser } = useGameStore();
 
-  const [form, setForm] = useState({
-    last_name: '',
-    first_name: '',
-    middle_name: '',
-    birth_day: '',
-    birth_month: '',
-    birth_year: '',
-    year: 2025,
-  });
+  const [year, setYear] = useState(2025);
   const [diplomas, setDiplomas] = useState<RsrDiploma[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const hasBirthDate = !!currentUser?.birth_date;
 
   const handleSearch = async () => {
-    const { last_name, first_name, birth_day, birth_month, birth_year } = form;
-    if (!last_name || !first_name || !birth_day || !birth_month || !birth_year) {
-      setError('Заполните фамилию, имя и дату рождения');
-      return;
-    }
-
-    const dd = birth_day.padStart(2, '0');
-    const mm = birth_month.padStart(2, '0');
-    const birth_date = `${dd}.${mm}.${birth_year}`;
+    if (!currentUser || !hasBirthDate) return;
 
     setLoading(true);
     setError('');
@@ -44,11 +38,11 @@ export default function RsrDiplomaSearch() {
 
     try {
       const res = await rsrDiplomaAPI.search({
-        last_name: last_name.trim(),
-        first_name: first_name.trim(),
-        middle_name: form.middle_name.trim() || undefined,
-        birth_date,
-        year: form.year,
+        last_name: currentUser.last_name.trim(),
+        first_name: currentUser.first_name.trim(),
+        middle_name: currentUser.middle_name?.trim() || undefined,
+        birth_date: isoToApi(currentUser.birth_date!),
+        year,
       });
       setDiplomas(res.data.diplomas);
       setSearched(true);
@@ -79,60 +73,55 @@ export default function RsrDiplomaSearch() {
       <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-blue-300">
         Поиск по базе дипломов{' '}
         <span className="font-semibold">Российского совета олимпиад школьников (РСОШ)</span>.
-        Введите ФИО и дату рождения — будут найдены все дипломы за выбранный учебный год.
+        Данные берутся из вашего профиля автоматически.
       </div>
 
       {/* Search form */}
       <div className="bg-[#1a2332] rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4">
         <h2 className="text-sm sm:text-base font-semibold text-white">Поиск диплома</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { name: 'last_name',   placeholder: 'Фамилия *' },
-            { name: 'first_name',  placeholder: 'Имя *' },
-            { name: 'middle_name', placeholder: 'Отчество' },
-          ].map(f => (
-            <input
-              key={f.name}
-              name={f.name}
-              value={form[f.name as keyof typeof form]}
-              onChange={handleChange}
-              placeholder={f.placeholder}
-              className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
-          ))}
+        {/* Profile data preview */}
+        <div className="bg-[#0f1419] border border-gray-700 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">ФИО</p>
+              <p className="text-sm text-white font-medium">
+                {currentUser?.last_name} {currentUser?.first_name}{currentUser?.middle_name ? ` ${currentUser.middle_name}` : ''}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">Дата рождения</p>
+              {hasBirthDate ? (
+                <p className="text-sm text-white font-medium">
+                  {isoToDisplay(currentUser!.birth_date!)}
+                </p>
+              ) : (
+                <p className="text-sm text-yellow-400">
+                  Не указана —{' '}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="underline hover:text-yellow-300 transition-colors"
+                  >
+                    добавить в настройках профиля
+                  </button>
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <input
-            name="birth_day"
-            value={form.birth_day}
-            onChange={handleChange}
-            placeholder="День *"
-            maxLength={2}
-            className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          <input
-            name="birth_month"
-            value={form.birth_month}
-            onChange={handleChange}
-            placeholder="Месяц *"
-            maxLength={2}
-            className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          <input
-            name="birth_year"
-            value={form.birth_year}
-            onChange={handleChange}
-            placeholder="Год рождения *"
-            maxLength={4}
-            className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-          />
+        {/* Year selector */}
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">Учебный год</label>
           <select
-            name="year"
-            value={form.year}
-            onChange={handleChange}
-            className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+            value={year}
+            onChange={e => setYear(Number(e.target.value))}
+            className="bg-[#0f1419] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors w-full sm:w-48"
           >
             {YEARS.map(y => (
               <option key={y} value={y}>
@@ -151,7 +140,7 @@ export default function RsrDiplomaSearch() {
 
         <button
           onClick={handleSearch}
-          disabled={loading}
+          disabled={loading || !hasBirthDate}
           className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg shadow-blue-500/25"
         >
           {loading ? (
