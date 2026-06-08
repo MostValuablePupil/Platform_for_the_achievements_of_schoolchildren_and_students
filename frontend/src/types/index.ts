@@ -28,6 +28,7 @@ export interface User {
   username: string;
   first_name: string;
   last_name: string;
+  middle_name?: string;
   email: string;
   role: 'STUDENT' | 'CURATOR' | 'EMPLOYER' | 'ADMIN';
   educational_institution?: string;
@@ -44,6 +45,7 @@ export interface User {
   competencies?: UserSkill[];
   future_profession?: string | null;
   achievements_count?: number;
+  birth_date?: string | null;
 }
 
 export interface AchievementStats {
@@ -163,4 +165,13 @@ export interface LastAchievement {
 export interface SubscribedStudent extends User {
   last_achievement?: LastAchievement | null;
   has_new_achievements: boolean;
+}
+
+export interface RsrDiploma {
+  code: string | number;
+  olympiad: string;
+  name: string;
+  form: string | number;
+  pdf_url: string;
+  year: number;
 }

@@ -153,11 +153,27 @@ python manage.py send_course_update_reminders
 python manage.py send_course_update_reminders --message "Обнови курс в профиле!"
 ```
 
+**Уведомления студентам о новых мероприятиях:**
+```bash
+# Проверить без отправки:
+python manage.py notify_students_about_events --dry-run
+
+# Отправить (все типы за последние 25 ч):
+python manage.py notify_students_about_events
+
+# Только хакатоны:
+python manage.py notify_students_about_events --event-type HACKATHON
+
+# Запустить парсер и сразу разослать:
+python manage.py notify_students_about_events --run-parser --since-hours 48
+```
+
 ### Автоматические уведомления (Docker)
 
 В `docker-compose.yml` настроен планировщик `ofelia`:
 - **1-е число каждого месяца 09:00** — парсинг олимпиад + уведомления
 - **1 сентября 09:00** — напоминание обновить курс/класс
+- **Каждый понедельник 10:00** — рассылка студентам о новых мероприятиях за неделю
 
 В разработке (без Docker) автозапуска нет — команды запускаются вручную.
 

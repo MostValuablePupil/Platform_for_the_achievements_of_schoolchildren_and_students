@@ -78,6 +78,9 @@ export const achievementAPI = {
     }),
   update: (id: number, data: Partial<Achievement>) =>
     apiClient.patch<Achievement>(`achievements/${id}/`, data),
+    // ✅ ДОБАВЬТЕ ЭТОТ МЕТОД
+  verify: (id: number) => 
+    apiClient.patch<{ detail: string; xp_added: number; new_total_xp: number; new_level: number }>(`achievements/${id}/verify/`),
 };
 
 export const skillAPI = {
@@ -123,6 +126,20 @@ export const subscriptionAPI = {
   // Отписаться от студента (использует action unfollow из UserViewSet)
   // ВАЖНО: Убедитесь, что на бэкенде url_path='unfollow' для метода DELETE
   unsubscribe: (studentId: number) => apiClient.delete(`/users/${studentId}/unfollow/`),
+};
+
+export const rsrDiplomaAPI = {
+  search: (params: {
+    last_name: string;
+    first_name: string;
+    middle_name?: string;
+    birth_date: string;
+    year?: number;
+  }) =>
+    apiClient.get<{ diplomas: import('../types').RsrDiploma[]; count: number; year: number }>(
+      'rsr-diplomas/',
+      { params },
+    ),
 };
 
 export default apiClient;

@@ -162,10 +162,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'url', 'username', 'first_name', 'last_name', 'email',
+            'id', 'url', 'username', 'first_name', 'last_name', 'middle_name', 'email',
             'role', 'educational_institution', 'course', 'specialty', 'specialty_details', 'total_xp', 'level',
             'avatar', 'avatar_details', 'earned_badges', 'password', 'competencies', 'future_profession',
-            'achievements_count', 'curator_registration_code', 'organization', 'city',
+            'achievements_count', 'curator_registration_code', 'organization', 'city', 'birth_date',
         ]
         extra_kwargs = {
             'password': {'write_only': True},

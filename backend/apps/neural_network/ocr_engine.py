@@ -5,20 +5,67 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import Any, List, TYPE_CHECKING
 
 from PIL import Image, ImageOps
-from paddleocr import PaddleOCR
 
 from pdf2image import convert_from_path
 from docx import Document
 import io
 import zipfile
 
+if TYPE_CHECKING:
+    from paddleocr import PaddleOCR
+
 
 DEFAULT_CPU_THREADS = min(10, max(4, os.cpu_count() or 4))
 MAX_OCR_IMAGE_SIDE = 2200
 MIN_OCR_IMAGE_SIDE = 900
+PADDLE_ACCELERATION_ERROR_MARKERS = (
+    "ConvertPirAttribute2RuntimeAttribute",
+    "onednn_instruction",
+    "onednn",
+    "mkldnn",
+    "tensorrt",
+)
+
+
+def _get_bool_env(name: str, default: bool) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+
+    return raw_value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _get_int_env(name: str, default: int) -> int:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+
+    try:
+        value = int(raw_value)
+    except ValueError:
+        return default
+
+    return max(1, value)
+
+
+def _configure_paddle_runtime_env() -> None:
+    os.environ.setdefault("PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT", "False")
+    os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+
+
+def _load_paddle_ocr_class() -> type["PaddleOCR"]:
+    _configure_paddle_runtime_env()
+    from paddleocr import PaddleOCR
+
+    return PaddleOCR
+
+
+def _is_paddle_acceleration_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return any(marker.lower() in message for marker in PADDLE_ACCELERATION_ERROR_MARKERS)
 
 
 LANGUAGE_GROUPS = {
@@ -57,8 +104,8 @@ class PaddleOCREngine:
     def __init__(self, output_dir: str | Path = "output") -> None:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        self._ocr_engine: PaddleOCR | None = None
-        self._ocr_lang = ""
+        self._ocr_engine: Any | None = None
+        self._ocr_runtime_key: tuple[Any, ...] | None = None
 
     # =========================
     # NEW: UNIVERSAL INPUT LAYER
@@ -146,7 +193,15 @@ class PaddleOCREngine:
             prepared_image_path = self.prepare_image_for_ocr(img_path)
             last_prepared = prepared_image_path
 
-            result = ocr.predict(str(prepared_image_path))
+            try:
+                result = ocr.predict(str(prepared_image_path))
+            except Exception as exc:
+                if not _is_paddle_acceleration_error(exc):
+                    raise
+
+                ocr = self._get_ocr_engine(resolved_lang, force_safe_cpu=True)
+                result = ocr.predict(str(prepared_image_path))
+
             if not result:
                 continue
 
@@ -175,25 +230,58 @@ class PaddleOCREngine:
             json_path=json_path,
         )
 
-    def _get_ocr_engine(self, requested_lang: str) -> PaddleOCR:
-        if self._ocr_engine is not None and self._ocr_lang == requested_lang:
+    def _get_ocr_engine(
+        self,
+        requested_lang: str,
+        *,
+        force_safe_cpu: bool = False,
+    ) -> "PaddleOCR":
+        kwargs = self._build_ocr_kwargs(force_safe_cpu=force_safe_cpu)
+        runtime_key = (
+            requested_lang,
+            kwargs["device"],
+            kwargs["enable_mkldnn"],
+            kwargs["use_tensorrt"],
+            kwargs["cpu_threads"],
+        )
+        if self._ocr_engine is not None and self._ocr_runtime_key == runtime_key:
             return self._ocr_engine
 
-        kwargs = {
-            "device": "gpu:0",
-            "enable_mkldnn": False,
-            "cpu_threads": DEFAULT_CPU_THREADS,
-            "use_doc_orientation_classify": False,
-            "use_doc_unwarping": False,
-            "use_textline_orientation": False,
-            "use_tensorrt": True,
-        }
         if requested_lang:
             kwargs["lang"] = requested_lang
 
-        self._ocr_engine = PaddleOCR(**kwargs)
-        self._ocr_lang = requested_lang
+        paddle_ocr_class = _load_paddle_ocr_class()
+        self._ocr_engine = paddle_ocr_class(**kwargs)
+        self._ocr_runtime_key = runtime_key
         return self._ocr_engine
+
+    @staticmethod
+    def _build_ocr_kwargs(*, force_safe_cpu: bool = False) -> dict[str, Any]:
+        device = (
+            os.getenv("PADDLE_OCR_DEVICE", os.getenv("OCR_DEVICE", "cpu")).strip()
+            or "cpu"
+        )
+        enable_mkldnn = _get_bool_env("PADDLE_OCR_ENABLE_MKLDNN", False)
+        use_tensorrt = _get_bool_env("PADDLE_OCR_USE_TENSORRT", False)
+
+        if force_safe_cpu:
+            device = "cpu"
+            enable_mkldnn = False
+            use_tensorrt = False
+        elif not device.lower().startswith("gpu"):
+            use_tensorrt = False
+
+        return {
+            "device": device,
+            "enable_mkldnn": enable_mkldnn,
+            "mkldnn_cache_capacity": 0 if not enable_mkldnn else 10,
+            "cpu_threads": _get_int_env("PADDLE_OCR_CPU_THREADS", DEFAULT_CPU_THREADS),
+            "use_doc_orientation_classify": False,
+            "use_doc_unwarping": False,
+            "use_textline_orientation": False,
+            "use_tensorrt": use_tensorrt,
+            "enable_cinn": False,
+        }
 
     def prepare_image_for_ocr(self, image_path: str | Path) -> Path:
         source_path = Path(image_path)

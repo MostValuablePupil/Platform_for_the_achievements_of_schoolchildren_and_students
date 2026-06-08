@@ -1,11 +1,16 @@
 // frontend/src/pages/RegisterPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap, ShieldCheck } from 'lucide-react';
+import { Trophy, Lock, Mail, User, Building2, Eye, EyeOff, GraduationCap, ShieldCheck, Calendar as CalendarIcon } from 'lucide-react'; // Добавили CalendarIcon
 import apiClient, { specialtyAPI } from '../api/client';
 import type { Specialty } from '../types';
 import CustomSelect from '../components/CustomSelect';
 import AnimatedBackground from '../components/AnimatedBackground';
+
+// ✅ ИМПОРТ КАЛЕНДАРЯ И ЛОКАЛИЗАЦИИ
+import DatePicker from 'react-datepicker';
+import { ru } from 'date-fns/locale';
+import 'react-datepicker/dist/react-datepicker.css';
 
 type UserRole = 'student' | 'school' | 'employer' | 'curator';
 
@@ -18,6 +23,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [secretCode, setSecretCode] = useState('');
+  
+  // ✅ ИЗМЕНИЛИ ТИП birthDate на Date | null для совместимости с DatePicker
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -31,7 +38,9 @@ export default function RegisterPage() {
     className: '',
     city: '',
     specialtyId: null as number | null,
+    birthDate: null as Date | null, 
   });
+
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [specialtySearch, setSpecialtySearch] = useState('');
   const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
@@ -103,6 +112,14 @@ export default function RegisterPage() {
         userData.educational_institution = formData.educationalInstitution;
         userData.course = selectedRole === 'school' ? formData.className : formData.course;
         userData.city = formData.city;
+        
+        // ✅ ИСПРАВЛЕНИЕ: Отправляем дату в формате ГГГГ-ММ-ДД (ISO 8601)
+        if (formData.birthDate) {
+          const day = String(formData.birthDate.getDate()).padStart(2, '0');
+          const month = String(formData.birthDate.getMonth() + 1).padStart(2, '0');
+          const year = formData.birthDate.getFullYear();
+          userData.birth_date = `${year}-${month}-${day}`; 
+        }
       }
 
       console.log('📤 Отправляем на регистрацию:', userData);
@@ -140,7 +157,7 @@ export default function RegisterPage() {
       <AnimatedBackground />
       
       <div className="w-full max-w-2xl relative z-10">
-        {/* Карточка регистрации — делаем полупрозрачной для эффекта стекла */}
+        {/* Карточка регистрации */}
         <div className="bg-[#1a2332]/80 backdrop-blur-xl border border-gray-800/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
 
           {registered ? (
@@ -327,6 +344,34 @@ export default function RegisterPage() {
                       className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 bg-[#0f1419] border border-gray-700 rounded-xl text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Москва"
                       required
+                    />
+                  </div>
+                </div>
+
+                {/* ✅ ЗАМЕНА INPUT TYPE=DATE НА DATEPICKER */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">
+                    Дата рождения <span className="text-gray-500">(необязательно)</span>
+                  </label>
+                  <div className="relative">
+                    {/* Иконка календаря слева */}
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                      <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
+                    </div>
+                    
+                    <DatePicker
+                      selected={formData.birthDate}
+                      onChange={(date: Date | null) => setFormData({ ...formData, birthDate: date })}
+                      dateFormat="dd.MM.yyyy"
+                      locale={ru}
+                      placeholderText="ДД.ММ.ГГГГ"
+                      // Максимальная дата - сегодня
+                      maxDate={new Date()}
+                      // Стилизуем под общий дизайн
+                      className="w-full bg-[#0f1419] border border-gray-700 rounded-xl pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all [color-scheme:dark]"
+                      wrapperClassName="w-full"
+                      popperPlacement="bottom-start"
+                      calendarClassName="bg-[#1a2332] border border-gray-700 shadow-xl rounded-xl"
                     />
                   </div>
                 </div>

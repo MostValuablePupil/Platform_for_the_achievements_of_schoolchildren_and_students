@@ -87,6 +87,41 @@ def check_and_award_badges(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Achievement)
+def notify_student_on_status_change(sender, instance, **kwargs):
+    old_status = getattr(instance, '_old_status', None)
+    if old_status == instance.status:
+        return
+    if instance.status not in ('VERIFIED', 'REJECTED'):
+        return
+
+    try:
+        from apps.telegram_bot.services import send_custom_message_to_user
+    except ImportError:
+        return
+
+    if instance.status == 'VERIFIED':
+        text = (
+            f"✅ Ваше достижение подтверждено!\n\n"
+            f"📌 {instance.title}\n"
+            f"🎯 Тип: {instance.get_event_type_display()}\n"
+            f"⭐ Результат: {instance.get_achievement_level_display()}\n"
+            f"💎 Начислено XP: {instance.points}"
+        )
+    else:
+        text = (
+            f"❌ Ваше достижение отклонено куратором.\n\n"
+            f"📌 {instance.title}\n"
+            f"🎯 Тип: {instance.get_event_type_display()}\n\n"
+            f"Проверьте правильность данных и попробуйте добавить достижение повторно."
+        )
+
+    try:
+        send_custom_message_to_user(instance.student, text)
+    except Exception as exc:
+        logger.warning("Не удалось отправить уведомление студенту %s: %s", instance.student_id, exc)
+
+
+@receiver(post_save, sender=Achievement)
 def notify_employers_on_verified(sender, instance, **kwargs):
     old_status = getattr(instance, '_old_status', None)
     if instance.status != 'VERIFIED' or old_status == 'VERIFIED':

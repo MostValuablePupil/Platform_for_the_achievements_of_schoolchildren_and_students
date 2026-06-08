@@ -1,87 +1,97 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: mvp_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-mvp}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    container_name: mvp_db_prod
+    restart: always
+    env_file:
+      - .env.prod
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: mvp_backend
+    container_name: mvp_backend_prod
+    restart: always
     env_file:
-      - backend/.env
+      - .env.prod
     environment:
-      DEBUG: ${DEBUG:-0}
-      DB_NAME: ${DB_NAME:-mvp}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: db
-      DB_PORT: 5432
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,192.168.0.81,backend}
-      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://127.0.0.1,http://localhost,http://192.168.0.81}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://127.0.0.1,http://localhost,http://192.168.0.81}
-      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-0}
+      - DB_HOST=db
+      - DB_PORT=5432
+      # Убедитесь, что в .env.prod DEBUG=0
     volumes:
       - media_data:/app/media
       - static_data:/app/staticfiles
-    expose:
-      - "8000"
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
     labels:
       ofelia.enabled: "true"
-      # Уведомления об олимпиадах: 1-е число каждого месяца в 09:00
       ofelia.job-exec.parse-notify.schedule: "0 9 1 * *"
       ofelia.job-exec.parse-notify.command: "python manage.py notify_olympiad_updates --run-parser"
-      # Ежегодное напоминание обновить курс: 1 сентября в 09:00
       ofelia.job-exec.course-reminder.schedule: "0 9 1 9 *"
       ofelia.job-exec.course-reminder.command: "python manage.py send_course_update_reminders"
-      # Ежедневные напоминания об отслеживаемых мероприятиях (за 3 дня и за 1 день)
       ofelia.job-exec.event-reminders.schedule: "0 9 * * *"
       ofelia.job-exec.event-reminders.command: "python manage.py send_event_reminders"
-      # Уведомления студентам о новых мероприятиях: каждый понедельник в 10:00
       ofelia.job-exec.student-events-notify.schedule: "0 10 * * 1"
       ofelia.job-exec.student-events-notify.command: "python manage.py notify_students_about_events --since-hours 168"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   scheduler:
     image: mcuadros/ofelia:latest
-    container_name: mvp_scheduler
+    container_name: mvp_scheduler_prod
     depends_on:
       - backend
     command: daemon --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/}
-    container_name: mvp_frontend
+        # Для продакшена обычно /api/, т.к. запросы идут через один домен
+        VITE_API_BASE_URL: /api/
+    container_name: mvp_frontend_prod
+    restart: always
     depends_on:
       - backend
     ports:
       - "80:80"
+      # Если планируете настраивать HTTPS внутри nginx:
+      # - "443:443"
     volumes:
       - media_data:/var/www/media:ro
       - static_data:/var/www/static:ro
-    restart: unless-stopped
+      # Для сертификатов HTTPS (если настраиваете nginx внутри контейнера):
+      # - ./cert:/etc/nginx/ssl
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
 volumes:
   postgres_data:

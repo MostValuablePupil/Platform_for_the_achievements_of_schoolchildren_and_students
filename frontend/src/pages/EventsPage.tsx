@@ -10,6 +10,26 @@ import { useGameStore } from '../store/useGameStore';
 import type { ParsedEvent, RecommendedEvent, EventFilters } from '../types';
 
 const PAGE_SIZE = 20;
+const REC_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ч
+
+function getCachedRec(userId: number, profession: string): RecommendedEvent[] | null {
+  try {
+    const raw = localStorage.getItem(`rec_events_${userId}`);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as { data: RecommendedEvent[]; ts: number; profession: string };
+    if (cached.profession !== profession) return null;
+    if (Date.now() - cached.ts > REC_CACHE_TTL) return null;
+    return cached.data;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedRec(userId: number, profession: string, data: RecommendedEvent[]) {
+  try {
+    localStorage.setItem(`rec_events_${userId}`, JSON.stringify({ data, ts: Date.now(), profession }));
+  } catch {}
+}
 
 export default function EventsPage() {
   const { currentUser } = useGameStore();
@@ -75,12 +95,24 @@ export default function EventsPage() {
     loadEvents(currentPage);
   }, [currentPage, loadEvents]);
 
-  const loadRecommended = async () => {
+  const loadRecommended = async (force = false) => {
+    const userId = currentUser?.id;
+    const profession = currentUser?.future_profession ?? '';
+
+    if (!force && userId) {
+      const cached = getCachedRec(userId, profession);
+      if (cached) {
+        setRecommended(cached);
+        return;
+      }
+    }
+
     try {
       setRecLoading(true);
       setRecError(null);
       const res = await parsedEventAPI.getRecommended();
       setRecommended(res.data);
+      if (userId && profession) setCachedRec(userId, profession, res.data);
     } catch (err: any) {
       setRecError(err.response?.data?.detail || 'Ошибка загрузки рекомендаций');
     } finally {
@@ -470,10 +502,18 @@ export default function EventsPage() {
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-xs sm:text-sm text-gray-400">Рекомендации подобраны для профессии:</p>
                 <p className="text-base sm:text-lg font-semibold text-white">{currentUser.future_profession}</p>
               </div>
+              <button
+                onClick={() => loadRecommended(true)}
+                disabled={recLoading}
+                title="Обновить рекомендации"
+                className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-colors disabled:opacity-40"
+              >
+                <Loader2 className={`w-4 h-4 ${recLoading ? 'animate-spin text-purple-400' : ''}`} />
+              </button>
             </div>
           ) : (
             <div className="bg-[#1a2332] border border-yellow-500/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
