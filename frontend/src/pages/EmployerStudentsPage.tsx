@@ -1,10 +1,10 @@
 // frontend/src/pages/EmployerStudentsPage.tsx
-import { useState, useEffect, useMemo } from 'react'; // Добавили useMemo
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Award, TrendingUp, ExternalLink, GraduationCap, Loader2 } from 'lucide-react';
 import { userAPI } from '../api/client';
 import type { User } from '../types';
-import CustomSelect from '../components/CustomSelect'; // Импортируем кастомный селект
+
 
 interface StudentData {
   id: number;
@@ -27,7 +27,7 @@ export default function EmployerStudentsPage() {
   const [search, setSearch] = useState('');
   
   // Изменяем тип фильтров, чтобы они соответствовали значениям CustomSelect (строки)
-  const [filters, setFilters] = useState({ 
+  const [filters] = useState({ 
     institution: '', // Было faculty, переименовали для ясности
     min_level: '' 
   });
@@ -76,32 +76,7 @@ export default function EmployerStudentsPage() {
     fetchStudents();
   }, []);
 
-  // ✅ ГЕНЕРАЦИЯ ОПЦИЙ ДЛЯ КАСТОМНЫХ СЕЛЕКТОВ
-  
-  // 1. Опции учреждений: берем уникальные названия из загруженных студентов
-  const institutionOptions = useMemo(() => {
-    const uniqueInstitutions = Array.from(
-      new Set(students.map(s => s.educational_institution).filter(name => name && name !== 'Не указано'))
-    ).sort();
-
-    return [
-      { value: '', label: 'Все учреждения' },
-      ...uniqueInstitutions.map(inst => ({ value: inst, label: inst }))
-    ];
-  }, [students]);
-
-  // 2. Опции уровней: генерируем от 1 до 10+
-  const levelOptions = useMemo(() => {
-    const opts = [{ value: '', label: 'Все уровни' }];
-    for (let i = 1; i <= 10; i++) {
-      opts.push({ value: String(i), label: `${i} уровень${i === 1 ? '' : 'и выше'}` });
-    }
-    // Можно добавить отдельную опцию для высоких уровней, если нужно
-    // opts.push({ value: '11+', label: '11+ уровень' });
-    return opts;
-  }, []);
-
-  const filteredStudents = students.filter(s => {
+    const filteredStudents = students.filter(s => {
     const matchesSearch = search === '' ||
       s.first_name.toLowerCase().includes(search.toLowerCase()) ||
       s.last_name.toLowerCase().includes(search.toLowerCase()) ||

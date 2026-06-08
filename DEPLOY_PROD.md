@@ -37,14 +37,14 @@ cd mvp-prod
 
 ## 3. Настройка переменных окружения
 
-В проекте создан шаблон переменных окружения для продакшена — `.env.prod.example`.
+В проекте создан шаблон переменных окружения для продакшена — `.env.example`.
 
 1. Скопируйте шаблон:
 ```bash
-cp .env.prod.example .env.prod
+cp .env.example .env
 ```
 
-2. Откройте файл `.env.prod` в текстовом редакторе (например, `nano .env.prod`) и заполните его своими данными.
+2. Откройте файл `.env` в текстовом редакторе (например, `nano .env`) и заполните его своими данными.
 
 **Особое внимание уделите следующим параметрам:**
 - `SECRET_KEY`: сгенерируйте надежный случайный ключ.
@@ -68,8 +68,8 @@ chmod +x deploy.sh
 ```
 
 ### Что делает скрипт?
-- Проверяет наличие `.env.prod`
-- Запускает `docker compose -f docker-compose.prod.yml up -d --build`
+- Проверяет наличие `.env`
+- Запускает `docker compose -f docker-compose.yml up -d --build`
 - Выполняет `python manage.py migrate` в контейнере бэкенда
 - Выполняет `python manage.py collectstatic` в контейнере бэкенда
 
@@ -79,14 +79,14 @@ chmod +x deploy.sh
 
 Выполните команду внутри контейнера бэкенда:
 ```bash
-docker compose -f docker-compose.prod.yml exec backend python manage.py seed
+docker compose -f docker-compose.yml exec backend python manage.py seed
 ```
 
 *Скрипт создаст суперпользователя (admin / admin), а также тестовых пользователей. Не забудьте после входа изменить пароль администратора в админ-панели!*
 
 ## 6. Настройка Nginx и HTTPS (Рекомендация)
 
-По умолчанию `docker-compose.prod.yml` поднимает контейнер `frontend` с внутренним Nginx, который слушает порт 80.
+По умолчанию `docker-compose.yml` поднимает контейнер `frontend` с внутренним Nginx, который слушает порт 80.
 Для реального production настоятельно рекомендуется использовать **HTTPS**.
 
 Самый простой вариант — использовать **Nginx на хост-машине** в качестве reverse-proxy перед Docker-контейнером с настроенным SSL от Let's Encrypt (Certbot).
@@ -124,28 +124,28 @@ sudo certbot --nginx -d yourdomain.com
 
 **Посмотреть логи всех контейнеров:**
 ```bash
-docker compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.yml logs -f
 ```
 
 **Посмотреть логи конкретного контейнера (например, backend):**
 ```bash
-docker compose -f docker-compose.prod.yml logs -f backend
+docker compose -f docker-compose.yml logs -f backend
 ```
 
 **Остановить приложение:**
 ```bash
-docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml down
 ```
 
 **Перезапустить приложение:**
 ```bash
-docker compose -f docker-compose.prod.yml restart
+docker compose -f docker-compose.yml restart
 ```
 
 ## 8. Создание бэкапов базы данных
 
 Для создания дампа базы данных (резервной копии) используйте команду:
 ```bash
-docker compose -f docker-compose.prod.yml exec -T db pg_dump -U mvp_user mvp_prod > backup_$(date +%F).sql
+docker compose -f docker-compose.yml exec -T db pg_dump -U mvp_user mvp_prod > backup_$(date +%F).sql
 ```
-*(Имя пользователя и БД укажите те, что прописаны в вашем `.env.prod`)*
+*(Имя пользователя и БД укажите те, что прописаны в вашем `.env`)*

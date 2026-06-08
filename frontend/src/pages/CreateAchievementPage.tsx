@@ -1,7 +1,7 @@
 // frontend/src/pages/CreateAchievementPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, Award, Building2, Link2, X, ArrowLeft, Calendar, Brain, Laptop, BookOpen, Heart, Microscope, Medal } from 'lucide-react';
+import { Upload, Award, Building2, Link2, X, ArrowLeft, Calendar, Brain, Laptop, BookOpen, Heart, Microscope, Medal, Check} from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { ru } from 'date-fns/locale';
 import apiClient from '../api/client';

@@ -175,3 +175,8 @@ export interface RsrDiploma {
   pdf_url: string;
   year: number;
 }
+
+export interface PaginatedResponse<T> {
+  count: number;
+  results: T[];
+}

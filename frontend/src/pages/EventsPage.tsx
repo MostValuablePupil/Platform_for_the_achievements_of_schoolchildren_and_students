@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { parsedEventAPI } from '../api/client';
 import { useGameStore } from '../store/useGameStore';
-import type { ParsedEvent, RecommendedEvent, EventFilters } from '../types';
+import type { ParsedEvent, RecommendedEvent, EventFilters, PaginatedResponse} from '../types';
 
 const PAGE_SIZE = 20;
 const REC_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ч
@@ -57,6 +57,8 @@ export default function EventsPage() {
       .catch(err => console.error('Ошибка загрузки фильтров:', err));
   }, []);
 
+  // frontend/src/pages/EventsPage.tsx
+
   const loadEvents = useCallback(async (page: number) => {
     try {
       setLoading(true);
@@ -68,15 +70,20 @@ export default function EventsPage() {
       if (hasDateOnly) params.has_date = 'true';
 
       const res = await parsedEventAPI.getAll(params);
-      // Бэкенд теперь возвращает пагинированный ответ {count, results}
       const data = res.data;
-      if (data && typeof data === 'object' && 'results' in data) {
-        setEvents(data.results as ParsedEvent[]);
-        setTotalCount(data.count as number);
+
+      // Проверяем, является ли ответ объектом с пагинацией
+      if (data && typeof data === 'object' && !Array.isArray(data) && 'results' in data) {
+        // Приводим тип к нашему интерфейсу PaginatedResponse<ParsedEvent>
+        const paginatedData = data as PaginatedResponse<ParsedEvent>;
+        
+        setEvents(paginatedData.results);
+        setTotalCount(paginatedData.count);
       } else {
-        // Fallback если бэкенд без пагинации
-        setEvents(data as ParsedEvent[]);
-        setTotalCount((data as ParsedEvent[]).length);
+        // Fallback: если пришел просто массив
+        const arrayData = Array.isArray(data) ? data : [];
+        setEvents(arrayData as ParsedEvent[]);
+        setTotalCount(arrayData.length);
       }
     } catch (err) {
       console.error('Ошибка загрузки мероприятий:', err);
@@ -84,7 +91,6 @@ export default function EventsPage() {
       setLoading(false);
     }
   }, [searchQuery, selectedType, selectedSource, selectedYear, hasDateOnly]);
-
   // Сбрасываем страницу при смене фильтров
   useEffect(() => {
     setCurrentPage(1);

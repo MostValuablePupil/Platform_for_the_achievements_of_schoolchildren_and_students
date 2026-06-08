@@ -166,7 +166,7 @@ export default function AchievementsPage() {
                   <span className="text-xs sm:text-sm">Фильтр:</span>
                 </div>
                 <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                  {['all', 'VERIFIED', 'PENDING'].map((f, i) => (
+                  {['all', 'VERIFIED', 'PENDING'].map((f, _) => (
                     <button
                       key={f}
                       onClick={() => setFilter(f as any)}
