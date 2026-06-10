@@ -23,8 +23,15 @@ sleep 10
 echo "🗄️ Выполнение миграций базы данных..."
 docker compose exec -T backend python manage.py migrate --noinput
 
+echo "🗄️ Создание таблицы кэша (если еще нет)..."
+docker compose exec -T backend python manage.py createcachetable
+
 echo "📦 Сбор статических файлов..."
 docker compose exec -T backend python manage.py collectstatic --noinput
+
+docker compose exec -T backend python manage.py seed --no-users
+
+docker compose exec -t backend python manage.py run_telegram_bot
 
 echo "✅ Развертывание успешно завершено!"
 echo "Проверьте статус контейнеров с помощью:"
